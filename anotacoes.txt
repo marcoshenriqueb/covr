@@ -1,0 +1,18 @@
+- conversor de moedas
+- monitora cotações
+- ajuda na compra
+- relatórios/blog
+- match para trocas de moedas e idéias
+- chat para os matchs
+
+
+Páginas
+-Home
+-Blog
+-Câmbio
+-Mensagens
+-Ferramentas(Conversor, monitorador, previsões)
+
+-Notificações
+-Ultimas mensagens
+-Minha Conta

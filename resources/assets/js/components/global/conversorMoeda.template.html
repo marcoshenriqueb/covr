@@ -1,0 +1,41 @@
+<div class="heading">
+  <i class="fa fa-calculator"></i>
+  Conversor de Moedas
+</div>
+<div class="widget-content padded text-center">
+  <div class="col-md-3">
+    <div class="form-group">
+      <label>Digite o valor:</label>
+      <input class="form-control" v-on="keyup: calcula, click: calcula" type="number" v-model="valor">
+    </div>
+  </div>
+  <div class="col-md-2">
+    <div class="form-group">
+      <label>Moeda que possui:</label>
+      <select class="form-control" v-on="change: calcula" v-model="selectedA" options="cotacao"></select>
+    </div>
+  </div>
+  <div class="col-md-1">
+    <div class="form-group">
+      <div class="hidden-xs"></div>
+      <button v-on="click: inverte" style="margin-top:5px;" type="button" class="btn btn-block btn-primary">
+        <span style="margin:0;" class="fa fa-refresh"></span>
+      </button>
+    </div>
+  </div>
+  <div class="col-md-2">
+    <div class="form-group">
+      <label>Moeda que deseja:</label>
+      <select class="form-control" v-on="change: calcula" v-model="selectedB" options="cotacao" id="simbolo"></select>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="hidden-xs"></div>
+    <h2 style="margin-top:3px;"><small>{{simbolo}}</small> {{resultado}}</h2>
+  </div>
+  <div class="col-md-12">
+    <p>
+      *Data base: {{data}}
+    </p>
+  </div>
+</div>
