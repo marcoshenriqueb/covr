@@ -29,8 +29,18 @@ class RatePreparer
   public function prepareToApi($currencies)
   {
     $result = [];
-    foreach ($currencies[0] as $key => $c) {
-      $result[$key] = ['cot' => $c, 'var' => $c / $currencies[1][$key] - 1];
+    if ($currencies && $currencies->count() >= 2) {
+      $cur = $currencies->toArray();
+      foreach ($cur[0] as $key => $c) {
+        $result[$key] = ['cot' => $c, 'var' => $c / $cur[1][$key] - 1];
+      }
+    }elseif ($currencies && $currencies->count() == 1) {
+      $cur = $currencies->toArray();
+      foreach ($cur[0] as $key => $c) {
+        $result[$key] = ['cot' => $c, 'var' => 0];
+      }
+    }else {
+      $result = false;
     }
     return $result;
   }
@@ -38,8 +48,13 @@ class RatePreparer
   public function prepareToConverter($currencies)
   {
     $result = [];
-    foreach ($currencies as $key => $c) {
-      $result[$key] = $c;
+    if ($currencies) {
+      $cur = $currencies->toArray();
+      foreach ($cur as $key => $c) {
+        $result[$key] = $c;
+      }
+    }else {
+      $result = false;
     }
     return $result;
   }

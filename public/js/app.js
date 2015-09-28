@@ -17475,11 +17475,13 @@ module.exports = Watcher
 var Pusher = require('pusher-js');
 var Vue = require('vue');
 var VueRouter = require('vue-router');
+var VueResource = require('vue-resource');
 Vue.use(VueRouter);
-Vue.use(require('vue-resource'));
+Vue.use(VueResource);
 
 Vue.http.headers.common['X-CSRF-TOKEN'] = document.querySelector('#token').getAttribute('value');
 Vue.config.debug = true;
+
 var app = Vue.extend({
 
   data: function data() {
@@ -17490,17 +17492,19 @@ var app = Vue.extend({
 
   components: {
     'painel-cotacoes': require('./components/global/painelCotacoes'),
-    'conversor-moeda': require('./components/global/conversorMoeda')
+    'compara-conversor-moeda': require('./components/global/comparaConversorMoeda')
   },
 
   methods: {
     changeActivePage: function changeActivePage() {
-      this.activePage = this.$route.path;
+      var that = this;
+      setInterval(function () {
+        that.activePage = that.$route.path;
+      }, 200);
     }
   }
 
 });
-
 var router = new VueRouter({
   history: true,
   saveScrollPosition: true
@@ -17510,11 +17514,39 @@ router.map({
   '/': {
     component: require('./components/routed/home')
   },
+  '/app': {
+    component: require('./components/routed/painel'),
+    auth: true
+  },
+  '/perfil': {
+    component: require('./components/routed/perfil'),
+    auth: true
+  },
+  '/contatos': {
+    component: require('./components/routed/contatos'),
+    auth: true
+  },
   '/login': {
     component: require('./components/routed/login')
   },
   '/cadastro': {
     component: require('./components/routed/cadastro')
+  },
+  '/confirma-email': {
+    component: require('./components/routed/confirmaEmail')
+  }
+});
+
+router.beforeEach(function (transition) {
+  if (transition.to.auth) {
+    var response;
+    $.get('auth/check').done(function (xhr) {
+      transition.next();
+    }).fail(function (xhr) {
+      transition.redirect('/login');
+    });
+  } else {
+    transition.next();
   }
 });
 
@@ -17522,20 +17554,21 @@ router.mode = 'hash';
 
 router.start(app, '#app');
 
-},{"./components/global/conversorMoeda":108,"./components/global/painelCotacoes":110,"./components/routed/cadastro":112,"./components/routed/home":114,"./components/routed/login":116,"pusher-js":2,"vue":105,"vue-resource":4,"vue-router":16}],108:[function(require,module,exports){
+},{"./components/global/comparaConversorMoeda":108,"./components/global/painelCotacoes":110,"./components/routed/cadastro":112,"./components/routed/confirmaEmail":114,"./components/routed/contatos":116,"./components/routed/home":118,"./components/routed/login":120,"./components/routed/painel":122,"./components/routed/perfil":124,"pusher-js":2,"vue":105,"vue-resource":4,"vue-router":16}],108:[function(require,module,exports){
 'use strict';
 
 module.exports = {
-  template: require('./conversorMoeda.template.html'),
+  template: require('./comparaConversorMoeda.template.html'),
 
   data: function data() {
     return {
       cotacao: [],
       selectedA: 1,
       selectedB: '',
-      valor: 100,
+      valor: 1000,
       data: '',
       resultado: '',
+      resultadoSpread: '',
       simbolo: ''
     };
   },
@@ -17561,8 +17594,9 @@ module.exports = {
   methods: {
     calcula: function calcula() {
       this.resultado = (this.selectedA / this.selectedB * this.valor).toFixed(2);
+      this.resultadoSpread = (this.selectedA / this.selectedB * 0.90 * this.valor).toFixed(2);
       var that = this;
-      setInterval(function () {
+      setTimeout(function () {
         that.simbolo = $('#simbolo option:selected').text();
       }, 200);
     },
@@ -17575,8 +17609,8 @@ module.exports = {
   }
 };
 
-},{"./conversorMoeda.template.html":109}],109:[function(require,module,exports){
-module.exports = '<div class="heading">\n  <i class="fa fa-calculator"></i>\n  Conversor de Moedas\n</div>\n<div class="widget-content padded text-center">\n  <div class="col-md-3">\n    <div class="form-group">\n      <label>Digite o valor:</label>\n      <input class="form-control" v-on="keyup: calcula, click: calcula" type="number" v-model="valor">\n    </div>\n  </div>\n  <div class="col-md-2">\n    <div class="form-group">\n      <label>Moeda que possui:</label>\n      <select class="form-control" v-on="change: calcula" v-model="selectedA" options="cotacao"></select>\n    </div>\n  </div>\n  <div class="col-md-1">\n    <div class="form-group">\n      <div class="hidden-xs"></div>\n      <button v-on="click: inverte" style="margin-top:5px;" type="button" class="btn btn-block btn-primary">\n        <span style="margin:0;" class="fa fa-refresh"></span>\n      </button>\n    </div>\n  </div>\n  <div class="col-md-2">\n    <div class="form-group">\n      <label>Moeda que deseja:</label>\n      <select class="form-control" v-on="change: calcula" v-model="selectedB" options="cotacao" id="simbolo"></select>\n    </div>\n  </div>\n  <div class="col-md-4">\n    <div class="hidden-xs"></div>\n    <h2 style="margin-top:3px;"><small>{{simbolo}}</small> {{resultado}}</h2>\n  </div>\n  <div class="col-md-12">\n    <p>\n      *Data base: {{data}}\n    </p>\n  </div>\n</div>\n';
+},{"./comparaConversorMoeda.template.html":109}],109:[function(require,module,exports){
+module.exports = '<div class="heading">\n  <i class="fa fa-calculator"></i>\n  Conversor de Moedas\n</div>\n<div class="widget-content padded text-center">\n  <div class="row">\n    <div class="col-md-offset-2 col-md-8">\n      <h3>Veja quanto você economiza com o AppCambio!</h3>\n    </div>\n  </div>\n  <div class="row">\n    <div class="col-md-2">\n      <div class="form-group">\n        <label>Digite o valor:</label>\n        <input class="form-control" v-on="keyup: calcula, click: calcula" type="number" v-model="valor">\n      </div>\n    </div>\n    <div class="col-md-2">\n      <div class="form-group">\n        <label>Moeda que possui:</label>\n        <select class="form-control" v-on="change: calcula" v-model="selectedA" options="cotacao"></select>\n      </div>\n    </div>\n    <div class="col-md-1">\n      <div class="form-group">\n        <div class="hidden-xs"></div>\n        <button v-on="click: inverte" style="margin-top:5px;" type="button" class="btn btn-block btn-primary">\n          <span style="margin:0;" class="fa fa-refresh"></span>\n        </button>\n      </div>\n    </div>\n    <div class="col-md-2">\n      <div class="form-group">\n        <label>Moeda que deseja:</label>\n        <select class="form-control" v-on="change: calcula" v-model="selectedB" options="cotacao" id="simbolo"></select>\n      </div>\n    </div>\n    <div class="col-md-5">\n      <div class="col-md-6">\n        <span>Banco/Corretora</span>\n        <h2 style="margin-top:3px;"><small>{{simbolo}}</small> {{resultadoSpread}}</h2>\n      </div>\n      <div class="col-md-6">\n        <span>Com o AppCambio</span>\n        <h2 style="margin-top:3px;"><small>{{simbolo}}</small> {{resultado}}</h2>\n      </div>\n    </div>\n\n    <div class="col-md-12">\n      <p>\n        *Data base: {{data}}\n      </p>\n    </div>\n  </div>\n</div>\n';
 },{}],110:[function(require,module,exports){
 'use strict';
 
@@ -17621,7 +17655,7 @@ module.exports = {
       v.animate = true;
       var p = JSON.parse(data.cotacao);
       v.parseCot(p);
-      setInterval(function () {
+      setTimeout(function () {
         v.animate = false;
       }, 5000);
     });
@@ -17631,15 +17665,12 @@ module.exports = {
     parseCot: function parseCot(c) {
       var ar = {};
       for (var k in c) {
-        if (c[k].cot === Number(c[k].cot) && c[k].cot % 1 !== 0) {
-          c[k].cot.toFixed(2);
-        }
         var variacao = (c[k]['var'] * 100).toFixed(2) + "%";
-        ar[k] = { preco: k + " " + c[k].cot, variacao: variacao };
+        ar[k] = { preco: k + " " + Number(c[k].cot).toFixed(2), variacao: variacao };
         if (c[k]['var'] > 0) {
-          this[k + 'color'] = 'green';
+          this[k + 'color'] = 'text-success';
         } else if (c[k]['var'] < 0) {
-          this[k + 'color'] = 'red';
+          this[k + 'color'] = 'text-danger';
         }
       }
       this.cotacao = ar;
@@ -17650,7 +17681,7 @@ module.exports = {
 };
 
 },{"./painelCotacoes.template.html":111}],111:[function(require,module,exports){
-module.exports = '<!-- Statistics -->\n<div class="row">\n  <div class="widget-container cot-container">\n    <div class="col-lg-6" style="padding:0;">\n      <div class="col-md-3"\n           v-class="animated: animate, fadeIn: animate">\n        <div class="number">\n          {{cotacao.USD.preco}}\n        </div>\n        <div class="text">\n          {{cotacao.USD.variacao}}\n        </div>\n      </div>\n      <div class="col-md-3"\n           v-class="animated: animate, fadeIn: animate">\n        <div class="number">\n          {{cotacao.CAD.preco}}\n        </div>\n        <div class="text">\n          {{cotacao.CAD.variacao}}\n        </div>\n      </div>\n      <div class="col-md-3"\n           v-class="animated: animate, fadeIn: animate">\n        <div class="number">\n          {{cotacao.AUD.preco}}\n        </div>\n        <div class="text">\n          {{cotacao.AUD.variacao}}\n        </div>\n      </div>\n      <div class="col-md-3"\n           style="border-right:none;"\n           v-class="animated: animate, fadeIn: animate">\n        <div class="number">\n          {{cotacao.EUR.preco}}\n        </div>\n        <div class="text">\n          {{cotacao.EUR.variacao}}\n        </div>\n      </div>\n    </div>\n    <div class="col-lg-6" style="padding:0;">\n      <div class="col-md-3"\n           v-class="animated: animate, fadeIn: animate">\n        <div class="number">\n          {{cotacao.GBP.preco}}\n        </div>\n        <div class="text">\n          {{cotacao.GBP.variacao}}\n        </div>\n      </div>\n      <div class="col-md-3"\n           v-class="animated: animate, fadeIn: animate">\n        <div class="number">\n          {{cotacao.CLP.preco}}\n        </div>\n        <div class="text">\n          {{cotacao.CLP.variacao}}\n        </div>\n      </div>\n      <div class="col-md-3"\n           v-class="animated: animate, fadeIn: animate">\n        <div class="number">\n          {{cotacao.ARS.preco}}\n        </div>\n        <div class="text">\n          {{cotacao.ARS.variacao}}\n        </div>\n      </div>\n      <div class="col-md-3"\n           v-class="animated: animate, fadeIn: animate">\n        <div class="number">\n          {{cotacao.MXN.preco}}\n        </div>\n        <div class="text">\n          {{cotacao.MXN.variacao}}\n        </div>\n      </div>\n    </div>\n  </div>\n</div>\n<!-- End Statistics -->\n';
+module.exports = '<!-- Statistics -->\n<div class="row">\n  <div class="col-xs-6" style="padding:0;">\n    <div class="widget-container cot-container">\n      <div class="col-sm-3"\n           v-class="animated: animate, fadeIn: animate">\n        <div class="number">\n          {{cotacao.USD.preco}}\n        </div>\n        <div class="text" v-class="USDcolor">\n          {{cotacao.USD.variacao}}\n        </div>\n      </div>\n      <div class="col-sm-3"\n           v-class="animated: animate, fadeIn: animate">\n        <div class="number">\n          {{cotacao.CAD.preco}}\n        </div>\n        <div class="text" v-class="CADcolor">\n          {{cotacao.CAD.variacao}}\n        </div>\n      </div>\n      <div class="col-sm-3"\n           v-class="animated: animate, fadeIn: animate">\n        <div class="number">\n          {{cotacao.AUD.preco}}\n        </div>\n        <div class="text" v-class="AUDcolor">\n          {{cotacao.AUD.variacao}}\n        </div>\n      </div>\n      <div class="col-sm-3"\n           style="border-right:none;"\n           v-class="animated: animate, fadeIn: animate">\n        <div class="number">\n          {{cotacao.EUR.preco}}\n        </div>\n        <div class="text" v-class="EURcolor">\n          {{cotacao.EUR.variacao}}\n        </div>\n      </div>\n    </div>\n  </div>\n  <div class="col-xs-6" style="padding:0;">\n    <div class="widget-container cot-container">\n      <div class="col-sm-3"\n           v-class="animated: animate, fadeIn: animate">\n        <div class="number">\n          {{cotacao.GBP.preco}}\n        </div>\n        <div class="text" v-class="GBPcolor">\n          {{cotacao.GBP.variacao}}\n        </div>\n      </div>\n      <div class="col-sm-3"\n           v-class="animated: animate, fadeIn: animate">\n        <div class="number">\n          {{cotacao.CLP.preco}}\n        </div>\n        <div class="text" v-class="CLPcolor">\n          {{cotacao.CLP.variacao}}\n        </div>\n      </div>\n      <div class="col-sm-3"\n           v-class="animated: animate, fadeIn: animate">\n        <div class="number">\n          {{cotacao.ARS.preco}}\n        </div>\n        <div class="text" v-class="ARScolor">\n          {{cotacao.ARS.variacao}}\n        </div>\n      </div>\n      <div class="col-sm-3"\n           v-class="animated: animate, fadeIn: animate">\n        <div class="number">\n          {{cotacao.MXN.preco}}\n        </div>\n        <div class="text" v-class="MXNcolor">\n          {{cotacao.MXN.variacao}}\n        </div>\n      </div>\n    </div>\n  </div>\n</div>\n<!-- End Statistics -->\n';
 },{}],112:[function(require,module,exports){
 'use strict';
 
@@ -17710,7 +17741,7 @@ module.exports = {
         password_confirmation: this.password_confirmation
       }).success(function (data) {
         if (data == true) {
-          window.location = "app";
+          window.location = "confirma-email";
         } else {
           console.log(data);
         }
@@ -17719,13 +17750,112 @@ module.exports = {
           this.$set(err + 'Invalid', data[err]);
         }
       });
+    },
+    fbLogin: function fbLogin() {
+      FB.login(function (response) {
+        // console.log(JSON.stringify(response));
+        FB.getLoginStatus(function (response) {
+          statusChangeCallback(response);
+        });
+      }, { scope: "public_profile,email,user_friends,user_location" });
     }
   }
 };
 
 },{"./cadastro.template.html":113}],113:[function(require,module,exports){
-module.exports = '<div class="col-md-offset-3 col-md-6">\n  <div class="widget-container fluid-height clearfix">\n    <div class="heading">\n      <i class="fa fa-sign-in"></i>\n      Cadastro\n    </div>\n    <div class="widget-content padded text-center">\n      <div class="login-wrapper col-md-offset-1 col-md-10">\n        <form method="POST">\n\n          <div class="form-group">\n            <div class="input-group">\n              <span class="input-group-addon"><i class="fa fa-user"></i></span>\n              <input type="text"\n                     v-model="nome"\n                     v-on="blur: validaNome"\n                     class="form-control"\n                     placeholder="Digite o seu nome">\n            </div>\n            <span v-if="nomeInvalid">{{ nomeInvalid }}</span>\n          </div>\n\n          <div class="form-group">\n            <div class="input-group">\n              <span class="input-group-addon"><i class="fa fa-user-secret"></i></span>\n              <input type="text"\n                     v-model="sobrenome"\n                     v-on="blur: validaSobrenome"\n                     class="form-control"\n                     placeholder="Digite o seu sobrenome">\n            </div>\n            <span v-if="sobrenomeInvalid">{{ sobrenomeInvalid }}</span>\n          </div>\n\n          <div class="form-group">\n            <div class="input-group">\n              <span class="input-group-addon"><i class="fa fa-envelope"></i></span>\n              <input type="text"\n                     v-model="email"\n                     v-on="blur: validaEmail"\n                     class="form-control"\n                     placeholder="Digite o email">\n            </div>\n            <span v-if="emailInvalid">{{ emailInvalid }}</span>\n          </div>\n\n          <div class="form-group">\n            <div class="input-group">\n              <span class="input-group-addon"><i class="fa fa-lock"></i></span>\n              <input type="password"\n                     v-model="password"\n                     v-on="blur: validaPassword"\n                     class="form-control"\n                     placeholder="Digite a senha">\n            </div>\n            <span v-if="passwordInvalid">{{ passwordInvalid }}</span>\n          </div>\n\n          <div class="form-group">\n            <div class="input-group">\n              <span class="input-group-addon"><i class="fa fa-lock"></i></span>\n              <input type="password" v-model="password_confirmation" class="form-control" placeholder="Confirme a senha">\n            </div>\n          </div>\n\n          <button v-on="click: postRegister" class="btn btn-lg btn-primary btn-block">Cadastrar</button>\n        </form>\n\n          <div class="social-login clearfix">\n            <a class="btn btn-primary facebook btn-block"><i class="fa fa-facebook"></i> Cadastro com o facebook</a>\n          </div>\n\n          <hr>\n\n          <p>\n            Já tem uma conta?\n          </p>\n\n          <a v-link="{path: \'/login\'}" style="margin-bottom:20px;" class="btn btn-default-outline btn-block">Login</a>\n      </div>\n    </div>\n  </div>\n</div>\n';
+module.exports = '<div class="col-md-offset-3 col-md-6">\n  <div class="widget-container fluid-height clearfix">\n    <div class="heading">\n      <i class="fa fa-sign-in"></i>\n      Cadastro\n    </div>\n    <div class="widget-content padded text-center">\n      <div class="login-wrapper col-md-offset-1 col-md-10">\n        <form method="POST">\n\n          <div class="form-group">\n            <div class="input-group">\n              <span class="input-group-addon"><i class="fa fa-user"></i></span>\n              <input type="text"\n                     v-model="nome"\n                     v-on="blur: validaNome"\n                     class="form-control"\n                     placeholder="Digite o seu nome">\n            </div>\n            <span v-if="nomeInvalid">{{ nomeInvalid }}</span>\n          </div>\n\n          <div class="form-group">\n            <div class="input-group">\n              <span class="input-group-addon"><i class="fa fa-user-secret"></i></span>\n              <input type="text"\n                     v-model="sobrenome"\n                     v-on="blur: validaSobrenome"\n                     class="form-control"\n                     placeholder="Digite o seu sobrenome">\n            </div>\n            <span v-if="sobrenomeInvalid">{{ sobrenomeInvalid }}</span>\n          </div>\n\n          <div class="form-group">\n            <div class="input-group">\n              <span class="input-group-addon"><i class="fa fa-envelope"></i></span>\n              <input type="text"\n                     v-model="email"\n                     v-on="blur: validaEmail"\n                     class="form-control"\n                     placeholder="Digite o email">\n            </div>\n            <span v-if="emailInvalid">{{ emailInvalid }}</span>\n          </div>\n\n          <div class="form-group">\n            <div class="input-group">\n              <span class="input-group-addon"><i class="fa fa-lock"></i></span>\n              <input type="password"\n                     v-model="password"\n                     v-on="blur: validaPassword"\n                     class="form-control"\n                     placeholder="Digite a senha">\n            </div>\n            <span v-if="passwordInvalid">{{ passwordInvalid }}</span>\n          </div>\n\n          <div class="form-group">\n            <div class="input-group">\n              <span class="input-group-addon"><i class="fa fa-lock"></i></span>\n              <input type="password" v-model="password_confirmation" class="form-control" placeholder="Confirme a senha">\n            </div>\n          </div>\n\n          <button v-on="click: postRegister" class="btn btn-lg btn-primary btn-block">Cadastrar</button>\n          <br>\n        </form>\n\n          <div class="social-login clearfix">\n            <a class="btn btn-primary facebook btn-block" v-on="click: fbLogin"><i class="fa fa-facebook"></i> Cadastro com o facebook</a>\n          </div>\n\n          <hr>\n\n          <p>\n            Já tem uma conta?\n          </p>\n\n          <a v-link="{path: \'/login\'}" style="margin-bottom:20px;" class="btn btn-default-outline btn-block">Login</a>\n      </div>\n    </div>\n  </div>\n</div>\n';
 },{}],114:[function(require,module,exports){
+'use strict';
+
+module.exports = {
+  template: require('./confirmaEmail.template.html')
+};
+
+},{"./confirmaEmail.template.html":115}],115:[function(require,module,exports){
+module.exports = '<div class="col-md-offset-3 col-md-6">\n  <div class="widget-container fluid-height clearfix">\n    <div class="heading">\n      <i class="fa fa-sign-in"></i>\n      Confirmação de email\n    </div>\n    <div class="widget-content padded text-center">\n      <div class="login-wrapper col-md-offset-1 col-md-10">\n        <p>\n          Obrigado por ser cadastrar! Favor confirmar o seu cadastro através do email que lhe enviamos.\n        </p>\n      </div>\n    </div>\n  </div>\n</div>\n';
+},{}],116:[function(require,module,exports){
+'use strict';
+
+module.exports = {
+  template: require('./contatos.template.html'),
+
+  data: function data() {
+    return {
+      friends: {},
+      notFriends: {},
+      requests: {},
+      requested: {},
+      friendsCount: 0,
+      searchBar: '',
+      searchFriends: '',
+      selectedFriend: ''
+    };
+  },
+
+  computed: {},
+
+  filters: {
+    dontShow: function dontShow(value) {
+      if (this.searchBar == '') {
+        return [];
+      }
+      return value;
+    }
+  },
+
+  ready: function ready() {
+    this.$http.get('api/friends/get', function (data) {
+      this.friends = data.friends;
+      this.requests = data.requests;
+      this.requested = data.requested;
+      this.friendsCount = data.friends.length;
+    });
+  },
+
+  methods: {
+    requestFriend: function requestFriend(n, e) {
+      this.$http.post('api/friends/request', { id: n.id }, function (data) {
+        e.target.disabled = true;
+      }).success(function () {
+        this.requests.push(n);
+      });
+    },
+    confirmFriend: function confirmFriend(r, e, i) {
+      this.$http.post('api/friends/confirm', { id: r.id }, function (data) {
+        e.target.disabled = true;
+      }).success(function () {
+        this.friends.push(r);
+        this.requested.splice(i, 1);
+      });
+    },
+    removeRequested: function removeRequested(r, e, i) {
+      this.$http.post('api/friends/removeRequest', { id: r.id }, function (data) {
+        e.target.disabled = true;
+      }).success(function () {
+        this.requested.splice(i, 1);
+      });
+    },
+    cancelRequest: function cancelRequest(r, e, i) {
+      this.$http.post('api/friends/cancelRequest', { id: r.id }, function (data) {
+        e.target.disabled = true;
+      }).success(function () {
+        this.requests.splice(i, 1);
+      });
+    },
+    getNotFriends: function getNotFriends() {
+      if (this.searchFriends.length >= 3) {
+
+        this.$http.get('api/friends/search/' + this.searchFriends, function (data) {
+          this.notFriends = data;
+        });
+      }
+    }
+  }
+};
+
+},{"./contatos.template.html":117}],117:[function(require,module,exports){
+module.exports = '\n<div class="row">\n  <!-- Primeiro widget -->\n  <div class="col-md-3">\n    <div class="widget-container scrollable chat chat-page">\n      <div class="contact-list alone">\n        <div class="heading">\n          Chats ({{friendsCount}})\n        </div>\n        <input v-model="searchBar" class="form-control input-sm" placeholder="Procure por amigos">\n        <ul>\n          <li v-repeat="f: friends | filterBy searchBar">\n            <a href="#">\n              <img src="images/int.jpg" width="30" height="30" />\n              {{f.nome + \' \' + f.sobrenome}}\n              <i class="fa fa-circle text-danger"></i>\n            </a>\n          </li>\n        </ul>\n      </div>\n    </div>\n  <!-- Fim do primeiro widget -->\n  </div>\n\n  <!-- Segundo widget -->\n  <div class="col-md-9">\n\n    <!-- Solicitações de amizades -->\n    <div v-if="selectedFriend == \'\'" style="height:700px;" class="widget-container scrollable clearfix">\n      <div class="heading">\n        <i class="fa fa-users"></i>\n        Amizades\n      </div>\n      <div class="widget-content padded">\n        <div class="form-group form-inline">\n          <input v-model="searchFriends"\n                 class="form-control input-sm"\n                 placeholder="Digite o nome"\n                 v-on="keyup: getNotFriends">\n        </div>\n\n        <!-- Painel de explicações -->\n        <div class="text-center" v-if="requests.length == 0 && requested.length == 0 && searchFriends == \'\'">\n          <h2>\n            Adicione mais contatos, a chance será maior de trocar moeda com alguém que conheça!\n          </h2>\n          <i style="font-size:5em;" class="fa fa-smile-o"></i>\n          <p class="lead">\n            Clique no botão + no painel ao lado e procure por conhecidos.\n          </p>\n          <p class="lead">\n            Você também pode adicionar os seus amigos do facebook, que estão no aplicativo.\n            Basta clicar no botão abaixo.\n          </p>\n          <button type="button" class="btn btn-primary">Adicionar fb</button>\n          <hr>\n        </div>\n\n        <!-- Soliciatações de amizade -->\n        <div class="friends-requested" v-if="requested.length > 0 && searchFriends == \'\'">\n          <h3>Solicitações pendentes</h3>\n          <div class="row" v-repeat="r: requested">\n            <div class="col-md-2">\n              <img src="{{ r.profilePic == null ? \'images/int.jpg\' : r.profilePic }}"\n                   class="img-responsive img-rounded" />\n              </div>\n            <div class="col-md-7">\n              <p style="font-size:1.4em;">{{r.nome + \' \' + r.sobrenome}}</p>\n              <p>\n                <i class="fa fa-map-marker"></i> Rio de Janeiro\n              </p>\n            </div>\n            <div class="col-md-3">\n              <button class="btn btn-large btn-block btn-success pull-right"\n                      v-on="click: confirmFriend(r, $event, $index)">\n                Aceitar\n              </button>\n              <button class="btn btn-large btn-block btn-warning pull-right"\n                      v-on="click: removeRequested(r, $event, $index)">\n                Cancelar\n              </button>\n            </div>\n          </div>\n        </div>\n\n        <!-- Amizades solicitadas -->\n        <div class="friends-requests" v-if="requests.length > 0 && searchFriends == \'\'">\n          <h3>Solicitações feitas</h3>\n          <div class="row" v-repeat="r: requests">\n            <div class="col-md-2">\n              <img src="{{ r.profilePic == null ? \'images/int.jpg\' : r.profilePic }}"\n                   class="img-responsive img-rounded" />\n            </div>\n            <div class="col-md-7">\n              <p style="font-size:1.4em;">{{r.nome + \' \' + r.sobrenome}}</p>\n              <p>\n                <i class="fa fa-map-marker"></i> Rio de Janeiro\n              </p>\n            </div>\n            <div class="col-md-3">\n              <button class="btn btn-large btn-block btn-warning pull-right"\n                      v-on="click: cancelRequest(r, $event, $index)">\n                Cancelar\n              </button>\n            </div>\n          </div>\n        </div>\n\n\n        <!-- Amigos atuais -->\n        <div class="friends-requests">\n          <h3>Amigos</h3>\n          <div class="row" v-repeat="f: friends | filterBy searchFriends">\n            <div class="col-md-2">\n              <img src="{{ f.profilePic == null ? \'images/int.jpg\' : f.profilePic }}"\n                   class="img-responsive img-rounded" />\n            </div>\n            <div class="col-md-7">\n              <p style="font-size:1.4em;">{{f.nome + \' \' + f.sobrenome}}</p>\n              <p>\n                <i class="fa fa-map-marker"></i> Rio de Janeiro\n              </p>\n            </div>\n            <div class="col-md-3">\n              <button class="btn btn-large btn-block btn-warning pull-right"\n                      v-on="click: cancelFriend(f, $event, $index)">\n                Desfazer amizade\n              </button>\n            </div>\n          </div>\n        </div>\n\n        <!-- Procura por novos amigos -->\n        <div class="friends-requests" v-if="searchFriends != \'\'">\n          <h3>Mais pessoas</h3>\n          <div class="row" v-repeat="n: notFriends | filterBy searchFriends">\n            <div class="col-md-2">\n              <img src="{{ n.profilePic == null ? \'images/int.jpg\' : n.profilePic }}"\n                   class="img-responsive img-rounded" />\n            </div>\n            <div class="col-md-7">\n              <p style="font-size:1.4em;">{{n.nome + \' \' + n.sobrenome}}</p>\n              <p>\n                <i class="fa fa-map-marker"></i> Rio de Janeiro\n              </p>\n            </div>\n            <div class="col-md-3">\n              <button class="btn btn-large btn-block btn-success pull-right"\n                      v-on="click: requestFriend(n, $event)">\n                Solicitar\n              </button>\n            </div>\n          </div>\n        </div>\n\n\n      </div>\n    <!-- Fim das solicitações de amizade -->\n    </div>\n\n    <!-- Chat -->\n    <div v-if="selectedFriend != \'\'" class="widget-container clearfix">\n      <div class="heading">\n        <i class="fa fa-users"></i>\n        Chat com Fulano\n      </div>\n      <div class="widget-content padded">\n\n      </div>\n    </div>\n  <!-- Fim do segundo widget -->\n  </div>\n</div>\n';
+},{}],118:[function(require,module,exports){
 'use strict';
 
 module.exports = {
@@ -17738,9 +17868,9 @@ module.exports = {
   }
 };
 
-},{"./home.template.html":115}],115:[function(require,module,exports){
+},{"./home.template.html":119}],119:[function(require,module,exports){
 module.exports = '\n<painel-cotacoes></painel-cotacoes>\n<div class="row">\n  <div class="col-md-12">\n    <div class="widget-container fluid-height clearfix">\n      <compara-conversor-moeda cotacao=\'{{cotacao}}\'></compara-conversor-moeda>\n    </div>\n  </div>\n</div>\n';
-},{}],116:[function(require,module,exports){
+},{}],120:[function(require,module,exports){
 'use strict';
 
 module.exports = {
@@ -17755,6 +17885,14 @@ module.exports = {
   },
 
   methods: {
+    fbLogin: function fbLogin() {
+      FB.login(function (response) {
+        // console.log(JSON.stringify(response));
+        FB.getLoginStatus(function (response) {
+          statusChangeCallback(response);
+        });
+      }, { scope: "public_profile,email,user_friends,user_location" });
+    },
     postLogin: function postLogin(e) {
       e.preventDefault();
       this.$http.post('auth/login', {
@@ -17773,6 +17911,298 @@ module.exports = {
   }
 };
 
-},{"./login.template.html":117}],117:[function(require,module,exports){
-module.exports = '\n<div class="col-md-offset-3 col-md-6">\n  <div class="widget-container fluid-height clearfix">\n    <div class="heading">\n      <i class="fa fa-sign-in"></i>\n      Login\n    </div>\n    <div class="widget-content padded text-center">\n      <div class="login-wrapper col-md-offset-1 col-md-10">\n        <form method="POST">\n          <div class="form-group">\n            <div class="input-group">\n              <span class="input-group-addon"><i class="fa fa-envelope"></i></span>\n              <input type="text" v-model="email" class="form-control" placeholder="Digite o email">\n            </div>\n          </div>\n\n          <div class="form-group">\n            <div class="input-group">\n              <span class="input-group-addon"><i class="fa fa-lock"></i></span>\n              <input type="password" v-model="password" class="form-control" placeholder="Digite a senha">\n            </div>\n          </div>\n\n          <a class="pull-right">Esqueceu a senha?</a>\n\n          <div style="left:20px;position:relative;" class="text-left">\n            <label class="checkbox">\n              <input type="checkbox" name="remember" v-model="remember">\n              <span>Manter-me conectado</span>\n            </label>\n          </div>\n\n\n          <button v-on="click: postLogin" class="btn btn-lg btn-primary btn-block">Login</button><br>\n          <span v-if="authErr">Email ou senha inválidos</span>\n\n          <div class="social-login clearfix">\n            <a class="btn btn-primary btn-block facebook"><i class="fa fa-facebook"></i> Logar com o Facebook</a>\n          </div>\n        </form>\n        <hr>\n        <p>\n          Ainda não tem uma conta?\n        </p>\n        <a v-link="{path: \'/cadastro\'}" style="margin-bottom:20px;" class="btn btn-default-outline btn-block btn-large">Cadastre-se</a>\n      </div>\n    </div>\n  </div>\n</div>\n';
+},{"./login.template.html":121}],121:[function(require,module,exports){
+module.exports = '\n\n<div class="col-md-offset-3 col-md-6">\n  <div class="widget-container fluid-height clearfix">\n    <div class="heading">\n      <i class="fa fa-sign-in"></i>\n      Login\n    </div>\n    <div class="widget-content padded text-center">\n      <div class="login-wrapper col-md-offset-1 col-md-10">\n        <form method="POST">\n          <div class="form-group">\n            <div class="input-group">\n              <span class="input-group-addon"><i class="fa fa-envelope"></i></span>\n              <input type="text" v-model="email" class="form-control" placeholder="Digite o email">\n            </div>\n          </div>\n\n          <div class="form-group">\n            <div class="input-group">\n              <span class="input-group-addon"><i class="fa fa-lock"></i></span>\n              <input type="password" v-model="password" class="form-control" placeholder="Digite a senha">\n            </div>\n          </div>\n\n          <a class="pull-right">Esqueceu a senha?</a>\n\n          <div style="left:20px;position:relative;" class="text-left">\n            <label class="checkbox">\n              <input type="checkbox" name="remember" v-model="remember">\n              <span>Manter-me conectado</span>\n            </label>\n          </div>\n\n\n          <button v-on="click: postLogin" class="btn btn-lg btn-primary btn-block">Login</button>\n          <span v-if="authErr">Credenciais inválidas</span><br>\n        </form>\n\n          <div class="social-login clearfix">\n            <a class="btn btn-primary btn-block facebook" v-on="click: fbLogin"><i class="fa fa-facebook"></i> Logar com o Facebook</a>\n          </div>\n\n        <hr>\n        <p>\n          Ainda não tem uma conta?\n        </p>\n        <a v-link="{path: \'/cadastro\'}" style="margin-bottom:20px;" class="btn btn-default-outline btn-block btn-large">Cadastre-se</a>\n      </div>\n    </div>\n  </div>\n</div>\n';
+},{}],122:[function(require,module,exports){
+'use strict';
+
+module.exports = {
+  template: require('./painel.template.html'),
+
+  data: function data() {
+    return {
+      operation: '',
+      currency: '',
+      amount: '',
+      price: '',
+      address: '',
+      place_id: '',
+      results: '',
+      availableCurrencies: []
+    };
+  },
+
+  ready: function ready() {
+    var that = this;
+    var init = function rec() {
+      if (mapOk) {
+        that.initMap();
+      } else {
+        setTimeout(function () {
+          rec();
+        }, 500);
+      }
+    };
+    init();
+    this.getAvailableCurrencies();
+  },
+
+  methods: {
+    findGeolocation: function findGeolocation() {
+      var that = this;
+      if (this.address.length > 3) {
+        geocoder.geocode({ 'address': this.address }, function (results, status) {
+          if (status == google.maps.GeocoderStatus.OK) {
+            that.place_id = results[0].geometry.location;
+            map.setCenter(results[0].geometry.location);
+            var marker = new google.maps.Marker({
+              map: map,
+              position: results[0].geometry.location
+            });
+          } else {
+            alert("Geocode was not successful for the following reason: " + status);
+          }
+        });
+      }
+    },
+    reverseGeolocation: function reverseGeolocation(latlng) {
+      var that = this;
+      geocoder.geocode({ 'location': latlng }, function (results, status) {
+        if (status === google.maps.GeocoderStatus.OK) {
+          if (results[1]) {
+            map.setZoom(11);
+            var marker = new google.maps.Marker({
+              position: latlng,
+              map: map
+            });
+            that.address = results[1].formatted_address;
+            infowindow.setContent(results[1].formatted_address);
+            infowindow.open(map, marker);
+          } else {
+            window.alert('Não tivemos resultados');
+          }
+        } else {
+          window.alert('Geocoder falhou por causa de: ' + status);
+        }
+      });
+    },
+    initMap: function initMap() {
+      infowindow = new google.maps.InfoWindow();
+      map = new google.maps.Map(document.getElementById('map'), {
+        center: { lat: -22.998657, lng: -43.398863 },
+        zoom: 12
+      });
+
+      geocoder = new google.maps.Geocoder();
+    },
+    findCurrentLocation: function findCurrentLocation() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(this.saveCurrentPosition);
+      } else {
+        alert("Não conseguimos achar a sua localização.");
+      }
+    },
+    saveCurrentPosition: function saveCurrentPosition(position) {
+      this.place_id = {
+        H: position.coords.latitude,
+        L: position.coords.longitude
+      };
+      this.reverseGeolocation({
+        lat: position.coords.latitude,
+        lng: position.coords.longitude
+      });
+    },
+    getAvailableCurrencies: function getAvailableCurrencies() {
+      this.$http.get('api/currency/available', function (data) {
+        for (var k in data) {
+          var set = { text: data[k]['currency'], value: data[k]['ticker'] };
+          this.availableCurrencies.push(set);
+        }
+      });
+    },
+    postBid: function postBid() {
+      var postData = {
+        operation: this.operation,
+        currency: this.currency,
+        amount: this.amount,
+        price: this.price,
+        address: this.address,
+        place_id: this.place_id
+      };
+      this.$http.post('api/bid/store', postData, function (data) {
+        console.log(data);
+      });
+    }
+  }
+};
+
+},{"./painel.template.html":123}],123:[function(require,module,exports){
+module.exports = '\n<painel-cotacoes></painel-cotacoes>\n\n<div class="row">\n  <div class="col-md-12">\n    <div class="widget-container fluid-height clearfix">\n      <div class="heading">\n        <i class="fa fa-money"></i>\n        Faça aqui a sua proposta\n      </div>\n      <div class="widget-content padded">\n        <div class="row">\n          <div class="col-md-4 opacity">\n            <div class="row">\n              <div class="col-md-12">\n                <label class="radio-inline">\n                  <input type="radio" value="0" v-model="operation">\n                  <span>Quero comprar</span>\n                </label>\n                <label class="radio-inline">\n                  <input type="radio" value="1" v-model="operation">\n                  <span>Quero vender</span>\n                </label>\n              </div>\n            </div>\n\n            <div class="row">\n              <div class="col-md-12">\n                <label>Escolha uma moeda: </label>\n                <select v-model="currency"\n                        options="availableCurrencies"\n                        class="form-control">\n                </select>\n              </div>\n            </div>\n\n            <div class="row">\n              <div class="col-md-12">\n                <label>Digite um valor: </label>\n                <input class="form-control" type="number" v-model="amount">\n              </div>\n            </div>\n\n            <div class="row">\n              <div class="col-md-12">\n                <label>Digite um preço: </label>\n                <input class="form-control" type="number" v-model="price">\n              </div>\n            </div>\n\n            <div class="row">\n              <div class="col-md-12">\n                <div class="row">\n                  <div class="col-md-12">\n                    <label>Localização: </label>\n                    <input data-toggle="tooltip"\n                           data-placement="top"\n                           title="Digite o local e clique em \'Achar\' no botão abaixo, ou apenas clique em \'Localização Atual\' para podermos achar as suas coordenadas!"\n                           class="form-control"\n                           type="text"\n                           v-model="address">\n                  </div>\n                </div>\n                <div class="row">\n                  <div class="col-md-6">\n                    <button v-on="click: findGeolocation" class="btn btn-large btn-block btn-primary">\n                      Achar\n                    </button>\n                  </div>\n                  <div class="col-md-6">\n                    <button v-on="click: findCurrentLocation" class="btn btn-large btn-block btn-primary">\n                      <i class="glyphicon glyphicon-pushpin"></i>\n                      Localização atual\n                    </button>\n                  </div>\n                </div>\n              </div>\n            </div>\n          </div>\n          <div class="col-md-8">\n            <div style="height:400px;width:100%;" id="map"></div>\n          </div>\n        </div>\n        <div class="row">\n          <div class="col-md-offset-3 col-md-6">\n            <button v-on="click: postBid" class="btn btn-large btn-block btn-primary">Enviar proposta</button>\n          </div>\n        </div>\n      </div>\n    </div>\n  </div>\n</div>\n';
+},{}],124:[function(require,module,exports){
+'use strict';
+
+module.exports = {
+  template: require('./perfil.template.html'),
+
+  data: function data() {
+    return {
+      currentClick: '',
+      nome: '',
+      sobrenome: '',
+      localizacao: '',
+      place_id: '',
+      readyData: {},
+      erros: false,
+      readyOk: false
+    };
+  },
+
+  ready: function ready() {
+    this.$http.get('api/user', function (data) {
+      this.nome = data.nome;
+      this.sobrenome = data.sobrenome;
+      this.localizacao = data.localizacao;
+      this.place_id = JSON.parse(data.place_id);
+      this.readyData = data;
+      this.readyOk = true;
+    });
+    var that = this;
+    var init = function rec() {
+      if (mapOk && that.readyOk) {
+        that.initMap();
+      } else {
+        setTimeout(function () {
+          rec();
+        }, 500);
+      }
+    };
+    init();
+  },
+
+  methods: {
+    findGeolocation: function findGeolocation() {
+      if (this.localizacao.length > 3) {
+        this.erros = false;
+        var that = this;
+        geocoderPerfil.geocode({ 'address': this.localizacao }, function (results, status) {
+          if (status == google.maps.GeocoderStatus.OK) {
+
+            that.place_id = results[0].geometry.location;
+            mapPerfil.setCenter(results[0].geometry.location);
+            var marker = new google.maps.Marker({
+              map: mapPerfil,
+              position: results[0].geometry.location
+            });
+            that.postEditarLocation();
+          } else {
+            alert("Geocode was not successful for the following reason: " + status);
+          }
+        });
+      } else {
+        this.erros = 'Você precisa digitar um local.';
+      }
+    },
+    reverseGeolocation: function reverseGeolocation(latlng) {
+      var that = this;
+      geocoderPerfil.geocode({ 'location': latlng }, function (results, status) {
+        if (status === google.maps.GeocoderStatus.OK) {
+          if (results[1]) {
+            mapPerfil.setZoom(11);
+            var marker = new google.maps.Marker({
+              position: latlng,
+              map: mapPerfil
+            });
+            that.localizacao = results[1].formatted_address;
+            infowindow.setContent(results[1].formatted_address);
+            infowindow.open(mapPerfil, marker);
+          } else {
+            window.alert('Não tivemos resultados');
+          }
+        } else {
+          window.alert('Geocoder falhou por causa de: ' + status);
+        }
+      });
+    },
+    initMap: function initMap() {
+      infowindow = new google.maps.InfoWindow();
+      mapPerfil = new google.maps.Map(document.getElementById('map'), {
+        center: { lat: this.place_id ? this.place_id.H : -22.975782, lng: this.place_id ? this.place_id.L : -43.212179 },
+        zoom: 12
+      });
+
+      geocoderPerfil = new google.maps.Geocoder();
+    },
+    editar: function editar(e) {
+      if (this.currentClick.length > 0) {
+        this.erros = false;
+        this[this.currentClick] = this.readyData[this.currentClick];
+      }
+      this.currentClick = e.target.id;
+    },
+    cancel: function cancel() {
+      this[this.currentClick] = this.readyData[this.currentClick];
+      this.currentClick = '';
+      this.erros = false;
+    },
+    postEditar: function postEditar(campo) {
+      var putData = {};
+      putData[campo] = this[this.currentClick];
+      this.$http.put('api/user/' + campo, putData, function (data) {
+        this.readyData = data;
+        this.currentClick = '';
+        this.erros = false;
+      }).error(function (data) {
+        this.erros = data[campo][0];
+      });
+    },
+    postEditarLocation: function postEditarLocation() {
+      var putData = {
+        localizacao: this.localizacao,
+        place_id: this.place_id
+      };
+      this.$http.put('api/user/localizacao', putData, function (data) {
+        this.readyData = data;
+        this.currentClick = '';
+        this.erros = false;
+      }).error(function (data) {
+        this.erros = data[localizacao][0];
+      });
+    },
+    nullLocation: function nullLocation() {
+      this.localizacao = null;
+      this.place_id = null;
+      var putData = {
+        localizacao: this.localizacao,
+        place_id: this.place_id
+      };
+      this.$http.put('api/user/localizacao', putData, function (data) {
+        this.readyData = data;
+        this.currentClick = '';
+        this.erros = false;
+      }).error(function (data) {
+        this.erros = data[localizacao][0];
+      });
+    },
+    findCurrentLocation: function findCurrentLocation() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(this.saveCurrentPosition);
+      } else {
+        alert("Não conseguimos achar a sua localização.");
+      }
+    },
+    saveCurrentPosition: function saveCurrentPosition(position) {
+      this.place_id = {
+        H: position.coords.latitude,
+        L: position.coords.longitude
+      };
+      this.reverseGeolocation({
+        lat: position.coords.latitude,
+        lng: position.coords.longitude
+      });
+    }
+  }
+};
+
+},{"./perfil.template.html":125}],125:[function(require,module,exports){
+module.exports = '<div class="page-title">\n  <h1>Perfil</h1>\n</div>\n<div class="row">\n  <div class="col-lg-12">\n    <div class="widget-container fluid-height clearfix">\n      <div class="widget-content padded">\n        <p>\n          <em>Clique nos campos para editar.</em>\n        </p>\n        <table class="table table-hover table-bordered table-striped editable-form" id="user">\n          <tbody>\n            <tr>\n              <td width="20%">\n                Nome:\n              </td>\n              <td>\n                <div class="col-md-6">\n                  <a v-if="currentClick != \'nome\'"\n                     id="nome"\n                     v-on="click: editar"\n                     style="cursor:pointer;">\n                    {{nome}}\n                  </a>\n                  <div class="form-group form-inline editableform" v-if="currentClick == \'nome\'">\n                    <div class="editable-input">\n                      <input type="text"\n                             style="max-width: 200px"\n                             v-model="nome"\n                             class="form-control input-sm">\n                    </div>\n                    <div class="editable-buttons">\n                      <button v-on="click: postEditar(\'nome\')" class="btn btn-sm btn-primary">\n                        <i class="glyphicon glyphicon-ok"></i>\n                      </button>\n                      <button v-on="click: cancel" class="btn btn-sm btn-danger">\n                        <i class="glyphicon glyphicon-remove"></i>\n                      </button>\n                    </div>\n                    <span class="text-danger" v-if="currentClick == \'nome\' && erros">\n                      {{erros}}\n                    </danger>\n                  </div>\n                </div>\n              </td>\n            </tr>\n            <tr>\n              <td>\n                Sobrenome:\n              </td>\n              <td>\n                <div class="col-md-6">\n                  <a v-if="currentClick != \'sobrenome\'"\n                     id="sobrenome"\n                     v-on="click: editar"\n                     style="cursor:pointer;">\n                    {{sobrenome}}\n                  </a>\n                  <div class="form-group form-inline editableform" v-if="currentClick == \'sobrenome\'">\n                    <div class="editable-input">\n                      <input type="text"\n                             style="max-width: 200px"\n                             name="sobrenome"\n                             v-model="sobrenome"\n                             class="form-control input-sm">\n                    </div>\n                    <div class="editable-buttons">\n                      <button v-on="click: postEditar(\'sobrenome\')" class="btn btn-sm btn-primary">\n                        <i class="glyphicon glyphicon-ok"></i>\n                      </button>\n                      <button v-on="click: cancel" class="btn btn-sm btn-danger">\n                        <i class="glyphicon glyphicon-remove"></i>\n                      </button>\n                    </div>\n                    <span class="text-danger" v-if="currentClick == \'sobrenome\' && erros">\n                      {{erros}}\n                    </danger>\n                  </div>\n                </div>\n              </td>\n            </tr>\n            <tr>\n              <td>\n                Localização:\n              </td>\n              <td>\n                <div class="col-md-4">\n                  <a v-if="currentClick != \'localizacao\'"\n                     id="localizacao"\n                     v-on="click: editar"\n                     style="cursor:pointer;">\n                    {{ localizacao ? localizacao : "Editar"}}\n                  </a>\n                  <div class="form-group form-inline editableform" v-if="currentClick == \'localizacao\'">\n                    <div class="editable-input">\n                      <input type="text"\n                             style="max-width: 200px"\n                             name="localizacao"\n                             v-model="localizacao"\n                             class="form-control input-sm">\n                    </div>\n                    <div class="editable-buttons">\n                      <button v-on="click: findGeolocation" class="btn btn-sm btn-primary">\n                        <i class="glyphicon glyphicon-ok"></i>\n                      </button>\n                      <button v-on="click: cancel" class="btn btn-sm btn-danger">\n                        <i class="glyphicon glyphicon-remove"></i>\n                      </button>\n                    </div>\n                    <div class="location-button">\n                      <button v-on="click: findCurrentLocation" class="btn btn-block btn-primary">\n                        <i class="glyphicon glyphicon-pushpin"></i>\n                        Localização atual\n                      </button>\n                      <button v-on="click: nullLocation" class="btn btn-block btn-danger">\n                        <i class="glyphicon glyphicon-remove"></i>\n                        Apagar localaização\n                      </button>\n                    </div>\n                    <span class="text-danger" v-if="currentClick == \'localizacao\' && erros">\n                      {{erros}}\n                    </danger>\n                  </div>\n                </div>\n                <div class="col-md-8">\n                  <div style="height:200px;width:100%;" id="map"></div>\n                </div>\n              </td>\n            </tr>\n\n          </tbody>\n        </table>\n      </div>\n    </div>\n  </div>\n</div>\n';
 },{}]},{},[107]);

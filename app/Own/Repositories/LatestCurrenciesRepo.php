@@ -31,7 +31,7 @@ class LatestCurrenciesRepo
 
   public function fetch()
   {
-    return LatestCurrencies::select(
+    $result = LatestCurrencies::select(
     'USD',
     'CAD',
     'AUD',
@@ -40,12 +40,17 @@ class LatestCurrenciesRepo
     'CLP',
     'ARS',
     'MXN'
-    )->orderBy('created_at', 'desc')->take(2)->get()->toArray();
+    )->orderBy('created_at', 'desc');
+    if ($result) {
+      return $result->take(2)->get();
+    }else {
+      return false;
+    }
   }
 
   public function fetchWithHeaders()
   {
-    return LatestCurrencies::select(
+    $result = LatestCurrencies::select(
     'USD',
     'CAD',
     'AUD',
@@ -56,6 +61,11 @@ class LatestCurrenciesRepo
     'MXN',
     'date',
     'eTag'
-    )->get()->last()->toArray();
+    )->get();
+    if ($result) {
+      return $result->last();
+    }else {
+      return false;
+    }
   }
 }

@@ -1,0 +1,136 @@
+<div class="page-title">
+  <h1>Perfil</h1>
+</div>
+<div class="row">
+  <div class="col-lg-12">
+    <div class="widget-container fluid-height clearfix">
+      <div class="widget-content padded">
+        <p>
+          <em>Clique nos campos para editar.</em>
+        </p>
+        <table class="table table-hover table-bordered table-striped editable-form" id="user">
+          <tbody>
+            <tr>
+              <td width="20%">
+                Nome:
+              </td>
+              <td>
+                <div class="col-md-6">
+                  <a v-if="currentClick != 'nome'"
+                     id="nome"
+                     v-on="click: editar"
+                     style="cursor:pointer;">
+                    {{nome}}
+                  </a>
+                  <div class="form-group form-inline editableform" v-if="currentClick == 'nome'">
+                    <div class="editable-input">
+                      <input type="text"
+                             style="max-width: 200px"
+                             v-model="nome"
+                             class="form-control input-sm">
+                    </div>
+                    <div class="editable-buttons">
+                      <button v-on="click: postEditar('nome')" class="btn btn-sm btn-primary">
+                        <i class="glyphicon glyphicon-ok"></i>
+                      </button>
+                      <button v-on="click: cancel" class="btn btn-sm btn-danger">
+                        <i class="glyphicon glyphicon-remove"></i>
+                      </button>
+                    </div>
+                    <span class="text-danger" v-if="currentClick == 'nome' && erros">
+                      {{erros}}
+                    </danger>
+                  </div>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                Sobrenome:
+              </td>
+              <td>
+                <div class="col-md-6">
+                  <a v-if="currentClick != 'sobrenome'"
+                     id="sobrenome"
+                     v-on="click: editar"
+                     style="cursor:pointer;">
+                    {{sobrenome}}
+                  </a>
+                  <div class="form-group form-inline editableform" v-if="currentClick == 'sobrenome'">
+                    <div class="editable-input">
+                      <input type="text"
+                             style="max-width: 200px"
+                             name="sobrenome"
+                             v-model="sobrenome"
+                             class="form-control input-sm">
+                    </div>
+                    <div class="editable-buttons">
+                      <button v-on="click: postEditar('sobrenome')" class="btn btn-sm btn-primary">
+                        <i class="glyphicon glyphicon-ok"></i>
+                      </button>
+                      <button v-on="click: cancel" class="btn btn-sm btn-danger">
+                        <i class="glyphicon glyphicon-remove"></i>
+                      </button>
+                    </div>
+                    <span class="text-danger" v-if="currentClick == 'sobrenome' && erros">
+                      {{erros}}
+                    </danger>
+                  </div>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                Localização:
+              </td>
+              <td>
+                <div class="col-md-4">
+                  <a v-if="currentClick != 'localizacao'"
+                     id="localizacao"
+                     v-on="click: editar"
+                     style="cursor:pointer;">
+                    {{ localizacao ? localizacao : "Editar"}}
+                  </a>
+                  <div class="form-group form-inline editableform" v-if="currentClick == 'localizacao'">
+                    <div class="editable-input">
+                      <input type="text"
+                             style="max-width: 200px"
+                             name="localizacao"
+                             v-model="localizacao"
+                             class="form-control input-sm">
+                    </div>
+                    <div class="editable-buttons">
+                      <button v-on="click: findGeolocation" class="btn btn-sm btn-primary">
+                        <i class="glyphicon glyphicon-ok"></i>
+                      </button>
+                      <button v-on="click: cancel" class="btn btn-sm btn-danger">
+                        <i class="glyphicon glyphicon-remove"></i>
+                      </button>
+                    </div>
+                    <div class="location-button">
+                      <button v-on="click: findCurrentLocation" class="btn btn-block btn-primary">
+                        <i class="glyphicon glyphicon-pushpin"></i>
+                        Localização atual
+                      </button>
+                      <button v-on="click: nullLocation" class="btn btn-block btn-danger">
+                        <i class="glyphicon glyphicon-remove"></i>
+                        Apagar localaização
+                      </button>
+                    </div>
+                    <span class="text-danger" v-if="currentClick == 'localizacao' && erros">
+                      {{erros}}
+                    </danger>
+                  </div>
+                </div>
+                <div class="col-md-8">
+                  <div style="height:200px;width:100%;" id="map"></div>
+                </div>
+              </td>
+            </tr>
+
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

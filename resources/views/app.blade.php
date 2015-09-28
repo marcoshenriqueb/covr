@@ -17,12 +17,13 @@
     <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
     <![endif]-->
   </head>
-  <body class="page-header-fixed bg-1">
-    <div id="{{(isset($user)) ? 'app' : 'site'}}" class="modal-shiftfix">
+  <body id="app" class="page-header-fixed bg-1">
+
+
+    <div class="modal-shiftfix">
       <!-- Navigation -->
       <div class="navbar navbar-fixed-top scroll-hide">
         <div class="container-fluid top-bar">
-          @if(isset($user))
           <div class="pull-right">
             <ul class="nav navbar-nav pull-right">
               <li class="dropdown notifications hidden-xs">
@@ -31,7 +32,7 @@
                     Notifications
                   </div>
                   <p class="counter">
-                    8
+                    4
                   </p>
                 </a>
                 <ul class="dropdown-menu">
@@ -84,18 +85,26 @@
                 </a>
                 <ul class="dropdown-menu">
                   <li><a href="#">
-                    <img width="34" height="34" src="images/foto_perfil.jpg" />Could we meet today? I wanted...</a>
+                    <img width="34" height="34" src="images/avatar-male2.png" />Could we meet today? I wanted...</a>
                   </li>
                   <li><a href="#">
-                    <img width="34" height="34" src="images/foto_perfil.jpg" />Important data needs your analysis...</a>
+                    <img width="34" height="34" src="images/avatar-female.png" />Important data needs your analysis...</a>
+                  </li>
+                  <li><a href="#">
+                    <img width="34" height="34" src="images/avatar-male2.png" />Buy Se7en today, it's a great theme...</a>
                   </li>
                 </ul>
               </li>
-              <li class="dropdown user hidden-xs"><a data-toggle="dropdown" class="dropdown-toggle" href="#">
-                <img width="34" height="34" src="images/foto_perfil.jpg" />John Smith<b class="caret"></b></a>
+              <li class="dropdown user hidden-xs">
+                <a data-toggle="dropdown" class="dropdown-toggle" href="#">
+                  <img width="34"
+                       height="34"
+                       src="{{(isset($user->profilePic) ? $user->profilePic : 'images/int.jpg')}}" />
+                  {{$user->getFullName()}}<b class="caret"></b>
+                </a>
                 <ul class="dropdown-menu">
-                  <li><a href="#">
-                    <i class="fa fa-user"></i>My Account</a>
+                  <li><a v-link="{path: '/perfil'}">
+                    <i class="fa fa-user"></i>Perfil</a>
                   </li>
                   <li><a href="#">
                     <i class="fa fa-gear"></i>Account Settings</a>
@@ -107,12 +116,6 @@
               </li>
             </ul>
           </div>
-          @else
-          <ul class="nav navbar-nav pull-right">
-            <li><a v-link="{path: '/login'}">Login</a></li>
-            <li><a v-link="{path: '/cadastro'}">Cadastre-se</a></li>
-          </ul>
-          @endif
           <button class="navbar-toggle"><span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span></button><a class="logo" href="index.html">AppCambio</a>
         </div>
         <div class="container-fluid main-nav clearfix">
@@ -127,53 +130,21 @@
                  </a>
               </li>
               <li>
-                <a href="social.html"
+                <a v-class="current: activePage == '/app'"
                    v-on="click: changeActivePage"
-                   v-class="current: activePage == '/blog'">
-                  <span aria-hidden="true" class="fa fa-file-text-o"></span>
-                  Blog
-                </a>
-              </li>
-              @if(isset($user))
-              <li>
-                <a href="social.html">
-                  <span aria-hidden="true" class="fa fa-money"></span>
-                  Câmbio
-                </a>
+                   v-link="{path: '/app'}">
+                   <span aria-hidden="true" class="hightop-feed"></span>
+                   Painel
+                 </a>
               </li>
               <li>
-                <a href="social.html">
+                <a v-class="current: activePage == '/contatos'"
+                   v-on="click: changeActivePage"
+                   v-link="{path: '/contatos'}">
                   <span aria-hidden="true" class="fa fa-comments-o"></span>
-                  Mensagens
+                  Contatos
                 </a>
               </li>
-              <li class="dropdown">
-                <a data-toggle="dropdown" href="#">
-                  <span aria-hidden="true" class="fa fa-line-chart"></span>
-                  Ferramentas<b class="caret"></b>
-                </a>
-                <ul class="dropdown-menu">
-                  <li>
-                    <a href="buttons.html">Conversor</a>
-                  </li>
-                  <li>
-                    <a href="fontawesome.html">Acompanhamento de taxas</a>
-                  </li>
-                  <li>
-                    <a href="glyphicons.html">Previsões</a>
-                  </li>
-                </ul>
-              </li>
-              @else
-              <li>
-                <a v-link="{path: '/cadastro'}"
-                   v-on="click: changeActivePage"
-                   v-class="current: activePage == '/cadastro'">
-                  <span aria-hidden="true" class="fa fa-sign-in"></span>
-                  Cadastre-se
-                </a>
-              </li>
-              @endif
             </ul>
           </div>
         </div>
@@ -184,9 +155,12 @@
         <router-view ></router-view>
 
       </div>
-    </div>
 
-        <script src="js/all.js"></script>
-        <script src="js/{{(isset($user)) ? 'app' : 'site'}}.js"></script>
-       </body>
+    </div>
+    <script src="js/all.js"></script>
+    <script src="js/app.js"></script>
+    <script async defer
+      src="https://maps.googleapis.com/maps/api/js?key={{env('GOOGLE_API_KEY')}}&callback=setMapOk">
+    </script>
+  </body>
 </html>

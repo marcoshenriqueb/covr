@@ -17511,7 +17511,7 @@ module.exports = {
       this.resultado = (this.selectedA / this.selectedB * this.valor).toFixed(2);
       this.resultadoSpread = (this.selectedA / this.selectedB * 0.90 * this.valor).toFixed(2);
       var that = this;
-      setInterval(function () {
+      setTimeout(function () {
         that.simbolo = $('#simbolo option:selected').text();
       }, 200);
     },
@@ -17570,7 +17570,7 @@ module.exports = {
       v.animate = true;
       var p = JSON.parse(data.cotacao);
       v.parseCot(p);
-      setInterval(function () {
+      setTimeout(function () {
         v.animate = false;
       }, 5000);
     });
@@ -17580,15 +17580,12 @@ module.exports = {
     parseCot: function parseCot(c) {
       var ar = {};
       for (var k in c) {
-        if (c[k].cot === Number(c[k].cot) && c[k].cot % 1 !== 0) {
-          c[k].cot.toFixed(2);
-        }
         var variacao = (c[k]['var'] * 100).toFixed(2) + "%";
-        ar[k] = { preco: k + " " + c[k].cot, variacao: variacao };
+        ar[k] = { preco: k + " " + Number(c[k].cot).toFixed(2), variacao: variacao };
         if (c[k]['var'] > 0) {
-          this[k + 'color'] = 'green';
+          this[k + 'color'] = 'text-success';
         } else if (c[k]['var'] < 0) {
-          this[k + 'color'] = 'red';
+          this[k + 'color'] = 'text-danger';
         }
       }
       this.cotacao = ar;
@@ -17599,7 +17596,7 @@ module.exports = {
 };
 
 },{"./painelCotacoes.template.html":110}],110:[function(require,module,exports){
-module.exports = '<!-- Statistics -->\n<div class="row">\n  <div class="widget-container cot-container">\n    <div class="col-lg-6" style="padding:0;">\n      <div class="col-md-3"\n           v-class="animated: animate, fadeIn: animate">\n        <div class="number">\n          {{cotacao.USD.preco}}\n        </div>\n        <div class="text">\n          {{cotacao.USD.variacao}}\n        </div>\n      </div>\n      <div class="col-md-3"\n           v-class="animated: animate, fadeIn: animate">\n        <div class="number">\n          {{cotacao.CAD.preco}}\n        </div>\n        <div class="text">\n          {{cotacao.CAD.variacao}}\n        </div>\n      </div>\n      <div class="col-md-3"\n           v-class="animated: animate, fadeIn: animate">\n        <div class="number">\n          {{cotacao.AUD.preco}}\n        </div>\n        <div class="text">\n          {{cotacao.AUD.variacao}}\n        </div>\n      </div>\n      <div class="col-md-3"\n           style="border-right:none;"\n           v-class="animated: animate, fadeIn: animate">\n        <div class="number">\n          {{cotacao.EUR.preco}}\n        </div>\n        <div class="text">\n          {{cotacao.EUR.variacao}}\n        </div>\n      </div>\n    </div>\n    <div class="col-lg-6" style="padding:0;">\n      <div class="col-md-3"\n           v-class="animated: animate, fadeIn: animate">\n        <div class="number">\n          {{cotacao.GBP.preco}}\n        </div>\n        <div class="text">\n          {{cotacao.GBP.variacao}}\n        </div>\n      </div>\n      <div class="col-md-3"\n           v-class="animated: animate, fadeIn: animate">\n        <div class="number">\n          {{cotacao.CLP.preco}}\n        </div>\n        <div class="text">\n          {{cotacao.CLP.variacao}}\n        </div>\n      </div>\n      <div class="col-md-3"\n           v-class="animated: animate, fadeIn: animate">\n        <div class="number">\n          {{cotacao.ARS.preco}}\n        </div>\n        <div class="text">\n          {{cotacao.ARS.variacao}}\n        </div>\n      </div>\n      <div class="col-md-3"\n           v-class="animated: animate, fadeIn: animate">\n        <div class="number">\n          {{cotacao.MXN.preco}}\n        </div>\n        <div class="text">\n          {{cotacao.MXN.variacao}}\n        </div>\n      </div>\n    </div>\n  </div>\n</div>\n<!-- End Statistics -->\n';
+module.exports = '<!-- Statistics -->\n<div class="row">\n  <div class="col-xs-6" style="padding:0;">\n    <div class="widget-container cot-container">\n      <div class="col-sm-3"\n           v-class="animated: animate, fadeIn: animate">\n        <div class="number">\n          {{cotacao.USD.preco}}\n        </div>\n        <div class="text" v-class="USDcolor">\n          {{cotacao.USD.variacao}}\n        </div>\n      </div>\n      <div class="col-sm-3"\n           v-class="animated: animate, fadeIn: animate">\n        <div class="number">\n          {{cotacao.CAD.preco}}\n        </div>\n        <div class="text" v-class="CADcolor">\n          {{cotacao.CAD.variacao}}\n        </div>\n      </div>\n      <div class="col-sm-3"\n           v-class="animated: animate, fadeIn: animate">\n        <div class="number">\n          {{cotacao.AUD.preco}}\n        </div>\n        <div class="text" v-class="AUDcolor">\n          {{cotacao.AUD.variacao}}\n        </div>\n      </div>\n      <div class="col-sm-3"\n           style="border-right:none;"\n           v-class="animated: animate, fadeIn: animate">\n        <div class="number">\n          {{cotacao.EUR.preco}}\n        </div>\n        <div class="text" v-class="EURcolor">\n          {{cotacao.EUR.variacao}}\n        </div>\n      </div>\n    </div>\n  </div>\n  <div class="col-xs-6" style="padding:0;">\n    <div class="widget-container cot-container">\n      <div class="col-sm-3"\n           v-class="animated: animate, fadeIn: animate">\n        <div class="number">\n          {{cotacao.GBP.preco}}\n        </div>\n        <div class="text" v-class="GBPcolor">\n          {{cotacao.GBP.variacao}}\n        </div>\n      </div>\n      <div class="col-sm-3"\n           v-class="animated: animate, fadeIn: animate">\n        <div class="number">\n          {{cotacao.CLP.preco}}\n        </div>\n        <div class="text" v-class="CLPcolor">\n          {{cotacao.CLP.variacao}}\n        </div>\n      </div>\n      <div class="col-sm-3"\n           v-class="animated: animate, fadeIn: animate">\n        <div class="number">\n          {{cotacao.ARS.preco}}\n        </div>\n        <div class="text" v-class="ARScolor">\n          {{cotacao.ARS.variacao}}\n        </div>\n      </div>\n      <div class="col-sm-3"\n           v-class="animated: animate, fadeIn: animate">\n        <div class="number">\n          {{cotacao.MXN.preco}}\n        </div>\n        <div class="text" v-class="MXNcolor">\n          {{cotacao.MXN.variacao}}\n        </div>\n      </div>\n    </div>\n  </div>\n</div>\n<!-- End Statistics -->\n';
 },{}],111:[function(require,module,exports){
 'use strict';
 
@@ -17659,7 +17656,7 @@ module.exports = {
         password_confirmation: this.password_confirmation
       }).success(function (data) {
         if (data == true) {
-          window.location = "app";
+          window.location = "confirma-email";
         } else {
           console.log(data);
         }
@@ -17668,13 +17665,30 @@ module.exports = {
           this.$set(err + 'Invalid', data[err]);
         }
       });
+    },
+    fbLogin: function fbLogin() {
+      FB.login(function (response) {
+        // console.log(JSON.stringify(response));
+        FB.getLoginStatus(function (response) {
+          statusChangeCallback(response);
+        });
+      }, { scope: "public_profile,email,user_friends,user_location" });
     }
   }
 };
 
 },{"./cadastro.template.html":112}],112:[function(require,module,exports){
-module.exports = '<div class="col-md-offset-3 col-md-6">\n  <div class="widget-container fluid-height clearfix">\n    <div class="heading">\n      <i class="fa fa-sign-in"></i>\n      Cadastro\n    </div>\n    <div class="widget-content padded text-center">\n      <div class="login-wrapper col-md-offset-1 col-md-10">\n        <form method="POST">\n\n          <div class="form-group">\n            <div class="input-group">\n              <span class="input-group-addon"><i class="fa fa-user"></i></span>\n              <input type="text"\n                     v-model="nome"\n                     v-on="blur: validaNome"\n                     class="form-control"\n                     placeholder="Digite o seu nome">\n            </div>\n            <span v-if="nomeInvalid">{{ nomeInvalid }}</span>\n          </div>\n\n          <div class="form-group">\n            <div class="input-group">\n              <span class="input-group-addon"><i class="fa fa-user-secret"></i></span>\n              <input type="text"\n                     v-model="sobrenome"\n                     v-on="blur: validaSobrenome"\n                     class="form-control"\n                     placeholder="Digite o seu sobrenome">\n            </div>\n            <span v-if="sobrenomeInvalid">{{ sobrenomeInvalid }}</span>\n          </div>\n\n          <div class="form-group">\n            <div class="input-group">\n              <span class="input-group-addon"><i class="fa fa-envelope"></i></span>\n              <input type="text"\n                     v-model="email"\n                     v-on="blur: validaEmail"\n                     class="form-control"\n                     placeholder="Digite o email">\n            </div>\n            <span v-if="emailInvalid">{{ emailInvalid }}</span>\n          </div>\n\n          <div class="form-group">\n            <div class="input-group">\n              <span class="input-group-addon"><i class="fa fa-lock"></i></span>\n              <input type="password"\n                     v-model="password"\n                     v-on="blur: validaPassword"\n                     class="form-control"\n                     placeholder="Digite a senha">\n            </div>\n            <span v-if="passwordInvalid">{{ passwordInvalid }}</span>\n          </div>\n\n          <div class="form-group">\n            <div class="input-group">\n              <span class="input-group-addon"><i class="fa fa-lock"></i></span>\n              <input type="password" v-model="password_confirmation" class="form-control" placeholder="Confirme a senha">\n            </div>\n          </div>\n\n          <button v-on="click: postRegister" class="btn btn-lg btn-primary btn-block">Cadastrar</button>\n        </form>\n\n          <div class="social-login clearfix">\n            <a class="btn btn-primary facebook btn-block"><i class="fa fa-facebook"></i> Cadastro com o facebook</a>\n          </div>\n\n          <hr>\n\n          <p>\n            Já tem uma conta?\n          </p>\n\n          <a v-link="{path: \'/login\'}" style="margin-bottom:20px;" class="btn btn-default-outline btn-block">Login</a>\n      </div>\n    </div>\n  </div>\n</div>\n';
+module.exports = '<div class="col-md-offset-3 col-md-6">\n  <div class="widget-container fluid-height clearfix">\n    <div class="heading">\n      <i class="fa fa-sign-in"></i>\n      Cadastro\n    </div>\n    <div class="widget-content padded text-center">\n      <div class="login-wrapper col-md-offset-1 col-md-10">\n        <form method="POST">\n\n          <div class="form-group">\n            <div class="input-group">\n              <span class="input-group-addon"><i class="fa fa-user"></i></span>\n              <input type="text"\n                     v-model="nome"\n                     v-on="blur: validaNome"\n                     class="form-control"\n                     placeholder="Digite o seu nome">\n            </div>\n            <span v-if="nomeInvalid">{{ nomeInvalid }}</span>\n          </div>\n\n          <div class="form-group">\n            <div class="input-group">\n              <span class="input-group-addon"><i class="fa fa-user-secret"></i></span>\n              <input type="text"\n                     v-model="sobrenome"\n                     v-on="blur: validaSobrenome"\n                     class="form-control"\n                     placeholder="Digite o seu sobrenome">\n            </div>\n            <span v-if="sobrenomeInvalid">{{ sobrenomeInvalid }}</span>\n          </div>\n\n          <div class="form-group">\n            <div class="input-group">\n              <span class="input-group-addon"><i class="fa fa-envelope"></i></span>\n              <input type="text"\n                     v-model="email"\n                     v-on="blur: validaEmail"\n                     class="form-control"\n                     placeholder="Digite o email">\n            </div>\n            <span v-if="emailInvalid">{{ emailInvalid }}</span>\n          </div>\n\n          <div class="form-group">\n            <div class="input-group">\n              <span class="input-group-addon"><i class="fa fa-lock"></i></span>\n              <input type="password"\n                     v-model="password"\n                     v-on="blur: validaPassword"\n                     class="form-control"\n                     placeholder="Digite a senha">\n            </div>\n            <span v-if="passwordInvalid">{{ passwordInvalid }}</span>\n          </div>\n\n          <div class="form-group">\n            <div class="input-group">\n              <span class="input-group-addon"><i class="fa fa-lock"></i></span>\n              <input type="password" v-model="password_confirmation" class="form-control" placeholder="Confirme a senha">\n            </div>\n          </div>\n\n          <button v-on="click: postRegister" class="btn btn-lg btn-primary btn-block">Cadastrar</button>\n          <br>\n        </form>\n\n          <div class="social-login clearfix">\n            <a class="btn btn-primary facebook btn-block" v-on="click: fbLogin"><i class="fa fa-facebook"></i> Cadastro com o facebook</a>\n          </div>\n\n          <hr>\n\n          <p>\n            Já tem uma conta?\n          </p>\n\n          <a v-link="{path: \'/login\'}" style="margin-bottom:20px;" class="btn btn-default-outline btn-block">Login</a>\n      </div>\n    </div>\n  </div>\n</div>\n';
 },{}],113:[function(require,module,exports){
+'use strict';
+
+module.exports = {
+  template: require('./confirmaEmail.template.html')
+};
+
+},{"./confirmaEmail.template.html":114}],114:[function(require,module,exports){
+module.exports = '<div class="col-md-offset-3 col-md-6">\n  <div class="widget-container fluid-height clearfix">\n    <div class="heading">\n      <i class="fa fa-sign-in"></i>\n      Confirmação de email\n    </div>\n    <div class="widget-content padded text-center">\n      <div class="login-wrapper col-md-offset-1 col-md-10">\n        <p>\n          Obrigado por ser cadastrar! Favor confirmar o seu cadastro através do email que lhe enviamos.\n        </p>\n      </div>\n    </div>\n  </div>\n</div>\n';
+},{}],115:[function(require,module,exports){
 'use strict';
 
 module.exports = {
@@ -17687,9 +17701,9 @@ module.exports = {
   }
 };
 
-},{"./home.template.html":114}],114:[function(require,module,exports){
+},{"./home.template.html":116}],116:[function(require,module,exports){
 module.exports = '\n<painel-cotacoes></painel-cotacoes>\n<div class="row">\n  <div class="col-md-12">\n    <div class="widget-container fluid-height clearfix">\n      <compara-conversor-moeda cotacao=\'{{cotacao}}\'></compara-conversor-moeda>\n    </div>\n  </div>\n</div>\n';
-},{}],115:[function(require,module,exports){
+},{}],117:[function(require,module,exports){
 'use strict';
 
 module.exports = {
@@ -17704,6 +17718,14 @@ module.exports = {
   },
 
   methods: {
+    fbLogin: function fbLogin() {
+      FB.login(function (response) {
+        // console.log(JSON.stringify(response));
+        FB.getLoginStatus(function (response) {
+          statusChangeCallback(response);
+        });
+      }, { scope: "public_profile,email,user_friends,user_location" });
+    },
     postLogin: function postLogin(e) {
       e.preventDefault();
       this.$http.post('auth/login', {
@@ -17722,16 +17744,17 @@ module.exports = {
   }
 };
 
-},{"./login.template.html":116}],116:[function(require,module,exports){
-module.exports = '\n<div class="col-md-offset-3 col-md-6">\n  <div class="widget-container fluid-height clearfix">\n    <div class="heading">\n      <i class="fa fa-sign-in"></i>\n      Login\n    </div>\n    <div class="widget-content padded text-center">\n      <div class="login-wrapper col-md-offset-1 col-md-10">\n        <form method="POST">\n          <div class="form-group">\n            <div class="input-group">\n              <span class="input-group-addon"><i class="fa fa-envelope"></i></span>\n              <input type="text" v-model="email" class="form-control" placeholder="Digite o email">\n            </div>\n          </div>\n\n          <div class="form-group">\n            <div class="input-group">\n              <span class="input-group-addon"><i class="fa fa-lock"></i></span>\n              <input type="password" v-model="password" class="form-control" placeholder="Digite a senha">\n            </div>\n          </div>\n\n          <a class="pull-right">Esqueceu a senha?</a>\n\n          <div style="left:20px;position:relative;" class="text-left">\n            <label class="checkbox">\n              <input type="checkbox" name="remember" v-model="remember">\n              <span>Manter-me conectado</span>\n            </label>\n          </div>\n\n\n          <button v-on="click: postLogin" class="btn btn-lg btn-primary btn-block">Login</button><br>\n          <span v-if="authErr">Email ou senha inválidos</span>\n\n          <div class="social-login clearfix">\n            <a class="btn btn-primary btn-block facebook"><i class="fa fa-facebook"></i> Logar com o Facebook</a>\n          </div>\n        </form>\n        <hr>\n        <p>\n          Ainda não tem uma conta?\n        </p>\n        <a v-link="{path: \'/cadastro\'}" style="margin-bottom:20px;" class="btn btn-default-outline btn-block btn-large">Cadastre-se</a>\n      </div>\n    </div>\n  </div>\n</div>\n';
-},{}],117:[function(require,module,exports){
+},{"./login.template.html":118}],118:[function(require,module,exports){
+module.exports = '\n\n<div class="col-md-offset-3 col-md-6">\n  <div class="widget-container fluid-height clearfix">\n    <div class="heading">\n      <i class="fa fa-sign-in"></i>\n      Login\n    </div>\n    <div class="widget-content padded text-center">\n      <div class="login-wrapper col-md-offset-1 col-md-10">\n        <form method="POST">\n          <div class="form-group">\n            <div class="input-group">\n              <span class="input-group-addon"><i class="fa fa-envelope"></i></span>\n              <input type="text" v-model="email" class="form-control" placeholder="Digite o email">\n            </div>\n          </div>\n\n          <div class="form-group">\n            <div class="input-group">\n              <span class="input-group-addon"><i class="fa fa-lock"></i></span>\n              <input type="password" v-model="password" class="form-control" placeholder="Digite a senha">\n            </div>\n          </div>\n\n          <a class="pull-right">Esqueceu a senha?</a>\n\n          <div style="left:20px;position:relative;" class="text-left">\n            <label class="checkbox">\n              <input type="checkbox" name="remember" v-model="remember">\n              <span>Manter-me conectado</span>\n            </label>\n          </div>\n\n\n          <button v-on="click: postLogin" class="btn btn-lg btn-primary btn-block">Login</button>\n          <span v-if="authErr">Credenciais inválidas</span><br>\n        </form>\n\n          <div class="social-login clearfix">\n            <a class="btn btn-primary btn-block facebook" v-on="click: fbLogin"><i class="fa fa-facebook"></i> Logar com o Facebook</a>\n          </div>\n\n        <hr>\n        <p>\n          Ainda não tem uma conta?\n        </p>\n        <a v-link="{path: \'/cadastro\'}" style="margin-bottom:20px;" class="btn btn-default-outline btn-block btn-large">Cadastre-se</a>\n      </div>\n    </div>\n  </div>\n</div>\n';
+},{}],119:[function(require,module,exports){
 'use strict';
 
 var Pusher = require('pusher-js');
 var Vue = require('vue');
 var VueRouter = require('vue-router');
+var VueResource = require('vue-resource');
 Vue.use(VueRouter);
-Vue.use(require('vue-resource'));
+Vue.use(VueResource);
 
 Vue.http.headers.common['X-CSRF-TOKEN'] = document.querySelector('#token').getAttribute('value');
 Vue.config.debug = true;
@@ -17773,6 +17796,22 @@ router.map({
   },
   '/cadastro': {
     component: require('./components/routed/cadastro')
+  },
+  '/confirma-email': {
+    component: require('./components/routed/confirmaEmail')
+  }
+});
+
+router.beforeEach(function (transition) {
+  if (transition.to.auth) {
+    var response;
+    $.get('auth/check').done(function (xhr) {
+      transition.next();
+    }).fail(function (xhr) {
+      transition.redirect('/login');
+    });
+  } else {
+    transition.next();
   }
 });
 
@@ -17780,4 +17819,4 @@ router.mode = 'hash';
 
 router.start(site, '#site');
 
-},{"./components/global/comparaConversorMoeda":107,"./components/global/painelCotacoes":109,"./components/routed/cadastro":111,"./components/routed/home":113,"./components/routed/login":115,"pusher-js":2,"vue":105,"vue-resource":4,"vue-router":16}]},{},[117]);
+},{"./components/global/comparaConversorMoeda":107,"./components/global/painelCotacoes":109,"./components/routed/cadastro":111,"./components/routed/confirmaEmail":113,"./components/routed/home":115,"./components/routed/login":117,"pusher-js":2,"vue":105,"vue-resource":4,"vue-router":16}]},{},[119]);

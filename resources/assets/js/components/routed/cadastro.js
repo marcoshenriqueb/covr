@@ -57,7 +57,7 @@ module.exports = {
         }
       ).success(function(data){
         if (data == true) {
-          window.location="app";
+          window.location="confirma-email";
         }else {
           console.log(data);
         }
@@ -66,6 +66,14 @@ module.exports = {
           this.$set(err + 'Invalid', data[err]);
         }
       });
+    },
+    fbLogin: function(){
+      FB.login(function(response){
+        // console.log(JSON.stringify(response));
+        FB.getLoginStatus(function(response) {
+          statusChangeCallback(response);
+        });
+      }, {scope: "public_profile,email,user_friends,user_location"});
     }
   }
 };

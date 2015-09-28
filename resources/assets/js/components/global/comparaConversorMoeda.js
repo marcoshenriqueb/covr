@@ -37,7 +37,7 @@ module.exports = {
       this.resultado = ((this.selectedA / this.selectedB) * this.valor).toFixed(2);
       this.resultadoSpread = (((this.selectedA / this.selectedB) * 0.90 ) * this.valor).toFixed(2);
       var that = this;
-      setInterval(function () {that.simbolo = $('#simbolo option:selected').text();}, 200);
+      setTimeout(function () {that.simbolo = $('#simbolo option:selected').text();}, 200);
     },
     inverte: function(){
       var a = this.selectedA;

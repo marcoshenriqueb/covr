@@ -1,78 +1,69 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="">
   <head>
-   <meta charset="utf-8">
-   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-   <meta id="token" name="token" value="{{csrf_token()}}">
-   <title>Vue app</title>
-   <!-- Bootstrap CSS -->
-   <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.0/css/bootstrap.min.css" rel="stylesheet">
-   <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
-   <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
-   <!--[if lt IE 9]>
-   <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-   <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
-   <![endif]-->
-   <link href="/css/all.css" rel="stylesheet">
- </head>
- <body class="container">
-   <div class="site-wrapper" id="site">
-     <div class="site-wrapper-inner">
-       <div class="cover-container">
-         <div class="masthead clearfix">
-           <div class="inner">
-             <h3 class="masthead-brand">AppCambio</h3>
-             <nav>
-               <ul class="nav masthead-nav">
-                 <li v-on="click: changeActivePage" v-class="active: activePage == '/'"><a v-link="{path: '/'}">Home</a></li>
-                 <li v-on="click: changeActivePage" v-class="active: activePage == '/login'"><a v-link="{path: '/login'}">Login</a></li>
-                 <li v-on="click: changeActivePage" v-class="active: activePage == '/cadastro'"><a v-link="{path: '/cadastro'}">Cadastre-se</a></li>
-               </ul>
-             </nav>
-           </div>
-         </div>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta id="token" name="token" value="{{csrf_token()}}">
+    <title>AppCambio</title>
+    <!-- Bootstrap CSS -->
+    <link href="http://fonts.googleapis.com/css?family=Lato:100,300,400,700" media="all" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.4.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/css/all.css">
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+    <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+  <body id="site" class="page-header-fixed bg-1">
 
-         <router-view></router-view>
 
-         <div class='painel-cotacoes'>
-           <div class="inner col-md-3"
-                v-class="animated: animate, fadeIn: animate">
-            <span class="cotacao" v-class="USDcolor"> @{{cotacao.USD}} </span>
-           </div>
-           <div class="inner col-md-3"
-                v-class="animated: animate, fadeIn: animate">
-            <span class="cotacao" v-class="CADcolor"> @{{cotacao.CAD}} </span>
-           </div>
-           <div class="inner col-md-3"
-                v-class="animated: animate, fadeIn: animate">
-            <span class="cotacao" v-class="AUDcolor"> @{{cotacao.AUD}} </span>
-           </div>
-           <div class="inner col-md-3"
-                v-class="animated: animate, fadeIn: animate">
-            <span class="cotacao" v-class="EURcolor"> @{{cotacao.EUR}} </span>
-           </div>
-           <div class="inner col-md-3"
-                v-class="animated: animate, fadeIn: animate">
-            <span class="cotacao" v-class="GBPcolor"> @{{cotacao.GBP}} </span>
-           </div>
-           <div class="inner col-md-3"
-                v-class="animated: animate, fadeIn: animate">
-            <span class="cotacao" v-class="CLPcolor"> @{{cotacao.CLP}} </span>
-           </div>
-           <div class="inner col-md-3"
-                v-class="animated: animate, fadeIn: animate">
-            <span class="cotacao" v-class="ARScolor"> @{{cotacao.ARS}} </span>
-           </div>
-           <div class="inner col-md-3"
-                v-class="animated: animate, fadeIn: animate">
-            <span class="cotacao" v-class="MXNcolor"> @{{cotacao.MXN}} </span>
-           </div>
-         </div>
-       </div>
-     </div>
-   </div>
+    <div class="modal-shiftfix">
+      <!-- Navigation -->
+      <div class="navbar navbar-fixed-top scroll-hide">
+        <div class="container-fluid top-bar">
+          <ul class="nav navbar-nav pull-right">
+            <li><a v-link="{path: '/login'}">Login</a></li>
+            <li><a v-link="{path: '/cadastro'}">Cadastre-se</a></li>
+          </ul>
+          <button class="navbar-toggle"><span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span></button><a class="logo" href="index.html">AppCambio</a>
+        </div>
+        <div class="container-fluid main-nav clearfix">
+          <div class="nav-collapse">
+            <ul class="nav">
+              <li>
+                <a v-class="current: activePage == '/'"
+                   v-on="click: changeActivePage"
+                   v-link="{path: '/'}">
+                   <span aria-hidden="true" class="hightop-home"></span>
+                   Home
+                 </a>
+              </li>
+              <li>
+                <a v-link="{path: '/cadastro'}"
+                   v-on="click: changeActivePage"
+                   v-class="current: activePage == '/cadastro'">
+                  <span aria-hidden="true" class="fa fa-sign-in"></span>
+                  Cadastre-se
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
 
-   <script src="/js/app.js"></script>
+      <!-- End Navigation -->
+      <div class="container-fluid main-content">
+        <router-view ></router-view>
 
+      </div>
+
+
+
+    </div>
+    <script src="js/all.js"></script>
+    <script src="js/site.js"></script>
   </body>
 </html>

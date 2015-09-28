@@ -1195,7 +1195,6 @@ th:active {
 /*----------------------------------------------------------------------------------- */
 .cot-container {
   min-height: 60px;
-  height: 60px;
   text-align: center; }
   .cot-container [class^="col-"], .cot-container [class*="col-"] {
     border-right: 1px solid #e6e6e6;
@@ -1218,7 +1217,7 @@ th:active {
         margin: 20px 12px 0 0; }
     .cot-container [class^="col-"] .text, .cot-container [class*="col-"] .text {
       font-weight: 500;
-      color: #999999; }
+       }
 
 /*----------------------------------------------------------------------------------- */
 /*  jQuery Sparkline Tooltip fix */
@@ -1911,6 +1910,8 @@ th:active {
     height: 100%;
     border-right: 1px solid #dddddd;
     padding-top: 50px; }
+    .widget-container.chat-page .contact-list.alone{
+      width: 100%; }
     .widget-container.chat-page .contact-list .heading {
       background-color: transparent;
       color: #777777;
@@ -1944,6 +1945,8 @@ th:active {
           padding-left: 15px;
           padding: 8px 0 8px 15px;
           color: #888888; }
+          .widget-container.chat-page .contact-list.alone ul li a {
+            width: 100%; }
           .widget-container.chat-page .contact-list ul li a:hover {
             background-color: #e6e6e6;
             color: #666666; }
@@ -3650,6 +3653,8 @@ body.fourofour {
     margin-bottom: 45px; }
     .widget-container.chat-page .contact-list {
       display: none; }
+      .widget-container.chat-page .contact-list.alone {
+        display: block;}
     .widget-container.chat-page .post-message {
       position: fixed;
       bottom: 0;

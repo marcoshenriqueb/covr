@@ -9,7 +9,16 @@ module.exports = {
     };
   },
 
+
   methods: {
+    fbLogin: function(){
+      FB.login(function(response){
+        // console.log(JSON.stringify(response));
+        FB.getLoginStatus(function(response) {
+          statusChangeCallback(response);
+        });
+      }, {scope: "public_profile,email,user_friends,user_location"});
+    },
     postLogin: function(e){
       e.preventDefault();
       this.$http.post(

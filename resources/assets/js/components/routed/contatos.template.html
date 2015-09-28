@@ -1,0 +1,173 @@
+
+<div class="row">
+  <!-- Primeiro widget -->
+  <div class="col-md-3">
+    <div class="widget-container scrollable chat chat-page">
+      <div class="contact-list alone">
+        <div class="heading">
+          Chats ({{friendsCount}})
+        </div>
+        <input v-model="searchBar" class="form-control input-sm" placeholder="Procure por amigos">
+        <ul>
+          <li v-repeat="f: friends | filterBy searchBar">
+            <a href="#">
+              <img src="images/int.jpg" width="30" height="30" />
+              {{f.nome + ' ' + f.sobrenome}}
+              <i class="fa fa-circle text-danger"></i>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  <!-- Fim do primeiro widget -->
+  </div>
+
+  <!-- Segundo widget -->
+  <div class="col-md-9">
+
+    <!-- Solicitações de amizades -->
+    <div v-if="selectedFriend == ''" style="height:700px;" class="widget-container scrollable clearfix">
+      <div class="heading">
+        <i class="fa fa-users"></i>
+        Amizades
+      </div>
+      <div class="widget-content padded">
+        <div class="form-group form-inline">
+          <input v-model="searchFriends"
+                 class="form-control input-sm"
+                 placeholder="Digite o nome"
+                 v-on="keyup: getNotFriends">
+        </div>
+
+        <!-- Painel de explicações -->
+        <div class="text-center" v-if="requests.length == 0 && requested.length == 0 && searchFriends == ''">
+          <h2>
+            Adicione mais contatos, a chance será maior de trocar moeda com alguém que conheça!
+          </h2>
+          <i style="font-size:5em;" class="fa fa-smile-o"></i>
+          <p class="lead">
+            Clique no botão + no painel ao lado e procure por conhecidos.
+          </p>
+          <p class="lead">
+            Você também pode adicionar os seus amigos do facebook, que estão no aplicativo.
+            Basta clicar no botão abaixo.
+          </p>
+          <button type="button" class="btn btn-primary">Adicionar fb</button>
+          <hr>
+        </div>
+
+        <!-- Soliciatações de amizade -->
+        <div class="friends-requested" v-if="requested.length > 0 && searchFriends == ''">
+          <h3>Solicitações pendentes</h3>
+          <div class="row" v-repeat="r: requested">
+            <div class="col-md-2">
+              <img src="{{ r.profilePic == null ? 'images/int.jpg' : r.profilePic }}"
+                   class="img-responsive img-rounded" />
+              </div>
+            <div class="col-md-7">
+              <p style="font-size:1.4em;">{{r.nome + ' ' + r.sobrenome}}</p>
+              <p>
+                <i class="fa fa-map-marker"></i> Rio de Janeiro
+              </p>
+            </div>
+            <div class="col-md-3">
+              <button class="btn btn-large btn-block btn-success pull-right"
+                      v-on="click: confirmFriend(r, $event, $index)">
+                Aceitar
+              </button>
+              <button class="btn btn-large btn-block btn-warning pull-right"
+                      v-on="click: removeRequested(r, $event, $index)">
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Amizades solicitadas -->
+        <div class="friends-requests" v-if="requests.length > 0 && searchFriends == ''">
+          <h3>Solicitações feitas</h3>
+          <div class="row" v-repeat="r: requests">
+            <div class="col-md-2">
+              <img src="{{ r.profilePic == null ? 'images/int.jpg' : r.profilePic }}"
+                   class="img-responsive img-rounded" />
+            </div>
+            <div class="col-md-7">
+              <p style="font-size:1.4em;">{{r.nome + ' ' + r.sobrenome}}</p>
+              <p>
+                <i class="fa fa-map-marker"></i> Rio de Janeiro
+              </p>
+            </div>
+            <div class="col-md-3">
+              <button class="btn btn-large btn-block btn-warning pull-right"
+                      v-on="click: cancelRequest(r, $event, $index)">
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+
+
+        <!-- Amigos atuais -->
+        <div class="friends-requests">
+          <h3>Amigos</h3>
+          <div class="row" v-repeat="f: friends | filterBy searchFriends">
+            <div class="col-md-2">
+              <img src="{{ f.profilePic == null ? 'images/int.jpg' : f.profilePic }}"
+                   class="img-responsive img-rounded" />
+            </div>
+            <div class="col-md-7">
+              <p style="font-size:1.4em;">{{f.nome + ' ' + f.sobrenome}}</p>
+              <p>
+                <i class="fa fa-map-marker"></i> Rio de Janeiro
+              </p>
+            </div>
+            <div class="col-md-3">
+              <button class="btn btn-large btn-block btn-warning pull-right"
+                      v-on="click: cancelFriend(f, $event, $index)">
+                Desfazer amizade
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Procura por novos amigos -->
+        <div class="friends-requests" v-if="searchFriends != ''">
+          <h3>Mais pessoas</h3>
+          <div class="row" v-repeat="n: notFriends | filterBy searchFriends">
+            <div class="col-md-2">
+              <img src="{{ n.profilePic == null ? 'images/int.jpg' : n.profilePic }}"
+                   class="img-responsive img-rounded" />
+            </div>
+            <div class="col-md-7">
+              <p style="font-size:1.4em;">{{n.nome + ' ' + n.sobrenome}}</p>
+              <p>
+                <i class="fa fa-map-marker"></i> Rio de Janeiro
+              </p>
+            </div>
+            <div class="col-md-3">
+              <button class="btn btn-large btn-block btn-success pull-right"
+                      v-on="click: requestFriend(n, $event)">
+                Solicitar
+              </button>
+            </div>
+          </div>
+        </div>
+
+
+      </div>
+    <!-- Fim das solicitações de amizade -->
+    </div>
+
+    <!-- Chat -->
+    <div v-if="selectedFriend != ''" class="widget-container clearfix">
+      <div class="heading">
+        <i class="fa fa-users"></i>
+        Chat com Fulano
+      </div>
+      <div class="widget-content padded">
+
+      </div>
+    </div>
+  <!-- Fim do segundo widget -->
+  </div>
+</div>

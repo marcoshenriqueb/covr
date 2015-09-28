@@ -39,7 +39,7 @@ module.exports = {
       v.animate = true;
       var p = JSON.parse(data.cotacao);
       v.parseCot(p);
-      setInterval(function () {v.animate = false;}, 5000);
+      setTimeout(function () {v.animate = false;}, 5000);
     });
   },
 
@@ -47,15 +47,12 @@ module.exports = {
     parseCot: function(c){
       var ar = {};
       for(var k in c){
-        if (c[k].cot === Number(c[k].cot) && c[k].cot % 1 !== 0) {
-          c[k].cot.toFixed(2);
-        }
         var variacao = (c[k].var * 100).toFixed(2) + "%";
-        ar[k] = {preco: k + " " + c[k].cot, variacao: variacao};
+        ar[k] = {preco: k + " " + Number(c[k].cot).toFixed(2), variacao: variacao};
         if (c[k].var > 0) {
-          this[k + 'color'] = 'green';
+          this[k + 'color'] = 'text-success';
         }else if (c[k].var < 0) {
-          this[k + 'color'] = 'red';
+          this[k + 'color'] = 'text-danger';
         }
       }
       this.cotacao = ar;

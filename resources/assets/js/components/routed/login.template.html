@@ -1,4 +1,5 @@
 
+
 <div class="col-md-offset-3 col-md-6">
   <div class="widget-container fluid-height clearfix">
     <div class="heading">
@@ -32,13 +33,14 @@
           </div>
 
 
-          <button v-on="click: postLogin" class="btn btn-lg btn-primary btn-block">Login</button><br>
-          <span v-if="authErr">Email ou senha inválidos</span>
+          <button v-on="click: postLogin" class="btn btn-lg btn-primary btn-block">Login</button>
+          <span v-if="authErr">Credenciais inválidas</span><br>
+        </form>
 
           <div class="social-login clearfix">
-            <a class="btn btn-primary btn-block facebook"><i class="fa fa-facebook"></i> Logar com o Facebook</a>
+            <a class="btn btn-primary btn-block facebook" v-on="click: fbLogin"><i class="fa fa-facebook"></i> Logar com o Facebook</a>
           </div>
-        </form>
+
         <hr>
         <p>
           Ainda não tem uma conta?

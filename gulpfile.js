@@ -13,10 +13,10 @@ require('laravel-elixir-livereload');
  */
 
 elixir(function(mix) {
-  mix.browserify('site.js', 'public/js/site.js')
-  .browserify('app.js')
-  .styles(['bootstrap.min.css', 'animate.min.css', 'hightop.css', 'appcambio.css'])
-  .scripts(['jquery.min.js', 'bootstrap.min.js', 'jquery.mousewheel.min.js', 'main.js']);
+  mix.browserify('app.js')
+  .browserify('site.js', 'public/js/site.js')
+  .styles(['bootstrap.min.css', 'animate.min.css', 'bs3xeditable.css', 'hightop.css', 'appcambio.css', 'app.css'])
+  .scripts(['jquery.min.js', 'bootstrap.min.js', 'jquery.mousewheel.min.js', 'main.js', 'fb.js', 'gm.js']);
 });
 
 elixir(function(mix) {

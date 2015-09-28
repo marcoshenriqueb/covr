@@ -15,6 +15,7 @@ module.exports = {
 
   ready: function(){
     this.$http.get('api/currency/converter', function(data){
+      console.log(data);
       var cot = [];
       this.selectedB = data.USD;
       for(var k in data){
@@ -35,7 +36,7 @@ module.exports = {
     calcula: function(){
       this.resultado = ((this.selectedA / this.selectedB) * this.valor).toFixed(2);
       var that = this;
-      setInterval(function () {that.simbolo = $('#simbolo option:selected').text();}, 200);
+      setTimeout(function () {that.simbolo = $('#simbolo option:selected').text();}, 200);
     },
     inverte: function(){
       var a = this.selectedA;

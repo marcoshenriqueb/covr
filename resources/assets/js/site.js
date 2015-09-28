@@ -1,9 +1,9 @@
 var Pusher = require('pusher-js');
 var Vue = require('vue');
 var VueRouter = require('vue-router');
+var VueResource = require('vue-resource');
 Vue.use(VueRouter);
-Vue.use(require('vue-resource'));
-
+Vue.use(VueResource);
 
 Vue.http.headers.common['X-CSRF-TOKEN'] = document.querySelector('#token').getAttribute('value');
 Vue.config.debug = true;
@@ -36,16 +36,32 @@ var router = new VueRouter({
 
 router.map({
     '/': {
-        component: require('./components/routed/home')
+      component: require('./components/routed/home')
     },
     '/login': {
-        component: require('./components/routed/login')
+      component: require('./components/routed/login')
     },
     '/cadastro': {
-        component: require('./components/routed/cadastro')
+      component: require('./components/routed/cadastro')
+    },
+    '/confirma-email': {
+      component: require('./components/routed/confirmaEmail')
     }
 });
 
+router.beforeEach(function(transition){
+  if (transition.to.auth) {
+    var response;
+    $.get('auth/check')
+      .done(function(xhr){
+      transition.next();
+    }).fail(function(xhr){
+      transition.redirect('/login');
+    });
+  }else {
+    transition.next();
+  }
+});
 
 router.mode = 'hash';
 

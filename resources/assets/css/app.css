@@ -1,0 +1,13 @@
+.friends-requests p, .friends-requested p{
+  margin: 0.5em 1em;
+}
+.friends-requests button{
+  margin: 1.5em 0;
+}
+.friends-requested button{
+  margin: 0.5em 0;
+}
+.friends-requests div.row, .friends-requested div.row {
+  border-bottom: solid 1px #d1d1d1;
+  padding: 1% 0;
+}

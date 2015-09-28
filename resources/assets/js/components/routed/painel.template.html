@@ -1,0 +1,92 @@
+
+<painel-cotacoes></painel-cotacoes>
+
+<div class="row">
+  <div class="col-md-12">
+    <div class="widget-container fluid-height clearfix">
+      <div class="heading">
+        <i class="fa fa-money"></i>
+        Faça aqui a sua proposta
+      </div>
+      <div class="widget-content padded">
+        <div class="row">
+          <div class="col-md-4 opacity">
+            <div class="row">
+              <div class="col-md-12">
+                <label class="radio-inline">
+                  <input type="radio" value="0" v-model="operation">
+                  <span>Quero comprar</span>
+                </label>
+                <label class="radio-inline">
+                  <input type="radio" value="1" v-model="operation">
+                  <span>Quero vender</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-12">
+                <label>Escolha uma moeda: </label>
+                <select v-model="currency"
+                        options="availableCurrencies"
+                        class="form-control">
+                </select>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-12">
+                <label>Digite um valor: </label>
+                <input class="form-control" type="number" v-model="amount">
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-12">
+                <label>Digite um preço: </label>
+                <input class="form-control" type="number" v-model="price">
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-12">
+                <div class="row">
+                  <div class="col-md-12">
+                    <label>Localização: </label>
+                    <input data-toggle="tooltip"
+                           data-placement="top"
+                           title="Digite o local e clique em 'Achar' no botão abaixo, ou apenas clique em 'Localização Atual' para podermos achar as suas coordenadas!"
+                           class="form-control"
+                           type="text"
+                           v-model="address">
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-md-6">
+                    <button v-on="click: findGeolocation" class="btn btn-large btn-block btn-primary">
+                      Achar
+                    </button>
+                  </div>
+                  <div class="col-md-6">
+                    <button v-on="click: findCurrentLocation" class="btn btn-large btn-block btn-primary">
+                      <i class="glyphicon glyphicon-pushpin"></i>
+                      Localização atual
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-8">
+            <div style="height:400px;width:100%;" id="map"></div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-offset-3 col-md-6">
+            <button v-on="click: postBid" class="btn btn-large btn-block btn-primary">Enviar proposta</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
