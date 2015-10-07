@@ -21,11 +21,7 @@ class SiteController extends Controller
 
     public function index()
     {
-      $data = [];
-      if (Auth::check()) {
-        $data['user'] = Auth::user();
-      }
-      return view('site', $data);
+      return view('site');
     }
 
     public function postLogin(Request $request)

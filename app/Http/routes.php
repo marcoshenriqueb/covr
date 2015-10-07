@@ -47,8 +47,21 @@ Route::put('api/user/nome', 'Api\UserApiController@postNome');
 Route::put('api/user/sobrenome', 'Api\UserApiController@postSobrenome');
 Route::put('api/user/localizacao', 'Api\UserApiController@postLocalizacao');
 Route::put('api/user/profilePic', 'Api\UserApiController@postPicture');
-Route::post('api/bid/store', 'Api\BidApiController@store');
+Route::delete('api/user', 'Api\UserApiController@destroy');
+Route::post('api/bid', 'Api\BidApiController@store');
+Route::get('api/bid', 'Api\BidApiController@index');
+Route::get('api/bid/page/{index}', 'Api\BidApiController@page');
+Route::delete('api/bid/destroy', 'Api\BidApiController@destroy');
+Route::get('api/chat', 'Api\ChatApiController@index');
+Route::post('api/chat', 'Api\ChatApiController@store');
+Route::delete('api/chat/{id}', 'Api\ChatApiController@destroy');
+Route::get('api/message/{id}', 'Api\MessageApiController@index');
+Route::get('api/message/{id}/{index}', 'Api\MessageApiController@page');
+Route::post('api/message/store', 'Api\MessageApiController@store');
+Route::put('api/message/read', 'Api\MessageApiController@update');
 
-Route::get('teste', function(App\Own\Mailer\AppMailer $mailer){
-  dd(App\Bid::searchClosest(-23.000434,-43.398604,30)->toArray());
+
+Route::get('teste', function(\Illuminate\Http\Request $request){
+  $r = $request->session()->all();
+  return json_encode($r);
 });

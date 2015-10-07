@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta id="token" name="token" value="{{csrf_token()}}">
-    <title>AppCambio</title>
+    <title>Covr</title>
     <!-- Bootstrap CSS -->
     <link href="http://fonts.googleapis.com/css?family=Lato:100,300,400,700" media="all" rel="stylesheet" type="text/css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.4.0/css/font-awesome.min.css">
@@ -24,29 +24,27 @@
       <!-- Navigation -->
       <div class="navbar navbar-fixed-top scroll-hide">
         <div class="container-fluid top-bar">
-          <ul class="nav navbar-nav pull-right">
-            <li><a v-link="{path: '/login'}">Login</a></li>
-            <li><a v-link="{path: '/cadastro'}">Cadastre-se</a></li>
-          </ul>
-          <button class="navbar-toggle"><span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span></button><a class="logo" href="index.html">AppCambio</a>
+          <button class="navbar-toggle"><span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span></button><a class="logo" href="index.html">Covr</a>
         </div>
         <div class="container-fluid main-nav clearfix">
           <div class="nav-collapse">
             <ul class="nav">
               <li>
-                <a v-class="current: activePage == '/'"
-                   v-on="click: changeActivePage"
-                   v-link="{path: '/'}">
+                <a v-link="{path: '/'}">
                    <span aria-hidden="true" class="hightop-home"></span>
                    Home
                  </a>
               </li>
               <li>
-                <a v-link="{path: '/cadastro'}"
-                   v-on="click: changeActivePage"
-                   v-class="current: activePage == '/cadastro'">
+                <a v-link="{path: '/login'}">
                   <span aria-hidden="true" class="fa fa-sign-in"></span>
-                  Cadastre-se
+                  Entrar
+                </a>
+              </li>
+              <li>
+                <a v-link="{path: '/cadastro'}">
+                  <span aria-hidden="true" class="fa fa-pencil-square-o"></span>
+                  Cadastro
                 </a>
               </li>
             </ul>

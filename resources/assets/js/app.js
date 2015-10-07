@@ -1,18 +1,45 @@
-var Pusher = require('pusher-js');
 var Vue = require('vue');
 var VueRouter = require('vue-router');
 var VueResource = require('vue-resource');
+window.Drop = require('dropzone');
 Vue.use(VueRouter);
 Vue.use(VueResource);
+window.moment = require('moment');
+window.socket = io('http://localhost:3000');
 
 Vue.http.headers.common['X-CSRF-TOKEN'] = document.querySelector('#token').getAttribute('value');
-Vue.config.debug = true;
+Vue.config.debug = false;
+Vue.transition('slide', {
+  enter: function (el, done) {
+    // element is already inserted into the DOM
+    // call done when animation finishes.
+    $(el)
+      .css('display', 'none')
+    setTimeout(function(){
+      $(el)
+        .slideDown(250, done)
+    }, 250)
 
+      // .animate({ opacity: 1 }, 1000, done)
+  },
+  enterCancelled: function (el) {
+    $(el).stop()
+  },
+  leave: function (el, done) {
+    // same as enter
+    $(el)
+    .slideUp(250, done)
+    // .animate({ opacity: 0 }, 1000, done)
+  },
+  leaveCancelled: function (el) {
+    $(el).stop()
+  }
+});
 var app = Vue.extend ({
 
   data: function(){
     return {
-      activePage: this.$route.path
+      user: {}
     };
   },
 
@@ -21,19 +48,22 @@ var app = Vue.extend ({
     'compara-conversor-moeda': require('./components/global/comparaConversorMoeda')
   },
 
-  methods: {
-    changeActivePage: function(){
-      var that = this;
-      setInterval(function () {that.activePage = that.$route.path;}, 200);
-    }
+  ready:function(){
+    this.$http.get('api/user').success(function(data){
+      this.user = data;
+      window.socket.on('connect', function(){
+        window.socket.emit('user_id', {user_id: this.user.id});
+      }.bind(this));
+    });
   }
+
 
 });
 var router = new VueRouter({
   history: true,
 	saveScrollPosition: true
 });
-
+window.router = router;
 router.map({
     '/': {
       component: require('./components/routed/home')
@@ -68,7 +98,7 @@ router.beforeEach(function(transition){
       .done(function(xhr){
       transition.next();
     }).fail(function(xhr){
-      transition.redirect('/login');
+      window.location.href = "/login";
     });
   }else {
     transition.next();

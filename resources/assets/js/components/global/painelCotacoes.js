@@ -30,16 +30,13 @@ module.exports = {
       this.parseCot(data);
     });
 
-    var pusher = new Pusher('bdeb580ff7d67b3c3cf6', {
-      encrypted: true
-    });
-    var channel = pusher.subscribe('cotacao');
-    var v = this;
-    channel.bind('App\\Events\\AtualizaCotacao', function(data) {
-      v.animate = true;
+    var that = this;
+    var socket = io('http://localhost:3000');
+    socket.on('cotacao:App\\Events\\AtualizaCotacao', function(data){
+      that.animate = true;
       var p = JSON.parse(data.cotacao);
-      v.parseCot(p);
-      setTimeout(function () {v.animate = false;}, 5000);
+      that.parseCot(p);
+      setTimeout(function () {that.animate = false;}, 5000);
     });
   },
 

@@ -8,6 +8,7 @@ module.exports = {
       sobrenome: '',
       localizacao: '',
       place_id: '',
+      profilePic: '',
       readyData: {},
       erros: false,
       readyOk: false
@@ -16,6 +17,7 @@ module.exports = {
 
   ready: function(){
     this.$http.get('api/user', function(data){
+      this.profilePic = data.profilePic;
       this.nome = data.nome;
       this.sobrenome = data.sobrenome;
       this.localizacao = data.localizacao;
@@ -32,6 +34,19 @@ module.exports = {
       }
     }
     init();
+    var dropzoneProfile = new window.Drop("form#dropzone-demo", {
+      url: 'api/user/profilePicDrop',
+      parallelUploads: 1,
+      maxFilesize: 2,
+      paramName: 'profilePic',
+      headers: {'X-CSRF-TOKEN': document.querySelector('#token').getAttribute('value')},
+      acceptedFiles: '.jpg, .jpeg, .png, .bmp, .gif, .svg',
+      dictDefaultMessage: 'Arraste a sua foto para cá!',
+      dictInvalidFileType: 'Favor colocar uma imagem',
+      dictFileTooBig: 'A imagem é muito grande',
+      dictResponseError: 'Erro ao fazer upload',
+      dictMaxFilesExceeded: 'Excedido o número de uploads permitidos'
+    });
   },
 
   methods: {
@@ -153,6 +168,11 @@ module.exports = {
       this.reverseGeolocation({
         lat: position.coords.latitude,
         lng: position.coords.longitude
+      });
+    },
+    destroyAccount: function(){
+      this.$http.delete('api/user', function(){
+        window.location.href = "/";
       });
     }
   }

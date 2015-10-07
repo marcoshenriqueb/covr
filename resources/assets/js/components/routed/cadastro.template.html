@@ -1,14 +1,16 @@
-<div class="col-md-offset-3 col-md-6">
+<div class="col-sm-offset-2 col-sm-8 col-md-offset-3 col-md-6">
   <div class="widget-container fluid-height clearfix">
     <div class="heading">
       <i class="fa fa-sign-in"></i>
       Cadastro
     </div>
     <div class="widget-content padded text-center">
-      <div class="login-wrapper col-md-offset-1 col-md-10">
+      <div class="login-wrapper col-sm-offset-1 col-sm-10">
         <form method="POST">
 
-          <div class="form-group">
+          <div class="form-group" v-class="has-error: nomeInvalid,
+                                          animated: nomeInvalid,
+                                          shake: nomeInvalid">
             <div class="input-group">
               <span class="input-group-addon"><i class="fa fa-user"></i></span>
               <input type="text"
@@ -17,10 +19,11 @@
                      class="form-control"
                      placeholder="Digite o seu nome">
             </div>
-            <span v-if="nomeInvalid">{{ nomeInvalid }}</span>
           </div>
 
-          <div class="form-group">
+          <div class="form-group" v-class="has-error: sobrenomeInvalid,
+                                          animated: sobrenomeInvalid,
+                                          shake: sobrenomeInvalid">
             <div class="input-group">
               <span class="input-group-addon"><i class="fa fa-user-secret"></i></span>
               <input type="text"
@@ -29,10 +32,11 @@
                      class="form-control"
                      placeholder="Digite o seu sobrenome">
             </div>
-            <span v-if="sobrenomeInvalid">{{ sobrenomeInvalid }}</span>
           </div>
 
-          <div class="form-group">
+          <div class="form-group" v-class="has-error: emailInvalid,
+                                          animated: emailInvalid,
+                                          shake: emailInvalid">
             <div class="input-group">
               <span class="input-group-addon"><i class="fa fa-envelope"></i></span>
               <input type="text"
@@ -41,10 +45,11 @@
                      class="form-control"
                      placeholder="Digite o email">
             </div>
-            <span v-if="emailInvalid">{{ emailInvalid }}</span>
           </div>
 
-          <div class="form-group">
+          <div class="form-group" v-class="has-error: passwordInvalid,
+                                          animated: passwordInvalid,
+                                          shake: passwordInvalid">
             <div class="input-group">
               <span class="input-group-addon"><i class="fa fa-lock"></i></span>
               <input type="password"
@@ -53,22 +58,30 @@
                      class="form-control"
                      placeholder="Digite a senha">
             </div>
-            <span v-if="passwordInvalid">{{ passwordInvalid }}</span>
           </div>
 
-          <div class="form-group">
+          <div class="form-group" v-class="has-error: confirmationInvalid,
+                                          animated: confirmationInvalid,
+                                          shake: confirmationInvalid">
             <div class="input-group">
               <span class="input-group-addon"><i class="fa fa-lock"></i></span>
               <input type="password" v-model="password_confirmation" class="form-control" placeholder="Confirme a senha">
             </div>
           </div>
 
-          <button v-on="click: postRegister" class="btn btn-lg btn-primary btn-block">Cadastrar</button>
-          <br>
+          <button v-class="disabled: loading" v-on="click: postRegister" class="btn btn-lg btn-primary btn-block">
+            {{!loading ? 'Cadastrar' : ''}}
+            <i v-if="loading" class="fa fa-spinner fa-pulse"></i>
+          </button>
+          <span class="text-danger" v-if="emailExists">Este email já está cadastrado.</span>
+        <br>
         </form>
 
           <div class="social-login clearfix">
-            <a class="btn btn-primary facebook btn-block" v-on="click: fbLogin"><i class="fa fa-facebook"></i> Cadastro com o facebook</a>
+            <a v-class="disabled: fbLoading" class="btn btn-primary facebook btn-block" v-on="click: fbLogin">
+              <i v-if="!fbLoading" class="fa fa-facebook"></i>{{!fbLoading ? ' Cadastro com o facebook' : ' '}}
+              <i v-if="fbLoading" class="fa fa-spinner fa-pulse"></i>
+            </a>
           </div>
 
           <hr>

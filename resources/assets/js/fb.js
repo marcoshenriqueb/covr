@@ -1,6 +1,6 @@
 // This is called with the results from from FB.getLoginStatus().
 function statusChangeCallback(response) {
-  console.log(response);
+  // console.log(response);
   // The response object is returned with a status field that lets the
   // app know the current login status of the person.
   // Full docs on the response object can be found in the documentation
@@ -76,7 +76,7 @@ var FbLogin = function() {
 }
 
 var FbGetAppSession = function() {
-  FB.api('/me?fields=id,first_name,last_name,picture,location,age_range,email', function(response) {
+  FB.api('/me?fields=id,first_name,friends,last_name,picture,location,age_range,email', function(response) {
     var csrf = document.querySelector('#token').getAttribute('value');
     var dados = response;
     jQuery.ajax({
@@ -110,20 +110,20 @@ var FbGetAppSession = function() {
                 }
               },
               error: function(data){
-                console.log('Deu erro 2.');
-                console.log(data);
+                // console.log('Deu erro 2.');
+                // console.log(data);
               }
             });
           });
         }else {
-          console.log('Não passou.');
-          console.log(data);
+          // console.log('Não passou.');
+          // console.log(data);
         }
       },
       error: function(data){
         // var errors = data.responseJSON;
-        console.log('Deu erro.');
-        console.log(data);
+        // console.log('Deu erro.');
+        // console.log(data);
       }
     });
   });

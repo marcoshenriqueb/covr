@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="">
+<html lang="pt-br">
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta id="token" name="token" value="{{csrf_token()}}">
-    <title>AppCambio</title>
+    <title>COvr</title>
     <!-- Bootstrap CSS -->
     <link href="http://fonts.googleapis.com/css?family=Lato:100,300,400,700" media="all" rel="stylesheet" type="text/css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.4.0/css/font-awesome.min.css">
@@ -116,31 +116,25 @@
               </li>
             </ul>
           </div>
-          <button class="navbar-toggle"><span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span></button><a class="logo" href="index.html">AppCambio</a>
+          <button class="navbar-toggle"><span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span></button><a class="logo" href="index.html">COvr</a>
         </div>
         <div class="container-fluid main-nav clearfix">
           <div class="nav-collapse">
             <ul class="nav">
               <li>
-                <a v-class="current: activePage == '/'"
-                   v-on="click: changeActivePage"
-                   v-link="{path: '/'}">
+                <a v-link="{path: '/'}">
                    <span aria-hidden="true" class="hightop-home"></span>
                    Home
                  </a>
               </li>
               <li>
-                <a v-class="current: activePage == '/app'"
-                   v-on="click: changeActivePage"
-                   v-link="{path: '/app'}">
+                <a v-link="{path: '/app'}">
                    <span aria-hidden="true" class="hightop-feed"></span>
                    Painel
                  </a>
               </li>
               <li>
-                <a v-class="current: activePage == '/contatos'"
-                   v-on="click: changeActivePage"
-                   v-link="{path: '/contatos'}">
+                <a v-link="{path: '/contatos'}">
                   <span aria-hidden="true" class="fa fa-comments-o"></span>
                   Contatos
                 </a>
@@ -152,7 +146,7 @@
 
       <!-- End Navigation -->
       <div class="container-fluid main-content">
-        <router-view ></router-view>
+        <router-view></router-view>
 
       </div>
 

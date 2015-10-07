@@ -7,7 +7,65 @@
 .friends-requested button{
   margin: 0.5em 0;
 }
-.friends-requests div.row, .friends-requested div.row {
+.friends-requests div.row, .friends-requested div.row, .bids div.row{
   border-bottom: solid 1px #d1d1d1;
   padding: 1% 0;
+}
+.friends-requests div.row:last-child, .friends-requested div.row:last-child, .bids div.row:last-child{
+  border-bottom: none;
+  padding: 1% 0;
+}
+.bid .rates > div:nth-child(1) {
+  border-right: solid 1px #d1d1d1;
+}
+
+.bid .rates > div:nth-child(3) {
+  border-left: solid 1px #d1d1d1;
+}
+.bid p{
+  /*margin-bottom: 0;*/
+}
+.bid .row+.row{
+  margin-top: 5px;
+}
+
+.widget-container.chat-page, .widget-container.chat, .widget-container.friends-widget{
+  height: 550px;
+  overflow: hidden;
+}
+
+.widget-container.chat-page .contact-list.alone ul li a{
+  width: 106%;
+}
+.widget-container.chat-page .contact-list.alone ul li a span{
+  margin-right: 8px;
+  background-color: green;
+  top: 5px;
+  position: relative;
+}
+.navbar .container-fluid.main-nav .nav-collapse .nav > li > a.v-link-active-exact{
+  color: #007aff;
+}
+@media (min-width: 768px) {
+  .profile-pic .profile-img{
+    /*height: 300px;
+    width: 300px;*/
+  }
+}
+
+.staggered-transition {
+    transition: all .5s ease;
+    overflow: hidden;
+    margin: 0;
+    height: 113px;
+}
+.staggered-enter, .staggered-leave {
+    opacity: 0;
+    height: 0;
+}
+.fade-enter {
+  animation: fadeIn .3s;
+}
+.fade-leave {
+  animation: fadeOut .3s;
 }

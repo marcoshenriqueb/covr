@@ -1,3 +1,24 @@
+Bugs
+-substituir $index onde não tem filtro
+-fotos no meu servidor
+-opção de amigo e não amigo, na procura de bids
+-colocar opção de data limite
+-colocar uma tabela de cotações na primeira pág e hidden-xs na de cima
+-cronjob e variação da atualização em relação ao dia anterior
+
+-listeners de criação de chat e mensagem estão nos lugares errados
+-utilizar queue para email cadastro e atualizar fbfriends
+-O que acontece na merda do Mozilla???????? Auth cai toda hora e problema com CSRF token
+-unificar modais
+-transições
+-acertar verbos http
+-colocar localização do fb
+-botão convide os seus amigos para o fb
+-cadastro após cadastrado com o facebook não funciona
+
+
+Um clube só para quem for convidado???
+
 - conversor de moedas
 - monitora cotações
 - ajuda na compra
@@ -16,3 +37,9 @@ Páginas
 -Notificações
 -Ultimas mensagens
 -Minha Conta
+
+
+apt-get
+-redis
+
+COLOCAR A DATA!!!!!

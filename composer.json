@@ -10,7 +10,9 @@
         "guzzlehttp/guzzle": "^6.1",
         "indatus/dispatcher": "^1.4",
         "pusher/pusher-php-server": "^2.2",
-        "symfony/psr-http-message-bridge": "^0.2.0"
+        "symfony/psr-http-message-bridge": "^0.2.0",
+        "predis/predis": "^1.0",
+        "intervention/image": "^2.3"
     },
     "require-dev": {
         "fzaninotto/faker": "~1.4",

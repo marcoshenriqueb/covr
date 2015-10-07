@@ -83,6 +83,21 @@ class User extends Model implements AuthenticatableContract,
         return $this->hasMany('App\Bid');
     }
 
+    public function chats1()
+    {
+        return $this->hasMany('App\Chat', 'user_1');
+    }
+
+    public function chats2()
+    {
+        return $this->hasMany('App\Chat', 'user_2');
+    }
+
+    public function messages()
+    {
+        return $this->hasMany('App\Messages');
+    }
+
     public function getFullName()
     {
         return $this->nome . ' ' . $this->sobrenome;

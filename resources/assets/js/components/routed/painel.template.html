@@ -1,92 +1,213 @@
+<div>
+  <painel-cotacoes></painel-cotacoes>
+  <div class="row">
+    <div class="col-sm-3">
+      <button v-on="click: openNewBid" class="btn btn-large btn-block btn-primary">Nova Proposta</button>
+    </div>
+    <div class="col-sm-3">
+      <button v-on="click: openCurrentBids" class="btn btn-large btn-block btn-primary">Bids existentes</button>
+    </div>
+    <div class="pull-right form-inline hidden-xs">
+      <label>Procure aqui: </label>
+      <select class="form-control" options="availableCurrencies" v-model="currencyFilter"></select>
+      <input type="text" class="form-control" v-model="searchBid" placeholder="Digite aqui para filtrar">
+    </div>
+  </div>
 
-<painel-cotacoes></painel-cotacoes>
-
-<div class="row">
-  <div class="col-md-12">
-    <div class="widget-container fluid-height clearfix">
-      <div class="heading">
-        <i class="fa fa-money"></i>
-        Faça aqui a sua proposta
-      </div>
-      <div class="widget-content padded">
-        <div class="row">
-          <div class="col-md-4 opacity">
-            <div class="row">
-              <div class="col-md-12">
-                <label class="radio-inline">
-                  <input type="radio" value="0" v-model="operation">
-                  <span>Quero comprar</span>
-                </label>
-                <label class="radio-inline">
-                  <input type="radio" value="1" v-model="operation">
-                  <span>Quero vender</span>
-                </label>
-              </div>
-            </div>
-
-            <div class="row">
-              <div class="col-md-12">
-                <label>Escolha uma moeda: </label>
-                <select v-model="currency"
-                        options="availableCurrencies"
-                        class="form-control">
-                </select>
-              </div>
-            </div>
-
-            <div class="row">
-              <div class="col-md-12">
-                <label>Digite um valor: </label>
-                <input class="form-control" type="number" v-model="amount">
-              </div>
-            </div>
-
-            <div class="row">
-              <div class="col-md-12">
-                <label>Digite um preço: </label>
-                <input class="form-control" type="number" v-model="price">
-              </div>
-            </div>
-
-            <div class="row">
-              <div class="col-md-12">
-                <div class="row">
-                  <div class="col-md-12">
-                    <label>Localização: </label>
-                    <input data-toggle="tooltip"
-                           data-placement="top"
-                           title="Digite o local e clique em 'Achar' no botão abaixo, ou apenas clique em 'Localização Atual' para podermos achar as suas coordenadas!"
-                           class="form-control"
-                           type="text"
-                           v-model="address">
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="col-md-6">
-                    <button v-on="click: findGeolocation" class="btn btn-large btn-block btn-primary">
-                      Achar
-                    </button>
-                  </div>
-                  <div class="col-md-6">
-                    <button v-on="click: findCurrentLocation" class="btn btn-large btn-block btn-primary">
-                      <i class="glyphicon glyphicon-pushpin"></i>
-                      Localização atual
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="col-md-8">
-            <div style="height:400px;width:100%;" id="map"></div>
-          </div>
+  <!-- Bids existentes -->
+  <div class="row" v-if="currentBids && !newBid" v-transition="slide">
+    <div class="col-sm-12">
+      <div class="widget-container fluid-height clearfix scrollable">
+        <div class="heading">
+          <i class="fa fa-money"></i>
+          Bids
         </div>
-        <div class="row">
-          <div class="col-md-offset-3 col-md-6">
-            <button v-on="click: postBid" class="btn btn-large btn-block btn-primary">Enviar proposta</button>
+        <div class="widget-content padded bids">
+          <div class="row" v-repeat="b: bids | filterBy searchBid | filterBy currencyFilter">
+            <div class="col-sm-8">
+              <p class="lead">
+                {{ b.operation == 0 ? "Comprar" : "Vender" }} {{ b.amount | currency b.currency }} {{ b.operation == 0 ? "a" : "por" }} R$ {{ b.price }}
+              </p>
+              <p>
+                <i class="fa fa-map-marker"></i>
+                {{ b.address }}
+              </p>
+            </div>
+            <div class="col-sm-4">
+              <button v-on="click: cancelBid($index)" class="btn btn-large btn-block btn-warning">Cancelar Bid</button>
+            </div>
           </div>
         </div>
       </div>
     </div>
+  </div>
+
+  <!-- Post de novo Bid -->
+  <div class="row" v-if="newBid && !currentBids" v-transition="slide">
+    <div class="col-sm-12">
+      <div class="widget-container fluid-height clearfix">
+        <div class="heading">
+          <i class="fa fa-money"></i>
+          Faça aqui a sua proposta
+        </div>
+        <div class="widget-content padded">
+          <div class="row">
+            <div class="col-sm-4 opacity">
+              <div class="row">
+                <div class="col-sm-12" v-class="has-error: operationError,
+                                                animated: operationError,
+                                                shake: operationError">
+                  <label class="radio-inline">
+                    <input type="radio" value="0" v-model="operation">
+                    <span>Quero comprar</span>
+                  </label>
+                  <label class="radio-inline">
+                    <input type="radio" value="1" v-model="operation">
+                    <span>Quero vender</span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-sm-12" v-class="has-error: currencyError,
+                                                animated: currencyError,
+                                                shake: currencyError">
+                  <label v-class="">Escolha uma moeda*: </label>
+                  <select v-model="currency"
+                          options="availableCurrencies"
+                          class="form-control">
+                  </select>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-sm-12" v-class="has-error: amountError,
+                                                animated: amountError,
+                                                shake: amountError">
+                  <label>Digite um valor*: </label>
+                  <input class="form-control" type="number" v-model="amount">
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-sm-12" v-class="has-error: priceError,
+                                                animated: priceError,
+                                                shake: priceError">
+                  <label>Digite um preço*: </label>
+                  <input class="form-control" type="number" v-model="price">
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-sm-12" v-class="has-error: addressError,
+                                                animated: addressError,
+                                                shake: addressError">
+                  <div class="row">
+                    <div class="col-sm-12">
+                      <label>Localização: </label>
+                      <input data-toggle="tooltip"
+                             data-placement="top"
+                             title="Digite o local e clique em 'Achar' no botão abaixo, ou apenas clique em 'Localização Atual' para podermos achar as suas coordenadas!"
+                             class="form-control"
+                             type="text"
+                             v-model="address">
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col-sm-6">
+                      <button v-on="click: findGeolocation" class="btn btn-large btn-block btn-primary">
+                        Achar
+                      </button>
+                    </div>
+                    <div class="col-sm-6">
+                      <button v-on="click: findCurrentLocation" class="btn btn-large btn-block btn-primary">
+                        <i class="glyphicon glyphicon-pushpin"></i>
+                        Localização atual
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-sm-8">
+              <div style="height:400px;width:100%;" id="map"></div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-sm-offset-3 col-sm-3">
+              <button v-on="click: cancelNewBid" class="btn btn-large btn-block btn-danger">Cancelar</button>
+            </div>
+            <div class="col-sm-3">
+              <button v-class="disabled: newBidDisabled" v-on="click: postBid" class="btn btn-large btn-block btn-primary">
+                Enviar proposta
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Resultado de ofertas -->
+  <div class="row">
+    <div v-repeat="o: offers | filterBy searchBid | filterBy currencyFilter" class="col-sm-6 col-md-4">
+      <div class="col-sm-offset-0 col-sm-12 bid widget-container fluid-height" style="margin-bottom:1em;">
+        <div class="widget-content padded">
+          <div class="row">
+            <div class="col-xs-4">
+              <img class="img-responsive" src="images/int.jpg" />
+            </div>
+            <div class="col-xs-8">
+              <p>
+                <a class="user-name" href="#">John</a>
+              </p>
+              <p>
+                {{o.operation == 0 ? 'Comprar' : 'Vender'}} {{o.currency}} {{o.amount}}
+              </p>
+              <p>
+                <i class="fa fa-map-marker"></i>
+                {{ o.address }}
+              </p>
+            </div>
+          </div>
+          <div class="row text-center rates">
+            <div class="col-xs-4">
+              <a href="#">
+                <h2>10</h2>
+              </a>
+              <p>
+                Km
+              </p>
+            </div>
+            <div class="col-xs-4">
+              <a href="#">
+                <h2>10</h2>
+              </a>
+              <p>
+                horas
+              </p>
+            </div>
+            <div class="col-xs-4">
+              <a href="#">
+                <h2>10</h2>
+              </a>
+              <p>
+                Nota média
+              </p>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-sm-8 col-sm-offset-2">
+              <button v-on="click: openChat(o)" class="btn btn-large btn-block btn-success">Abrir chat</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="row" v-if="loadMoreBids">
+  <div class="col-sm-offset-3 col-sm-6">
+    <button v-on="click: loadPagination" class="btn btn-large btn-block btn-default-outline">Carregar mais resultados</button>
   </div>
 </div>

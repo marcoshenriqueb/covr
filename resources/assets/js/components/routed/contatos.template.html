@@ -1,7 +1,7 @@
 
 <div class="row">
-  <!-- Primeiro widget -->
-  <div class="col-md-3">
+  <!-- Chat widget -->
+  <div class="col-sm-3">
     <div class="widget-container scrollable chat chat-page">
       <div class="contact-list alone">
         <div class="heading">
@@ -9,11 +9,11 @@
         </div>
         <input v-model="searchBar" class="form-control input-sm" placeholder="Procure por amigos">
         <ul>
-          <li v-repeat="f: friends | filterBy searchBar">
+          <li v-repeat="c: availableChats | filterBy searchBar" v-on="click: openChat($index)">
             <a href="#">
               <img src="images/int.jpg" width="30" height="30" />
-              {{f.nome + ' ' + f.sobrenome}}
-              <i class="fa fa-circle text-danger"></i>
+              {{c.user.nome + ' ' + c.user.sobrenome}}
+              <span v-if="c.countNotRead > 0" class="badge pull-right">{{c.countNotRead}}</span>
             </a>
           </li>
         </ul>
@@ -23,10 +23,10 @@
   </div>
 
   <!-- Segundo widget -->
-  <div class="col-md-9">
+  <div class="col-sm-9">
 
     <!-- Solicitações de amizades -->
-    <div v-if="selectedFriend == ''" style="height:700px;" class="widget-container scrollable clearfix">
+    <div v-if="currentChat == null" class="widget-container friends-widget scrollable clearfix">
       <div class="heading">
         <i class="fa fa-users"></i>
         Amizades
@@ -40,7 +40,7 @@
         </div>
 
         <!-- Painel de explicações -->
-        <div class="text-center" v-if="requests.length == 0 && requested.length == 0 && searchFriends == ''">
+        <!-- <div class="text-center" v-if="requests.length == 0 && requested.length == 0 && searchFriends == ''">
           <h2>
             Adicione mais contatos, a chance será maior de trocar moeda com alguém que conheça!
           </h2>
@@ -54,23 +54,23 @@
           </p>
           <button type="button" class="btn btn-primary">Adicionar fb</button>
           <hr>
-        </div>
+        </div> -->
 
         <!-- Soliciatações de amizade -->
         <div class="friends-requested" v-if="requested.length > 0 && searchFriends == ''">
           <h3>Solicitações pendentes</h3>
           <div class="row" v-repeat="r: requested">
-            <div class="col-md-2">
+            <div class="col-sm-2">
               <img src="{{ r.profilePic == null ? 'images/int.jpg' : r.profilePic }}"
                    class="img-responsive img-rounded" />
               </div>
-            <div class="col-md-7">
+            <div class="col-sm-7">
               <p style="font-size:1.4em;">{{r.nome + ' ' + r.sobrenome}}</p>
               <p>
                 <i class="fa fa-map-marker"></i> Rio de Janeiro
               </p>
             </div>
-            <div class="col-md-3">
+            <div class="col-sm-3">
               <button class="btn btn-large btn-block btn-success pull-right"
                       v-on="click: confirmFriend(r, $event, $index)">
                 Aceitar
@@ -87,17 +87,17 @@
         <div class="friends-requests" v-if="requests.length > 0 && searchFriends == ''">
           <h3>Solicitações feitas</h3>
           <div class="row" v-repeat="r: requests">
-            <div class="col-md-2">
+            <div class="col-sm-2">
               <img src="{{ r.profilePic == null ? 'images/int.jpg' : r.profilePic }}"
                    class="img-responsive img-rounded" />
             </div>
-            <div class="col-md-7">
+            <div class="col-sm-7">
               <p style="font-size:1.4em;">{{r.nome + ' ' + r.sobrenome}}</p>
               <p>
                 <i class="fa fa-map-marker"></i> Rio de Janeiro
               </p>
             </div>
-            <div class="col-md-3">
+            <div class="col-sm-3">
               <button class="btn btn-large btn-block btn-warning pull-right"
                       v-on="click: cancelRequest(r, $event, $index)">
                 Cancelar
@@ -111,17 +111,17 @@
         <div class="friends-requests">
           <h3>Amigos</h3>
           <div class="row" v-repeat="f: friends | filterBy searchFriends">
-            <div class="col-md-2">
+            <div class="col-sm-2">
               <img src="{{ f.profilePic == null ? 'images/int.jpg' : f.profilePic }}"
                    class="img-responsive img-rounded" />
             </div>
-            <div class="col-md-7">
+            <div class="col-sm-7">
               <p style="font-size:1.4em;">{{f.nome + ' ' + f.sobrenome}}</p>
               <p>
                 <i class="fa fa-map-marker"></i> Rio de Janeiro
               </p>
             </div>
-            <div class="col-md-3">
+            <div class="col-sm-3">
               <button class="btn btn-large btn-block btn-warning pull-right"
                       v-on="click: cancelFriend(f, $event, $index)">
                 Desfazer amizade
@@ -134,17 +134,17 @@
         <div class="friends-requests" v-if="searchFriends != ''">
           <h3>Mais pessoas</h3>
           <div class="row" v-repeat="n: notFriends | filterBy searchFriends">
-            <div class="col-md-2">
+            <div class="col-sm-2">
               <img src="{{ n.profilePic == null ? 'images/int.jpg' : n.profilePic }}"
                    class="img-responsive img-rounded" />
             </div>
-            <div class="col-md-7">
+            <div class="col-sm-7">
               <p style="font-size:1.4em;">{{n.nome + ' ' + n.sobrenome}}</p>
               <p>
                 <i class="fa fa-map-marker"></i> Rio de Janeiro
               </p>
             </div>
-            <div class="col-md-3">
+            <div class="col-sm-3">
               <button class="btn btn-large btn-block btn-success pull-right"
                       v-on="click: requestFriend(n, $event)">
                 Solicitar
@@ -159,15 +159,71 @@
     </div>
 
     <!-- Chat -->
-    <div v-if="selectedFriend != ''" class="widget-container clearfix">
+    <div v-if="currentChat != null" class="widget-container scrollable chat">
       <div class="heading">
         <i class="fa fa-users"></i>
-        Chat com Fulano
+        Chat com {{currentChat.user.nome + ' ' + currentChat.user.sobrenome}}
+        <i class="fa fa-close pull-right" style="font-size:1.4em;" v-on="click: closeChat"></i>
+        <i class="fa fa-trash-o pull-right" style="font-size:1.4em;" data-toggle="modal" data-target="#myModal"></i>
       </div>
-      <div class="widget-content padded">
-
+      <div class="widget-content padded" id="chat-scroll">
+        <div v-if="loadMore" class="row">
+          <div class="col-sm-offset-2 col-sm-8">
+            <button v-on="click: loadMoreMessages" class="btn btn-large btn-block btn-default-outline">Carregar mais..</button>
+          </div>
+        </div>
+        <ul>
+          <li v-repeat="m: currentChat.messages" v-class="current-user: user.id == m.user_id">
+            <img src="images/int.jpg" width="30" height="30" />
+            <div class="bubble">
+              <p class="message">{{m.message}}</p>
+              <p class="time">
+                <strong>{{m.created_at}}</strong>
+              </p>
+            </div>
+          </li>
+        </ul>
+      </div>
+      <div class="post-message">
+        <input class="form-control" type="text" v-model="messageInput" v-on="keyup: sendMessage | key 'enter'">
+        <input type="submit" value="Enviar" v-on="click: sendMessage">
       </div>
     </div>
   <!-- Fim do segundo widget -->
+  </div>
+</div>
+<div class="modal fade" id="myModal">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-body">
+        <h1>
+          Deseja deletar esse chat?
+        </h1>
+        <p>
+          Ao deleter esse chat, tanto você quanto o outro integrante irão perder todo o histórico da conversa.
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-danger" v-on="click: destroyChat">Deletar</button>
+        <button class="btn btn-default-outline" data-dismiss="modal" type="button">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="deletedChatModal">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-body">
+        <p class="lead">
+          Esse chat foi fechado pelo outro usuário
+        </p>
+        <!-- <p>
+          Ao deleter esse chat, tanto você quanto o outro integrante irão perder todo o histórico da conversa.
+        </p> -->
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-default-outline" data-dismiss="modal" type="button">Fechar</button>
+      </div>
+    </div>
   </div>
 </div>

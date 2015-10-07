@@ -18,8 +18,49 @@ class BidsRepo
      $bid->currency = $request->input('currency');
      $bid->amount = $request->input('amount');
      $bid->price = $request->input('price');
-     $bid->address = $request->input('address');
-     $bid->place_id = $request->input('place_id');
-     return Auth::user()->bids()->save($bid);
+     if ($request->input('place_id') != null) {
+       $bid->place_id = $request->input('place_id');
+     }else {
+       $pId = (array) json_decode(Auth::user()->place_id);
+       if (count($pId) > 0) {
+         $bid->place_id = $pId;
+       }else {
+         return response()->json(['address' => [0 => 'Favor colocar uma localização.']], 403);
+       }
+     }
+     if ($request->input('address') != null) {
+       $bid->address = $request->input('address');
+     }else {
+       $bid->address = Auth::user()->localizacao;
+     }
+     if(Auth::user()->bids()->save($bid)){
+       return $bid;
+     }else {
+       return false;
+     }
+
+  }
+
+  public function getBestOffers($dist, $skip = 0, $take = 12)
+  {
+    $user = Auth::user();
+    $bids = Auth::user()->bids()->orderBy('created_at', 'desc')->get();
+    $results = [];
+    foreach ($bids as $k => $bid) {
+      $results[$k]['bid'] = $bid;
+      $results[$k]['offers'] = Bid::searchRadius($bid, $dist, $user->id, $skip, $take)->get()->toArray();
+    }
+
+    return $results;
+  }
+
+  public function getUserFromBidRequest($request)
+  {
+    return Bid::find($request->input('id'))->user;
+  }
+
+  public function destroy($request)
+  {
+    return Bid::destroy($request->input('id'));
   }
 }

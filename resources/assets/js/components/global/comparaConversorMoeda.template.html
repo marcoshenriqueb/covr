@@ -4,24 +4,24 @@
 </div>
 <div class="widget-content padded text-center">
   <div class="row">
-    <div class="col-md-offset-2 col-md-8">
-      <h3>Veja quanto você economiza com o AppCambio!</h3>
+    <div class="col-sm-offset-2 col-sm-8">
+      <h3>Veja quanto você economiza com o Covr!</h3>
     </div>
   </div>
   <div class="row">
-    <div class="col-md-2">
+    <div class="col-sm-2">
       <div class="form-group">
         <label>Digite o valor:</label>
         <input class="form-control" v-on="keyup: calcula, click: calcula" type="number" v-model="valor">
       </div>
     </div>
-    <div class="col-md-2">
+    <div class="col-sm-2">
       <div class="form-group">
         <label>Moeda que possui:</label>
         <select class="form-control" v-on="change: calcula" v-model="selectedA" options="cotacao"></select>
       </div>
     </div>
-    <div class="col-md-1">
+    <div class="col-sm-1">
       <div class="form-group">
         <div class="hidden-xs"></div>
         <button v-on="click: inverte" style="margin-top:5px;" type="button" class="btn btn-block btn-primary">
@@ -29,24 +29,24 @@
         </button>
       </div>
     </div>
-    <div class="col-md-2">
+    <div class="col-sm-2">
       <div class="form-group">
         <label>Moeda que deseja:</label>
         <select class="form-control" v-on="change: calcula" v-model="selectedB" options="cotacao" id="simbolo"></select>
       </div>
     </div>
-    <div class="col-md-5">
-      <div class="col-md-6">
+    <div class="col-sm-5">
+      <div class="col-sm-6">
         <span>Banco/Corretora</span>
         <h2 style="margin-top:3px;"><small>{{simbolo}}</small> {{resultadoSpread}}</h2>
       </div>
-      <div class="col-md-6">
+      <div class="col-sm-6">
         <span>Com o AppCambio</span>
         <h2 style="margin-top:3px;"><small>{{simbolo}}</small> {{resultado}}</h2>
       </div>
     </div>
 
-    <div class="col-md-12">
+    <div class="col-sm-12">
       <p>
         *Data base: {{data}}
       </p>

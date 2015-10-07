@@ -3,7 +3,7 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateBidsTable extends Migration
+class CreateMessagesTable extends Migration
 {
     /**
      * Run the migrations.
@@ -12,19 +12,15 @@ class CreateBidsTable extends Migration
      */
     public function up()
     {
-        Schema::create('bids', function (Blueprint $table) {
+        Schema::create('messages', function (Blueprint $table) {
             $table->increments('id');
-            $table->boolean('operation')->default(0);
-            $table->string('currency');
-            $table->float('amount');
-            $table->float('price');
-            $table->string('address');
-            $table->double('lat', 12, 10);
-            $table->double('lng', 13, 10);
-            $table->timestamp('dataPrazo')->nullable();
             $table->integer('user_id')->unsigned();
-            $table->timestamps();
+            $table->integer('chat_id')->unsigned();
+            $table->text('message');
+            $table->boolean('read')->default(0);
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('chat_id')->references('id')->on('chats')->onDelete('cascade');
+            $table->timestamps();
         });
     }
 
@@ -35,6 +31,6 @@ class CreateBidsTable extends Migration
      */
     public function down()
     {
-        Schema::drop('bids');
+        Schema::drop('messages');
     }
 }

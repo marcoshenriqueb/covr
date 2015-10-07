@@ -3,6 +3,9 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use App\Chat;
+use App\Events\ChatHasBeenDeleted;
+use Auth;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -13,7 +16,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        //
+        Chat::deleted(function($chat){
+          $id = ($chat->user_1 == Auth::id()) ? $chat->user_2 : $chat->user_1;
+          event(new ChatHasBeenDeleted($id, $chat->id));
+        });
     }
 
     /**

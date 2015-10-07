@@ -11,7 +11,11 @@ module.exports = {
       nomeInvalid: false,
       sobrenomeInvalid: false,
       emailInvalid: false,
-      passwordInvalid: false
+      passwordInvalid: false,
+      confirmationInvalid: false,
+      emailExists: false,
+      fbLoading: false,
+      loading: false
     };
   },
 
@@ -45,7 +49,13 @@ module.exports = {
       }
     },
     postRegister: function(e){
+      this.loading = true;
       e.preventDefault();
+      this.nomeInvalid = false;
+      this.sobrenomeInvalid = false;
+      this.emailInvalid = false;
+      this.passwordInvalid = false;
+      this.confirmationInvalid = false;
       this.$http.post(
         'auth/register',
         {
@@ -62,12 +72,22 @@ module.exports = {
           console.log(data);
         }
       }).error(function(data){
+        this.loading = false;
         for (var err in  data){
-          this.$set(err + 'Invalid', data[err]);
+          if (data[err][0] == "A confirmação para o campo password não coincide.") {
+            console.log(data[err][0]);
+            this.$set('confirmationInvalid', data[err]);
+          }else if (data[err][0] == "O valor indicado para o campo email já se encontra utilizado.") {
+            this.emailExists = true;
+            this.$set(err + 'Invalid', data[err]);
+          }else {
+            this.$set(err + 'Invalid', data[err]);
+          }
         }
       });
     },
     fbLogin: function(){
+      this.fbLoading = true;
       FB.login(function(response){
         // console.log(JSON.stringify(response));
         FB.getLoginStatus(function(response) {

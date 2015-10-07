@@ -5,26 +5,42 @@ module.exports = {
     return {
       operation: '',
       currency: '',
+      currencyFilter: '',
       amount: '',
       price: '',
       address: '',
       place_id: '',
       results: '',
-      availableCurrencies: []
+      newBid: false,
+      currentBids: false,
+      bids: [],
+      offers: [],
+      availableCurrencies: [
+        {text: 'Escolha...', value: ''}
+      ],
+      searchBid: '',
+      newBidDisabled: false,
+      operationError: false,
+      currencyError: false,
+      amountError: false,
+      priceError: false,
+      addressError: false,
+      currentPagination: 1,
+      loadMoreBids: true
     };
   },
 
-  ready: function(){
-    var that = this;
-    var init = function rec (){
-      if (mapOk) {
-        that.initMap();
-      }else {
-        setTimeout(function(){rec();},500);
-      }
+  computed: {
+    compressIfNewBid: function(){
+      return this.newBid ? 'col-md-6' : 'col-md-12';
     }
-    init();
+  },
+
+  ready: function(){
+
     this.getAvailableCurrencies();
+
+    this.getBids();
   },
 
   methods: {
@@ -101,6 +117,11 @@ module.exports = {
       })
     },
     postBid: function(){
+      this.operationError = false;
+      this.currencyError = false;
+      this.amountError = false;
+      this.priceError = false;
+      this.addressError = false;
       var postData = {
         operation: this.operation,
         currency: this.currency,
@@ -108,8 +129,96 @@ module.exports = {
         price: this.price,
         address: this.address,
         place_id: this.place_id,
+      };
+      this.$http.post('api/bid', postData)
+      .success(function(data){
+        this.getBids();
+        this.operation = '';
+        this.currency = '';
+        this.amount = '';
+        this.price = '';
+        this.address = '';
+        this.place_id = '';
+        this.newBid = false;
+      })
+      .error(function(data){
+        for(var k in data){
+          this[k + 'Error'] = true;
+          console.log(data[k]);
+        }
+      });
+    },
+    cancelNewBid: function(){
+      this.newBid = false;
+    },
+    openNewBid: function(){
+      if (this.newBid) {
+        this.newBid = false;
+      }else {
+        this.newBid = true;
+        this.currentBids = false;
+        var that = this;
+        var init = function rec (){
+          var check = document.getElementById("map");
+          if (mapOk && check != null) {
+            that.initMap();
+          }else {
+            setTimeout(function(){rec();},500);
+          }
+        }
+        setTimeout(function(){init();},800);
       }
-      this.$http.post('api/bid/store', postData, function(data){
+    },
+    openCurrentBids: function(){
+      if (this.currentBids) {
+        this.currentBids = false;
+      }else {
+        this.newBid = false;
+        this.currentBids = true;
+      }
+    },
+    cancelBid: function(index){
+      var id = this.bids[index].id;
+      this.$http.delete('api/bid/destroy', {id: id}, function(data){
+        // this.bids.splice(index, 1);
+        this.getBids();
+      });
+    },
+    getBids: function(){
+      this.offers = [];
+      this.bids = [];
+      this.$http.get('api/bid', function(data){
+        for(var key in data){
+          this.bids.push(data[key].bid);
+          for(var k in data[key].offers){
+            this.offers.push(data[key].offers[k]);
+          }
+        }
+      });
+    },
+    loadPagination: function(){
+      this.loadMoreBids = false;
+      this.$http.get('api/bid/page/' + ++this.currentPagination, function(data){
+        for(var key in data){
+          // this.bids.push(data[key].bid);
+          for(var k in data[key].offers){
+            this.offers.push(data[key].offers[k]);
+          }
+          if (data[key].offers.length > 0) {
+            this.loadMoreBids = true;
+          }
+        }
+      });
+    },
+    openChat: function(o){
+      this.$http.post('api/chat', o)
+      .success(function(data){
+        window.chatToGoUpId = data.id == undefined ? data[0].id : data.id;
+        window.router.go({
+          path: '/contatos'
+        });
+      })
+      .error(function(data){
         console.log(data);
       });
     }

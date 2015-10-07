@@ -1,13 +1,13 @@
 
 
-<div class="col-md-offset-3 col-md-6">
+<div class="col-sm-offset-2 col-sm-8 col-md-offset-3 col-md-6">
   <div class="widget-container fluid-height clearfix">
     <div class="heading">
       <i class="fa fa-sign-in"></i>
       Login
     </div>
     <div class="widget-content padded text-center">
-      <div class="login-wrapper col-md-offset-1 col-md-10">
+      <div class="login-wrapper col-sm-offset-1 col-sm-10">
         <form method="POST">
           <div class="form-group">
             <div class="input-group">
@@ -33,14 +33,19 @@
           </div>
 
 
-          <button v-on="click: postLogin" class="btn btn-lg btn-primary btn-block">Login</button>
-          <span v-if="authErr">Credenciais inválidas</span><br>
+          <button v-class="disabled: loading" v-on="click: postLogin" class="btn btn-lg btn-primary btn-block">
+            {{!loading ? 'Login' : ''}}
+            <i v-if="loading" class="fa fa-spinner fa-pulse"></i>
+          </button>
+          <span class="text-danger" v-if="authErr">Credenciais inválidas</span><br>
         </form>
 
           <div class="social-login clearfix">
-            <a class="btn btn-primary btn-block facebook" v-on="click: fbLogin"><i class="fa fa-facebook"></i> Logar com o Facebook</a>
+            <a v-class="disabled: fbLoading" class="btn btn-primary facebook btn-block" v-on="click: fbLogin">
+              <i v-if="!fbLoading" class="fa fa-facebook"></i>{{!fbLoading ? ' Entrar com o facebook' : ' '}}
+              <i v-if="fbLoading" class="fa fa-spinner fa-pulse"></i>
+            </a>
           </div>
-
         <hr>
         <p>
           Ainda não tem uma conta?

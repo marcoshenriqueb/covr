@@ -23,14 +23,16 @@ $factory->define(App\User::class, function (Faker\Generator $faker) {
 });
 
 $factory->define(App\Bid::class, function (Faker\Generator $faker) {
+    $lat = '-22.' . $faker->randomNumber($nbDigits = 6);
+    $lng = '-43.' . $faker->randomNumber($nbDigits = 6);
     return [
         'operation' => $faker->boolean($chanceOfGettingTrue = 50),
-        'currency' => $faker->randomElement($array = ['USD', 'CAD', 'EUR', 'GBP']),
+        'currency' => $faker->randomElement($array = ['USD', 'CAD', 'AUD', 'EUR', 'GBP']),
         'amount' => $faker->randomNumber($nbDigits = 3),
         'price' => $faker->randomFloat($nbMaxDecimals = 2, $min = 1, $max = 10),
-        'lat' => $faker->latitude,
-        'lng' => $faker->longitude,
+        'lat' => $lat,
+        'lng' => $lng,
         'address' => $faker->state,
-        'user_id' => $faker->numberBetween($min = 1, $max = 40)
+        'user_id' => $faker->numberBetween($min = 2, $max = 1001)
     ];
 });

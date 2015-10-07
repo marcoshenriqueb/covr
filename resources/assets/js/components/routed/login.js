@@ -5,13 +5,16 @@ module.exports = {
     return {
       email: '',
       password: '',
-      authErr: false
+      authErr: false,
+      fbLoading: false,
+      loading: false
     };
   },
 
 
   methods: {
     fbLogin: function(){
+      this.fbLoading = true;
       FB.login(function(response){
         // console.log(JSON.stringify(response));
         FB.getLoginStatus(function(response) {
@@ -20,6 +23,7 @@ module.exports = {
       }, {scope: "public_profile,email,user_friends,user_location"});
     },
     postLogin: function(e){
+      this.loading = true;
       e.preventDefault();
       this.$http.post(
         'auth/login',
@@ -34,6 +38,7 @@ module.exports = {
           this.authErr = true;
         }
       }).error(function(data){
+        this.loading = false;
         console.log(data);
       });
     }
