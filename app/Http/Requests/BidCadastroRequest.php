@@ -28,8 +28,8 @@ class BidCadastroRequest extends Request
             'currency' => 'required|size:3',
             'amount' => 'required|numeric',
             'price' => 'required|numeric',
-            'address' => 'required|max:255',
-            'place_id' => 'required|max:255'
+            'address' => 'max:255',
+            'place_id' => 'max:255'
         ];
     }
 }

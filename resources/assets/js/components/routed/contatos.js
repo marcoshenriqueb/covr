@@ -8,7 +8,7 @@ module.exports = {
       notFriends: {},
       requests: {},
       requested: {},
-      friendsCount: 0,
+      chatsCount: 0,
       searchBar: '',
       searchFriends: '',
       availableChats: [],
@@ -33,10 +33,10 @@ module.exports = {
       this.friends = data.friends;
       this.requests = data.requests;
       this.requested = data.requested;
-      this.friendsCount = data.friends.length;
     });
     this.$http.get('api/chat', function(data){
       this.availableChats = data;
+      this.chatsCount = data.length;
     }).success(function(){
       if (window.chatToGoUpId != undefined) {
         this.takeChatUp(window.chatToGoUpId);

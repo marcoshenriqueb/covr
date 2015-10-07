@@ -5572,10 +5572,15 @@ module.exports = function (Vue) {
  */
 
 var Promise = require('./promise');
+var XDomain = window.XDomainRequest;
 
 module.exports = function (_, options) {
 
     var request = new XMLHttpRequest(), promise;
+
+    if (XDomain && options.crossOrigin) {
+        request = new XDomainRequest(); options.headers = {};
+    }
 
     if (_.isPlainObject(options.xhr)) {
         _.extend(request, options.xhr);
@@ -5593,15 +5598,20 @@ module.exports = function (_, options) {
             request.setRequestHeader(header, value);
         });
 
-        request.onreadystatechange = function () {
+        var handler = function (event) {
 
-            if (request.readyState === 4) {
+            request.ok = event.type === 'load';
 
+            if (request.ok && request.status) {
                 request.ok = request.status >= 200 && request.status < 300;
-
-                (request.ok ? resolve : reject)(request);
             }
+
+            (request.ok ? resolve : reject)(request);
         };
+
+        request.onload = handler;
+        request.onabort = handler;
+        request.onerror = handler;
 
         request.send(options.data);
     });
@@ -5727,6 +5737,7 @@ module.exports = function (_) {
  * Service for URL templating.
  */
 
+var ie = document.documentMode;
 var el = document.createElement('a');
 
 module.exports = function (_) {
@@ -5818,6 +5829,11 @@ module.exports = function (_) {
 
     Url.parse = function (url) {
 
+        if (ie) {
+            el.href = url;
+            url = el.href;
+        }
+
         el.href = url;
 
         return {
@@ -5906,10 +5922,29 @@ exports['default'] = function (Vue) {
       }
       var router = vm.$route.router;
       this.handler = function (e) {
-        if (e.button === 0) {
+        // don't redirect with control keys
+        if (e.metaKey || e.ctrlKey || e.shiftKey) return;
+        // don't redirect when preventDefault called
+        if (e.defaultPrevented) return;
+        // don't redirect on right click
+        if (e.button !== 0) return;
+
+        if (_this.el.tagName === 'A' || e.target === _this.el) {
+          // v-link on <a v-link="'path'">
           e.preventDefault();
           if (_this.destination != null) {
-            router.go(_this.destination);
+            router.go(_this.destination, _this.replace === true);
+          }
+        } else {
+          // v-link delegate on <div v-link>
+          var el = e.target;
+          while (el && el.tagName !== 'A' && el !== _this.el) {
+            el = el.parentNode;
+          }
+          if (!el || el.tagName !== 'A' || !el.href) return;
+          if (sameOrigin(el)) {
+            e.preventDefault();
+            router.go(el.pathname);
           }
         }
       };
@@ -5920,6 +5955,7 @@ exports['default'] = function (Vue) {
 
     update: function update(path) {
       var router = this.vm.$route.router;
+      this.replace = typeof path === 'object' ? path.replace : false;
       path = router._normalizePath(path);
       this.destination = path;
       this.activeRE = path ? new RegExp('^' + path.replace(regexEscapeRE, '\\$&') + '\\b') : null;
@@ -5959,6 +5995,10 @@ exports['default'] = function (Vue) {
       this.unwatch && this.unwatch();
     }
   });
+
+  function sameOrigin(link) {
+    return link.protocol === location.protocol && link.hostname === location.hostname && link.port === location.port;
+  }
 };
 
 module.exports = exports['default'];
@@ -5976,7 +6016,11 @@ var _pipeline = require('../pipeline');
 exports['default'] = function (Vue) {
 
   var _ = Vue.util;
-  var componentDef = Vue.directive('_component');
+  var componentDef =
+  // 0.12
+  Vue.directive('_component') ||
+  // 1.0
+  Vue.internalDirectives.component;
   // <router-view> extends the internal component directive
   var viewDef = _.extend({}, componentDef);
 
@@ -6753,7 +6797,7 @@ var _classCallCheck = require("babel-runtime/helpers/class-call-check")["default
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-var internalKeysRE = /^(component|subRoutes|name)$/;
+var internalKeysRE = /^(component|subRoutes)$/;
 
 /**
  * Route Context Object
@@ -7781,7 +7825,7 @@ module.exports = function defineProperty(it, key, desc){
 require('../../modules/es6.object.keys');
 module.exports = require('../../modules/$.core').Object.keys;
 },{"../../modules/$.core":32,"../../modules/es6.object.keys":40}],32:[function(require,module,exports){
-var core = module.exports = {};
+var core = module.exports = {version: '1.2.1'};
 if(typeof __e == 'number')__e = core; // eslint-disable-line no-undef
 },{}],33:[function(require,module,exports){
 var global    = require('./$.global')
@@ -8659,7 +8703,7 @@ exports.$delete = function (key) {
  * Watch an expression, trigger callback when its
  * value changes.
  *
- * @param {String} exp
+ * @param {String|Function} expOrFn
  * @param {Function} cb
  * @param {Object} [options]
  *                 - {Boolean} deep
@@ -8668,11 +8712,17 @@ exports.$delete = function (key) {
  * @return {Function} - unwatchFn
  */
 
-exports.$watch = function (exp, cb, options) {
+exports.$watch = function (expOrFn, cb, options) {
   var vm = this
-  var watcher = new Watcher(vm, exp, cb, {
+  var parsed
+  if (typeof expOrFn === 'string') {
+    parsed = dirParser.parse(expOrFn)[0]
+    expOrFn = parsed.expression
+  }
+  var watcher = new Watcher(vm, expOrFn, cb, {
     deep: options && options.deep,
-    user: !options || options.user !== false
+    user: !options || options.user !== false,
+    filters: parsed && parsed.filters
   })
   if (options && options.immediate) {
     cb.call(vm, watcher.value)
@@ -8717,13 +8767,15 @@ exports.$interpolate = function (text) {
   var tokens = textParser.parse(text)
   var vm = this
   if (tokens) {
-    return tokens.length === 1
-      ? vm.$eval(tokens[0].value)
-      : tokens.map(function (token) {
-          return token.tag
-            ? vm.$eval(token.value)
-            : token.value
-        }).join('')
+    if (tokens.length === 1) {
+      return vm.$eval(tokens[0].value) + ''
+    } else {
+      return tokens.map(function (token) {
+        return token.tag
+          ? vm.$eval(token.value)
+          : token.value
+      }).join('')
+    }
   } else {
     return text
   }
@@ -9245,6 +9297,16 @@ exports.use = function (plugin) {
     plugin.apply(null, args)
   }
   return this
+}
+
+/**
+ * Apply a global mixin by merging it into the default
+ * options.
+ */
+
+exports.mixin = function (mixin) {
+  var Vue = _.Vue
+  Vue.options = _.mergeOptions(Vue.options, mixin)
 }
 
 /**
@@ -10343,22 +10405,26 @@ function collectAttrDirective (name, value, options) {
         allOneTime = false
       }
     }
+    var linker
+    if (allOneTime) {
+      linker = function (vm, el) {
+        el.setAttribute(name, vm.$interpolate(value))
+      }
+    } else {
+      linker = function (vm, el) {
+        var exp = textParser.tokensToExp(tokens, vm)
+        var desc = isClass
+          ? dirParser.parse(exp)[0]
+          : dirParser.parse(name + ':' + exp)[0]
+        if (isClass) {
+          desc._rawClass = value
+        }
+        vm._bindDir(dirName, el, desc, def)
+      }
+    }
     return {
       def: def,
-      _link: allOneTime
-        ? function (vm, el) {
-            el.setAttribute(name, vm.$interpolate(value))
-          }
-        : function (vm, el) {
-            var exp = textParser.tokensToExp(tokens, vm)
-            var desc = isClass
-              ? dirParser.parse(exp)[0]
-              : dirParser.parse(name + ':' + exp)[0]
-            if (isClass) {
-              desc._rawClass = value
-            }
-            vm._bindDir(dirName, el, desc, def)
-          }
+      _link: linker
     }
   }
 }
@@ -10664,6 +10730,7 @@ var config = require('./config')
 var Watcher = require('./watcher')
 var textParser = require('./parsers/text')
 var expParser = require('./parsers/expression')
+function noop () {}
 
 /**
  * A directive links a DOM element with a piece of data,
@@ -10734,13 +10801,15 @@ Directive.prototype._bind = function (def) {
       !this._checkStatement()) {
     // wrapped updater for context
     var dir = this
-    var update = this._update = this.update
-      ? function (val, oldVal) {
-          if (!dir._locked) {
-            dir.update(val, oldVal)
-          }
+    if (this.update) {
+      this._update = function (val, oldVal) {
+        if (!dir._locked) {
+          dir.update(val, oldVal)
         }
-      : function () {} // noop if no update is provided
+      }
+    } else {
+      this._update = noop
+    }
     // pre-process hook called before the value is piped
     // through the filters. used in v-repeat.
     var preProcess = this._preProcess
@@ -10749,7 +10818,7 @@ Directive.prototype._bind = function (def) {
     var watcher = this._watcher = new Watcher(
       this.vm,
       this._watcherExp,
-      update, // callback
+      this._update, // callback
       {
         filters: this.filters,
         twoWay: this.twoWay,
@@ -11547,7 +11616,7 @@ module.exports = {
   },
 
   getContainedComponents: function () {
-    var vm = this.vm
+    var vm = this._host || this.vm
     var start = this.start.nextSibling
     var end = this.end
 
@@ -11883,7 +11952,13 @@ function initOptions (expression) {
       while (i--) {
         var option = el.options[i]
         if (option !== defaultOption) {
-          el.removeChild(option)
+          var parentNode = option.parentNode
+          if (parentNode === el) {
+            parentNode.removeChild(option)
+          } else {
+            el.removeChild(parentNode)
+            i = el.options.length
+          }
         }
       }
       buildOptions(el, value)
@@ -11922,7 +11997,7 @@ function buildOptions (parent, options) {
     op = options[i]
     if (!op.options) {
       el = document.createElement('option')
-      if (typeof op === 'string') {
+      if (typeof op === 'string' || typeof op === 'number') {
         el.text = el.value = op
       } else {
         if (op.value != null && !_.isObject(op.value)) {
@@ -12050,7 +12125,11 @@ module.exports = {
         // in IE11 the "compositionend" event fires AFTER
         // the "input" event, so the input handler is blocked
         // at the end... have to call it here.
-        self.listener()
+        //
+        // #1327: in lazy mode this is unecessary.
+        if (!lazy) {
+          self.listener()
+        }
       })
     }
 
@@ -13461,11 +13540,13 @@ exports.filterBy = function (arr, search, delimiter /* ...dataKeys */) {
     return prev.concat(cur)
   }, [])
   return arr.filter(function (item) {
-    return keys.length
-      ? keys.some(function (key) {
-          return contains(Path.get(item, key), search)
-        })
-      : contains(item, search)
+    if (keys.length) {
+      return keys.some(function (key) {
+        return contains(Path.get(item, key), search)
+      })
+    } else {
+      return contains(item, search)
+    }
   })
 }
 
@@ -13508,14 +13589,17 @@ exports.orderBy = function (arr, sortKey, reverse) {
  */
 
 function contains (val, search) {
+  var i
   if (_.isPlainObject(val)) {
-    for (var key in val) {
-      if (contains(val[key], search)) {
+    var keys = Object.keys(val)
+    i = keys.length
+    while (i--) {
+      if (contains(val[keys[i]], search)) {
         return true
       }
     }
   } else if (_.isArray(val)) {
-    var i = val.length
+    i = val.length
     while (i--) {
       if (contains(val[i], search)) {
         return true
@@ -14595,6 +14679,7 @@ module.exports = arrayMethods
 
 },{"../util":103}],88:[function(require,module,exports){
 var _ = require('../util')
+var uid = 0
 
 /**
  * A dep is an observable that can have multiple
@@ -14604,6 +14689,7 @@ var _ = require('../util')
  */
 
 function Dep () {
+  this.id = uid++
   this.subs = []
 }
 
@@ -14655,7 +14741,6 @@ Dep.prototype.notify = function () {
 module.exports = Dep
 
 },{"../util":103}],89:[function(require,module,exports){
-(function (process){
 var _ = require('../util')
 var config = require('../config')
 var Dep = require('./dep')
@@ -14715,13 +14800,6 @@ Observer.create = function (value, vm) {
     !value._isVue
   ) {
     ob = new Observer(value)
-  } else if (process.env.NODE_ENV !== 'production') {
-    if (_.isObject(value) && !_.isArray(value) && !_.isPlainObject(value)) {
-      _.warn(
-        'Unobservable object found in data: ' +
-        Object.prototype.toString.call(value)
-      )
-    }
   }
   if (ob && vm) {
     ob.addVm(vm)
@@ -14898,8 +14976,7 @@ function copyAugment (target, src, keys) {
 
 module.exports = Observer
 
-}).call(this,require('_process'))
-},{"../config":54,"../util":103,"./array":87,"./dep":88,"./object":90,"_process":2}],90:[function(require,module,exports){
+},{"../config":54,"../util":103,"./array":87,"./dep":88,"./object":90}],90:[function(require,module,exports){
 var _ = require('../util')
 var objProto = Object.prototype
 
@@ -15858,7 +15935,7 @@ function isRealTemplate (node) {
 }
 
 var tagRE = /<([\w:]+)/
-var entityRE = /&\w+;/
+var entityRE = /&\w+;|&#\d+;|&#x[\dA-F]+;/
 
 /**
  * Convert a string template to a DocumentFragment.
@@ -15944,22 +16021,28 @@ function nodeToFragment (node) {
 
 // Test for the presence of the Safari template cloning bug
 // https://bugs.webkit.org/show_bug.cgi?id=137755
-var hasBrokenTemplate = _.inBrowser
-  ? (function () {
-      var a = document.createElement('div')
-      a.innerHTML = '<template>1</template>'
-      return !a.cloneNode(true).firstChild.innerHTML
-    })()
-  : false
+var hasBrokenTemplate = (function () {
+  /* istanbul ignore else */
+  if (_.inBrowser) {
+    var a = document.createElement('div')
+    a.innerHTML = '<template>1</template>'
+    return !a.cloneNode(true).firstChild.innerHTML
+  } else {
+    return false
+  }
+})()
 
 // Test for IE10/11 textarea placeholder clone bug
-var hasTextareaCloneBug = _.inBrowser
-  ? (function () {
-      var t = document.createElement('textarea')
-      t.placeholder = 't'
-      return t.cloneNode(true).value === 't'
-    })()
-  : false
+var hasTextareaCloneBug = (function () {
+  /* istanbul ignore else */
+  if (_.inBrowser) {
+    var t = document.createElement('textarea')
+    t.placeholder = 't'
+    return t.cloneNode(true).value === 't'
+  } else {
+    return false
+  }
+})()
 
 /**
  * 1. Deal with Safari cloning nested <template> bug by
@@ -16190,11 +16273,13 @@ exports.parse = function (text) {
  */
 
 exports.tokensToExp = function (tokens, vm) {
-  return tokens.length > 1
-    ? tokens.map(function (token) {
-        return formatToken(token, vm)
-      }).join('+')
-    : formatToken(tokens[0], vm, true)
+  if (tokens.length > 1) {
+    return tokens.map(function (token) {
+      return formatToken(token, vm)
+    }).join('+')
+  } else {
+    return formatToken(tokens[0], vm, true)
+  }
 }
 
 /**
@@ -16705,7 +16790,9 @@ p.getCssTransitionType = function (className) {
     // CSS transitions.
     document.hidden ||
     // explicit js-only transition
-    (this.hooks && this.hooks.css === false)
+    (this.hooks && this.hooks.css === false) ||
+    // element is hidden
+    isHidden(this.el)
   ) {
     return
   }
@@ -16753,6 +16840,20 @@ p.setupCssCb = function (event, cb) {
     }
   }
   _.on(el, event, onEnd)
+}
+
+/**
+ * Check if an element is hidden - in that case we can just
+ * skip the transition alltogether.
+ *
+ * @param {Element} el
+ * @return {Boolean}
+ */
+
+function isHidden (el) {
+  return el.style.display === 'none' ||
+    el.style.visibility === 'hidden' ||
+    el.hidden
 }
 
 module.exports = Transition
@@ -17329,7 +17430,7 @@ extend(exports, require('./debug'))
 
 },{"./component":99,"./debug":100,"./dom":101,"./env":102,"./lang":104,"./options":105}],104:[function(require,module,exports){
 /**
- * Check is a string starts with $ or _
+ * Check if a string starts with $ or _
  *
  * @param {String} str
  * @return {Boolean}
@@ -17657,7 +17758,7 @@ var extend = _.extend
  * @param {Vue} [vm]
  */
 
-var strats = Object.create(null)
+var strats = config.optionMergeStrategies = Object.create(null)
 
 /**
  * Helper that recursively merges two data objects together.
@@ -18132,7 +18233,7 @@ function Watcher (vm, expOrFn, cb, options) {
   this.id = ++uid // uid for batching
   this.active = true
   this.dirty = this.lazy // for lazy watchers
-  this.deps = []
+  this.deps = Object.create(null)
   this.newDeps = null
   this.prevError = null // for async error stacks
   // parse expression for getter/setter
@@ -18159,15 +18260,12 @@ function Watcher (vm, expOrFn, cb, options) {
  */
 
 Watcher.prototype.addDep = function (dep) {
-  var newDeps = this.newDeps
-  var old = this.deps
-  if (_.indexOf(newDeps, dep) < 0) {
-    newDeps.push(dep)
-    var i = _.indexOf(old, dep)
-    if (i < 0) {
+  var id = dep.id
+  if (!this.newDeps[id]) {
+    this.newDeps[id] = dep
+    if (!this.deps[id]) {
+      this.deps[id] = dep
       dep.addSub(this)
-    } else {
-      old[i] = null
     }
   }
 }
@@ -18245,7 +18343,7 @@ Watcher.prototype.set = function (value) {
 
 Watcher.prototype.beforeGet = function () {
   Dep.target = this
-  this.newDeps = []
+  this.newDeps = Object.create(null)
 }
 
 /**
@@ -18254,15 +18352,15 @@ Watcher.prototype.beforeGet = function () {
 
 Watcher.prototype.afterGet = function () {
   Dep.target = null
-  var i = this.deps.length
+  var ids = Object.keys(this.deps)
+  var i = ids.length
   while (i--) {
-    var dep = this.deps[i]
-    if (dep) {
-      dep.removeSub(this)
+    var id = ids[i]
+    if (!this.newDeps[id]) {
+      this.deps[id].removeSub(this)
     }
   }
   this.deps = this.newDeps
-  this.newDeps = null
 }
 
 /**
@@ -18357,9 +18455,10 @@ Watcher.prototype.evaluate = function () {
  */
 
 Watcher.prototype.depend = function () {
-  var i = this.deps.length
+  var depIds = Object.keys(this.deps)
+  var i = depIds.length
   while (i--) {
-    this.deps[i].depend()
+    this.deps[depIds[i]].depend()
   }
 }
 
@@ -18375,9 +18474,10 @@ Watcher.prototype.teardown = function () {
     if (!this.vm._isBeingDestroyed) {
       this.vm._watchers.$remove(this)
     }
-    var i = this.deps.length
+    var depIds = Object.keys(this.deps)
+    var i = depIds.length
     while (i--) {
-      this.deps[i].removeSub(this)
+      this.deps[depIds[i]].removeSub(this)
     }
     this.active = false
     this.vm = this.cb = this.value = null
@@ -18766,7 +18866,7 @@ module.exports = {
       notFriends: {},
       requests: {},
       requested: {},
-      friendsCount: 0,
+      chatsCount: 0,
       searchBar: '',
       searchFriends: '',
       availableChats: [],
@@ -18791,10 +18891,10 @@ module.exports = {
       this.friends = data.friends;
       this.requests = data.requests;
       this.requested = data.requested;
-      this.friendsCount = data.friends.length;
     });
     this.$http.get('api/chat', function (data) {
       this.availableChats = data;
+      this.chatsCount = data.length;
     }).success(function () {
       if (window.chatToGoUpId != undefined) {
         this.takeChatUp(window.chatToGoUpId);
@@ -18977,7 +19077,7 @@ module.exports = {
 };
 
 },{"./contatos.template.html":118}],118:[function(require,module,exports){
-module.exports = '\n<div class="row">\n  <!-- Chat widget -->\n  <div class="col-sm-3">\n    <div class="widget-container scrollable chat chat-page">\n      <div class="contact-list alone">\n        <div class="heading">\n          Chats ({{friendsCount}})\n        </div>\n        <input v-model="searchBar" class="form-control input-sm" placeholder="Procure por amigos">\n        <ul>\n          <li v-repeat="c: availableChats | filterBy searchBar" v-on="click: openChat($index)">\n            <a href="#">\n              <img src="images/int.jpg" width="30" height="30" />\n              {{c.user.nome + \' \' + c.user.sobrenome}}\n              <span v-if="c.countNotRead > 0" class="badge pull-right">{{c.countNotRead}}</span>\n            </a>\n          </li>\n        </ul>\n      </div>\n    </div>\n  <!-- Fim do primeiro widget -->\n  </div>\n\n  <!-- Segundo widget -->\n  <div class="col-sm-9">\n\n    <!-- Solicitações de amizades -->\n    <div v-if="currentChat == null" class="widget-container friends-widget scrollable clearfix">\n      <div class="heading">\n        <i class="fa fa-users"></i>\n        Amizades\n      </div>\n      <div class="widget-content padded">\n        <div class="form-group form-inline">\n          <input v-model="searchFriends"\n                 class="form-control input-sm"\n                 placeholder="Digite o nome"\n                 v-on="keyup: getNotFriends">\n        </div>\n\n        <!-- Painel de explicações -->\n        <!-- <div class="text-center" v-if="requests.length == 0 && requested.length == 0 && searchFriends == \'\'">\n          <h2>\n            Adicione mais contatos, a chance será maior de trocar moeda com alguém que conheça!\n          </h2>\n          <i style="font-size:5em;" class="fa fa-smile-o"></i>\n          <p class="lead">\n            Clique no botão + no painel ao lado e procure por conhecidos.\n          </p>\n          <p class="lead">\n            Você também pode adicionar os seus amigos do facebook, que estão no aplicativo.\n            Basta clicar no botão abaixo.\n          </p>\n          <button type="button" class="btn btn-primary">Adicionar fb</button>\n          <hr>\n        </div> -->\n\n        <!-- Soliciatações de amizade -->\n        <div class="friends-requested" v-if="requested.length > 0 && searchFriends == \'\'">\n          <h3>Solicitações pendentes</h3>\n          <div class="row" v-repeat="r: requested">\n            <div class="col-sm-2">\n              <img src="{{ r.profilePic == null ? \'images/int.jpg\' : r.profilePic }}"\n                   class="img-responsive img-rounded" />\n              </div>\n            <div class="col-sm-7">\n              <p style="font-size:1.4em;">{{r.nome + \' \' + r.sobrenome}}</p>\n              <p>\n                <i class="fa fa-map-marker"></i> Rio de Janeiro\n              </p>\n            </div>\n            <div class="col-sm-3">\n              <button class="btn btn-large btn-block btn-success pull-right"\n                      v-on="click: confirmFriend(r, $event, $index)">\n                Aceitar\n              </button>\n              <button class="btn btn-large btn-block btn-warning pull-right"\n                      v-on="click: removeRequested(r, $event, $index)">\n                Cancelar\n              </button>\n            </div>\n          </div>\n        </div>\n\n        <!-- Amizades solicitadas -->\n        <div class="friends-requests" v-if="requests.length > 0 && searchFriends == \'\'">\n          <h3>Solicitações feitas</h3>\n          <div class="row" v-repeat="r: requests">\n            <div class="col-sm-2">\n              <img src="{{ r.profilePic == null ? \'images/int.jpg\' : r.profilePic }}"\n                   class="img-responsive img-rounded" />\n            </div>\n            <div class="col-sm-7">\n              <p style="font-size:1.4em;">{{r.nome + \' \' + r.sobrenome}}</p>\n              <p>\n                <i class="fa fa-map-marker"></i> Rio de Janeiro\n              </p>\n            </div>\n            <div class="col-sm-3">\n              <button class="btn btn-large btn-block btn-warning pull-right"\n                      v-on="click: cancelRequest(r, $event, $index)">\n                Cancelar\n              </button>\n            </div>\n          </div>\n        </div>\n\n\n        <!-- Amigos atuais -->\n        <div class="friends-requests">\n          <h3>Amigos</h3>\n          <div class="row" v-repeat="f: friends | filterBy searchFriends">\n            <div class="col-sm-2">\n              <img src="{{ f.profilePic == null ? \'images/int.jpg\' : f.profilePic }}"\n                   class="img-responsive img-rounded" />\n            </div>\n            <div class="col-sm-7">\n              <p style="font-size:1.4em;">{{f.nome + \' \' + f.sobrenome}}</p>\n              <p>\n                <i class="fa fa-map-marker"></i> Rio de Janeiro\n              </p>\n            </div>\n            <div class="col-sm-3">\n              <button class="btn btn-large btn-block btn-warning pull-right"\n                      v-on="click: cancelFriend(f, $event, $index)">\n                Desfazer amizade\n              </button>\n            </div>\n          </div>\n        </div>\n\n        <!-- Procura por novos amigos -->\n        <div class="friends-requests" v-if="searchFriends != \'\'">\n          <h3>Mais pessoas</h3>\n          <div class="row" v-repeat="n: notFriends | filterBy searchFriends">\n            <div class="col-sm-2">\n              <img src="{{ n.profilePic == null ? \'images/int.jpg\' : n.profilePic }}"\n                   class="img-responsive img-rounded" />\n            </div>\n            <div class="col-sm-7">\n              <p style="font-size:1.4em;">{{n.nome + \' \' + n.sobrenome}}</p>\n              <p>\n                <i class="fa fa-map-marker"></i> Rio de Janeiro\n              </p>\n            </div>\n            <div class="col-sm-3">\n              <button class="btn btn-large btn-block btn-success pull-right"\n                      v-on="click: requestFriend(n, $event)">\n                Solicitar\n              </button>\n            </div>\n          </div>\n        </div>\n\n\n      </div>\n    <!-- Fim das solicitações de amizade -->\n    </div>\n\n    <!-- Chat -->\n    <div v-if="currentChat != null" class="widget-container scrollable chat">\n      <div class="heading">\n        <i class="fa fa-users"></i>\n        Chat com {{currentChat.user.nome + \' \' + currentChat.user.sobrenome}}\n        <i class="fa fa-close pull-right" style="font-size:1.4em;" v-on="click: closeChat"></i>\n        <i class="fa fa-trash-o pull-right" style="font-size:1.4em;" data-toggle="modal" data-target="#myModal"></i>\n      </div>\n      <div class="widget-content padded" id="chat-scroll">\n        <div v-if="loadMore" class="row">\n          <div class="col-sm-offset-2 col-sm-8">\n            <button v-on="click: loadMoreMessages" class="btn btn-large btn-block btn-default-outline">Carregar mais..</button>\n          </div>\n        </div>\n        <ul>\n          <li v-repeat="m: currentChat.messages" v-class="current-user: user.id == m.user_id">\n            <img src="images/int.jpg" width="30" height="30" />\n            <div class="bubble">\n              <p class="message">{{m.message}}</p>\n              <p class="time">\n                <strong>{{m.created_at}}</strong>\n              </p>\n            </div>\n          </li>\n        </ul>\n      </div>\n      <div class="post-message">\n        <input class="form-control" type="text" v-model="messageInput" v-on="keyup: sendMessage | key \'enter\'">\n        <input type="submit" value="Enviar" v-on="click: sendMessage">\n      </div>\n    </div>\n  <!-- Fim do segundo widget -->\n  </div>\n</div>\n<div class="modal fade" id="myModal">\n  <div class="modal-dialog">\n    <div class="modal-content">\n      <div class="modal-body">\n        <h1>\n          Deseja deletar esse chat?\n        </h1>\n        <p>\n          Ao deleter esse chat, tanto você quanto o outro integrante irão perder todo o histórico da conversa.\n        </p>\n      </div>\n      <div class="modal-footer">\n        <button class="btn btn-danger" v-on="click: destroyChat">Deletar</button>\n        <button class="btn btn-default-outline" data-dismiss="modal" type="button">Cancelar</button>\n      </div>\n    </div>\n  </div>\n</div>\n<div class="modal fade" id="deletedChatModal">\n  <div class="modal-dialog modal-sm">\n    <div class="modal-content">\n      <div class="modal-body">\n        <p class="lead">\n          Esse chat foi fechado pelo outro usuário\n        </p>\n        <!-- <p>\n          Ao deleter esse chat, tanto você quanto o outro integrante irão perder todo o histórico da conversa.\n        </p> -->\n      </div>\n      <div class="modal-footer">\n        <button class="btn btn-default-outline" data-dismiss="modal" type="button">Fechar</button>\n      </div>\n    </div>\n  </div>\n</div>\n';
+module.exports = '\n<div class="row">\n  <!-- Chat widget -->\n  <div class="col-sm-3">\n    <div class="widget-container scrollable chat chat-page">\n      <div class="contact-list alone">\n        <div class="heading">\n          Chats ({{chatsCount}})\n        </div>\n        <input v-model="searchBar" class="form-control input-sm" placeholder="Procure por amigos">\n        <ul>\n          <li v-repeat="c: availableChats | filterBy searchBar" v-on="click: openChat($index)">\n            <a href="#">\n              <img src="images/int.jpg" width="30" height="30" />\n              {{c.user.nome + \' \' + c.user.sobrenome}}\n              <span v-if="c.countNotRead > 0" class="badge pull-right">{{c.countNotRead}}</span>\n            </a>\n          </li>\n        </ul>\n      </div>\n    </div>\n  <!-- Fim do primeiro widget -->\n  </div>\n\n  <!-- Segundo widget -->\n  <div class="col-sm-9">\n\n    <!-- Solicitações de amizades -->\n    <div v-if="currentChat == null" class="widget-container friends-widget scrollable clearfix">\n      <div class="heading">\n        <i class="fa fa-users"></i>\n        Amizades\n      </div>\n      <div class="widget-content padded">\n        <div class="form-group form-inline">\n          <input v-model="searchFriends"\n                 class="form-control input-sm"\n                 placeholder="Digite o nome"\n                 v-on="keyup: getNotFriends">\n        </div>\n\n        <!-- Painel de explicações -->\n        <!-- <div class="text-center" v-if="requests.length == 0 && requested.length == 0 && searchFriends == \'\'">\n          <h2>\n            Adicione mais contatos, a chance será maior de trocar moeda com alguém que conheça!\n          </h2>\n          <i style="font-size:5em;" class="fa fa-smile-o"></i>\n          <p class="lead">\n            Clique no botão + no painel ao lado e procure por conhecidos.\n          </p>\n          <p class="lead">\n            Você também pode adicionar os seus amigos do facebook, que estão no aplicativo.\n            Basta clicar no botão abaixo.\n          </p>\n          <button type="button" class="btn btn-primary">Adicionar fb</button>\n          <hr>\n        </div> -->\n\n        <!-- Soliciatações de amizade -->\n        <div class="friends-requested" v-if="requested.length > 0 && searchFriends == \'\'">\n          <h3>Solicitações pendentes</h3>\n          <div class="row" v-repeat="r: requested">\n            <div class="col-sm-2">\n              <img src="{{ r.profilePic == null ? \'images/int.jpg\' : r.profilePic }}"\n                   class="img-responsive img-rounded" />\n              </div>\n            <div class="col-sm-7">\n              <p style="font-size:1.4em;">{{r.nome + \' \' + r.sobrenome}}</p>\n              <p>\n                <i class="fa fa-map-marker"></i> Rio de Janeiro\n              </p>\n            </div>\n            <div class="col-sm-3">\n              <button class="btn btn-large btn-block btn-success pull-right"\n                      v-on="click: confirmFriend(r, $event, $index)">\n                Aceitar\n              </button>\n              <button class="btn btn-large btn-block btn-warning pull-right"\n                      v-on="click: removeRequested(r, $event, $index)">\n                Cancelar\n              </button>\n            </div>\n          </div>\n        </div>\n\n        <!-- Amizades solicitadas -->\n        <div class="friends-requests" v-if="requests.length > 0 && searchFriends == \'\'">\n          <h3>Solicitações feitas</h3>\n          <div class="row" v-repeat="r: requests">\n            <div class="col-sm-2">\n              <img src="{{ r.profilePic == null ? \'images/int.jpg\' : r.profilePic }}"\n                   class="img-responsive img-rounded" />\n            </div>\n            <div class="col-sm-7">\n              <p style="font-size:1.4em;">{{r.nome + \' \' + r.sobrenome}}</p>\n              <p>\n                <i class="fa fa-map-marker"></i> Rio de Janeiro\n              </p>\n            </div>\n            <div class="col-sm-3">\n              <button class="btn btn-large btn-block btn-warning pull-right"\n                      v-on="click: cancelRequest(r, $event, $index)">\n                Cancelar\n              </button>\n            </div>\n          </div>\n        </div>\n\n\n        <!-- Amigos atuais -->\n        <div class="friends-requests">\n          <h3>Amigos</h3>\n          <div class="row" v-repeat="f: friends | filterBy searchFriends">\n            <div class="col-sm-2">\n              <img src="{{ f.profilePic == null ? \'images/int.jpg\' : f.profilePic }}"\n                   class="img-responsive img-rounded" />\n            </div>\n            <div class="col-sm-7">\n              <p style="font-size:1.4em;">{{f.nome + \' \' + f.sobrenome}}</p>\n              <p>\n                <i class="fa fa-map-marker"></i> Rio de Janeiro\n              </p>\n            </div>\n            <div class="col-sm-3">\n              <button class="btn btn-large btn-block btn-warning pull-right"\n                      v-on="click: cancelFriend(f, $event, $index)">\n                Desfazer amizade\n              </button>\n            </div>\n          </div>\n        </div>\n\n        <!-- Procura por novos amigos -->\n        <div class="friends-requests" v-if="searchFriends != \'\'">\n          <h3>Mais pessoas</h3>\n          <div class="row" v-repeat="n: notFriends | filterBy searchFriends">\n            <div class="col-sm-2">\n              <img src="{{ n.profilePic == null ? \'images/int.jpg\' : n.profilePic }}"\n                   class="img-responsive img-rounded" />\n            </div>\n            <div class="col-sm-7">\n              <p style="font-size:1.4em;">{{n.nome + \' \' + n.sobrenome}}</p>\n              <p>\n                <i class="fa fa-map-marker"></i> Rio de Janeiro\n              </p>\n            </div>\n            <div class="col-sm-3">\n              <button class="btn btn-large btn-block btn-success pull-right"\n                      v-on="click: requestFriend(n, $event)">\n                Solicitar\n              </button>\n            </div>\n          </div>\n        </div>\n\n\n      </div>\n    <!-- Fim das solicitações de amizade -->\n    </div>\n\n    <!-- Chat -->\n    <div v-if="currentChat != null" class="widget-container scrollable chat">\n      <div class="heading">\n        <i class="fa fa-users"></i>\n        Chat com {{currentChat.user.nome + \' \' + currentChat.user.sobrenome}}\n        <i class="fa fa-close pull-right" style="font-size:1.4em;" v-on="click: closeChat"></i>\n        <i class="fa fa-trash-o pull-right" style="font-size:1.4em;" data-toggle="modal" data-target="#myModal"></i>\n      </div>\n      <div class="widget-content padded" id="chat-scroll">\n        <div v-if="loadMore" class="row">\n          <div class="col-sm-offset-2 col-sm-8">\n            <button v-on="click: loadMoreMessages" class="btn btn-large btn-block btn-default-outline">Carregar mais..</button>\n          </div>\n        </div>\n        <ul>\n          <li v-repeat="m: currentChat.messages" v-class="current-user: user.id == m.user_id">\n            <img src="images/int.jpg" width="30" height="30" />\n            <div class="bubble">\n              <p class="message">{{m.message}}</p>\n              <p class="time">\n                <strong>{{m.created_at}}</strong>\n              </p>\n            </div>\n          </li>\n        </ul>\n      </div>\n      <div class="post-message">\n        <input class="form-control" type="text" v-model="messageInput" v-on="keyup: sendMessage | key \'enter\'">\n        <input type="submit" value="Enviar" v-on="click: sendMessage">\n      </div>\n    </div>\n  <!-- Fim do segundo widget -->\n  </div>\n</div>\n<div class="modal fade" id="myModal">\n  <div class="modal-dialog">\n    <div class="modal-content">\n      <div class="modal-body">\n        <h1>\n          Deseja deletar esse chat?\n        </h1>\n        <p>\n          Ao deleter esse chat, tanto você quanto o outro integrante irão perder todo o histórico da conversa.\n        </p>\n      </div>\n      <div class="modal-footer">\n        <button class="btn btn-danger" v-on="click: destroyChat">Deletar</button>\n        <button class="btn btn-default-outline" data-dismiss="modal" type="button">Cancelar</button>\n      </div>\n    </div>\n  </div>\n</div>\n<div class="modal fade" id="deletedChatModal">\n  <div class="modal-dialog modal-sm">\n    <div class="modal-content">\n      <div class="modal-body">\n        <p class="lead">\n          Esse chat foi fechado pelo outro usuário\n        </p>\n        <!-- <p>\n          Ao deleter esse chat, tanto você quanto o outro integrante irão perder todo o histórico da conversa.\n        </p> -->\n      </div>\n      <div class="modal-footer">\n        <button class="btn btn-default-outline" data-dismiss="modal" type="button">Fechar</button>\n      </div>\n    </div>\n  </div>\n</div>\n';
 },{}],119:[function(require,module,exports){
 'use strict';
 

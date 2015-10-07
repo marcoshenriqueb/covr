@@ -1,5 +1,4 @@
 var elixir = require('laravel-elixir');
-require('laravel-elixir-livereload');
 
   /*
  |--------------------------------------------------------------------------
@@ -16,9 +15,10 @@ elixir(function(mix) {
   mix.browserify('app.js')
   .browserify('site.js', 'public/js/site.js')
   .styles(['bootstrap.min.css', 'animate.min.css', 'bs3xeditable.css', 'dropzone.css', 'isotope.css', 'hightop.css', 'appcambio.css', 'app.css'])
-  .scripts(['jquery.min.js', 'bootstrap.min.js', 'jquery.isotope.js', 'isotope_extras.js', 'socket.io.js', 'jquery.mousewheel.min.js', 'main.js', 'fb.js', 'gm.js']);
-});
-
-elixir(function(mix) {
-  mix.livereload();
+  .scripts(['jquery.min.js', 'bootstrap.min.js', 'jquery.isotope.js', 'isotope_extras.js', 'socket.io.js', 'jquery.mousewheel.min.js', 'main.js', 'fb.js', 'gm.js'])
+  .browserSync({
+    proxy: 'localhost:7999',
+    open: false,
+    port: 8000
+  });
 });
