@@ -9,6 +9,7 @@ use App\Own\Auth\OwnAuthUser;
 use App\Own\Repositories\UserRepo;
 use App\Http\Controllers\Controller;
 use App\Own\Mailer\AppMailer;
+use App\Http\Requests\SignUserRequest;
 use Auth;
 
 class SiteController extends Controller
@@ -24,7 +25,7 @@ class SiteController extends Controller
       return view('site');
     }
 
-    public function postLogin(Request $request)
+    public function postLogin(SignUserRequest $request)
     {
       return json_encode($this->autentica->auth($request));
     }

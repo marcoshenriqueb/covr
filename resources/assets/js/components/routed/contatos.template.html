@@ -9,7 +9,7 @@
         </div>
         <input v-model="searchBar" class="form-control input-sm" placeholder="Procure por amigos">
         <ul>
-          <li v-repeat="c: availableChats | filterBy searchBar" v-on="click: openChat($index)">
+          <li v-repeat="c: availableChats | filterBy searchBar" v-on="click: openChat(c)">
             <a href="#">
               <img src="images/int.jpg" width="30" height="30" />
               {{c.user.nome + ' ' + c.user.sobrenome}}
@@ -72,11 +72,11 @@
             </div>
             <div class="col-sm-3">
               <button class="btn btn-large btn-block btn-success pull-right"
-                      v-on="click: confirmFriend(r, $event, $index)">
+                      v-on="click: confirmFriend(r, $event)">
                 Aceitar
               </button>
               <button class="btn btn-large btn-block btn-warning pull-right"
-                      v-on="click: removeRequested(r, $event, $index)">
+                      v-on="click: removeRequested(r, $event)">
                 Cancelar
               </button>
             </div>
@@ -99,7 +99,7 @@
             </div>
             <div class="col-sm-3">
               <button class="btn btn-large btn-block btn-warning pull-right"
-                      v-on="click: cancelRequest(r, $event, $index)">
+                      v-on="click: cancelRequest(r, $event)">
                 Cancelar
               </button>
             </div>
@@ -123,7 +123,7 @@
             </div>
             <div class="col-sm-3">
               <button class="btn btn-large btn-block btn-warning pull-right"
-                      v-on="click: cancelFriend(f, $event, $index)">
+                      v-on="click: cancelFriend(f, $event)">
                 Desfazer amizade
               </button>
             </div>

@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use App\Http\Requests\Request;
 
-class CreateMessageRequest extends Request
+class SignUserRequest extends Request
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -13,7 +13,7 @@ class CreateMessageRequest extends Request
      */
     public function authorize()
     {
-        return \Auth::check();
+        return true;
     }
 
     /**
@@ -24,9 +24,8 @@ class CreateMessageRequest extends Request
     public function rules()
     {
         return [
-            'message' => 'required',
-            'user_id' => 'required|numeric',
-            'chat_id' => 'required|numeric'
+            'email' => 'required|email',
+            'password' => 'required|min:6'
         ];
     }
 }

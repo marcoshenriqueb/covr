@@ -33,6 +33,6 @@ $factory->define(App\Bid::class, function (Faker\Generator $faker) {
         'lat' => $lat,
         'lng' => $lng,
         'address' => $faker->state,
-        'user_id' => $faker->numberBetween($min = 2, $max = 1001)
+        'user_id' => $faker->numberBetween($min = 2, $max = 101)
     ];
 });

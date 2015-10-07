@@ -96,7 +96,7 @@ var FbGetAppSession = function() {
             var profilePic = response.data.url;
             jQuery.ajax({
               method: 'PUT',
-              url: 'api/user/profilePic',
+              url: 'api/user/fbRegisterProfilePic',
               headers: {
                 'X-CSRF-TOKEN': csrf
               },

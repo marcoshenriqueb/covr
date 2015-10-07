@@ -15,7 +15,7 @@ class OwnAuthUser
           'email' => $request->input('email'),
           'password' => $request->input('password'),
           'verified' => 1
-        ], $request->has('remember'));
+        ], ($request->input('remember') != null ) ? true : false);
     if ($result) {
         return $result;
     }

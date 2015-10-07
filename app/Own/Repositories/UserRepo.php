@@ -57,6 +57,15 @@ class UserRepo
     return $result;
   }
 
+  public function profilePicIsNotNull()
+  {
+      $count = strlen(env('PROFILE_PIC_PATH'));
+      if (isset(Auth::user()->profile_pic) && substr(Auth::user()->profile_pic, $count)) {
+        return true;
+      }
+      return false;
+  }
+
   public function registerUser($request)
   {
     $user = new User();
@@ -90,7 +99,6 @@ class UserRepo
     $user->nome = $request->input('user')['first_name'];
     $user->sobrenome = $request->input('user')['last_name'];
     $user->email = $request->input('user')['email'];
-    $user->profile_pic = $request->input('user')['picture']['data']['url'];
     $user->fbId = $request->input('user')['id'];
     $user->verifiedToken = null;
     $user->verified = 1;
@@ -105,21 +113,19 @@ class UserRepo
   public function updateFbUser($request)
   {
     $user = User::where('email', '=', $request->input('user')['email'])->first();
-    $user->profilePic = $request->input('user')['picture']['data']['url'];
     $user->fbId = $request->input('user')['id'];
     $user->verifiedToken = null;
     $user->verified = 1;
     if ($result = $user->save()) {
       return $user;
     }
-
     return $result;
   }
 
   public function exists($request)
   {
     $user = User::where('email', '=', $request->input('user')['email'])->first();
-    if (isset($user)) {
+    if (isset($user) && ($user->count() > 0)) {
       return true;
     }
     return false;

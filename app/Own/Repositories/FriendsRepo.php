@@ -65,6 +65,13 @@ class FriendsRepo
     return true;
   }
 
+  public function removeFriend($request)
+  {
+    $friend = User::find($request->input('id'));
+    Auth::user()->removeFriend($friend);
+    return true;
+  }
+
   public function search($q)
   {
     $result = $q

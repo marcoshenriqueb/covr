@@ -17832,7 +17832,8 @@ module.exports = {
       password: '',
       authErr: false,
       fbLoading: false,
-      loading: false
+      loading: false,
+      remember: null
     };
   },
 
@@ -17851,11 +17852,13 @@ module.exports = {
       e.preventDefault();
       this.$http.post('auth/login', {
         email: this.email,
-        password: this.password
+        password: this.password,
+        remember: this.remember
       }).success(function (data) {
         if (data == true) {
           window.location = "app";
         } else {
+          this.loading = false;
           this.authErr = true;
         }
       }).error(function (data) {
@@ -17867,7 +17870,7 @@ module.exports = {
 };
 
 },{"./login.template.html":118}],118:[function(require,module,exports){
-module.exports = '\n\n<div class="col-sm-offset-2 col-sm-8 col-md-offset-3 col-md-6">\n  <div class="widget-container fluid-height clearfix">\n    <div class="heading">\n      <i class="fa fa-sign-in"></i>\n      Login\n    </div>\n    <div class="widget-content padded text-center">\n      <div class="login-wrapper col-sm-offset-1 col-sm-10">\n        <form method="POST">\n          <div class="form-group">\n            <div class="input-group">\n              <span class="input-group-addon"><i class="fa fa-envelope"></i></span>\n              <input type="text" v-model="email" class="form-control" placeholder="Digite o email">\n            </div>\n          </div>\n\n          <div class="form-group">\n            <div class="input-group">\n              <span class="input-group-addon"><i class="fa fa-lock"></i></span>\n              <input type="password" v-model="password" class="form-control" placeholder="Digite a senha">\n            </div>\n          </div>\n\n          <a class="pull-right">Esqueceu a senha?</a>\n\n          <div style="left:20px;position:relative;" class="text-left">\n            <label class="checkbox">\n              <input type="checkbox" name="remember" v-model="remember">\n              <span>Manter-me conectado</span>\n            </label>\n          </div>\n\n\n          <button v-class="disabled: loading" v-on="click: postLogin" class="btn btn-lg btn-primary btn-block">\n            {{!loading ? \'Login\' : \'\'}}\n            <i v-if="loading" class="fa fa-spinner fa-pulse"></i>\n          </button>\n          <span class="text-danger" v-if="authErr">Credenciais inválidas</span><br>\n        </form>\n\n          <div class="social-login clearfix">\n            <a v-class="disabled: fbLoading" class="btn btn-primary facebook btn-block" v-on="click: fbLogin">\n              <i v-if="!fbLoading" class="fa fa-facebook"></i>{{!fbLoading ? \' Entrar com o facebook\' : \' \'}}\n              <i v-if="fbLoading" class="fa fa-spinner fa-pulse"></i>\n            </a>\n          </div>\n        <hr>\n        <p>\n          Ainda não tem uma conta?\n        </p>\n        <a v-link="{path: \'/cadastro\'}" style="margin-bottom:20px;" class="btn btn-default-outline btn-block btn-large">Cadastre-se</a>\n      </div>\n    </div>\n  </div>\n</div>\n';
+module.exports = '\n\n<div class="col-sm-offset-2 col-sm-8 col-md-offset-3 col-md-6">\n  <div class="widget-container fluid-height clearfix">\n    <div class="heading">\n      <i class="fa fa-sign-in"></i>\n      Login\n    </div>\n    <div class="widget-content padded text-center">\n      <div class="login-wrapper col-sm-offset-1 col-sm-10">\n        <form method="POST">\n          <div class="form-group">\n            <div class="input-group">\n              <span class="input-group-addon"><i class="fa fa-envelope"></i></span>\n              <input type="text" v-model="email" class="form-control" placeholder="Digite o email">\n            </div>\n          </div>\n\n          <div class="form-group">\n            <div class="input-group">\n              <span class="input-group-addon"><i class="fa fa-lock"></i></span>\n              <input type="password" v-model="password" class="form-control" placeholder="Digite a senha">\n            </div>\n          </div>\n\n          <a class="pull-right">Esqueceu a senha?</a>\n\n          <div style="left:20px;position:relative;" class="text-left">\n            <label class="checkbox">\n              <input type="checkbox" value="1" v-model="remember">\n              <span>Manter-me conectado</span>\n            </label>\n          </div>\n\n\n          <button v-class="disabled: loading" v-on="click: postLogin" class="btn btn-lg btn-primary btn-block">\n            {{!loading ? \'Login\' : \'\'}}\n            <i v-if="loading" class="fa fa-spinner fa-pulse"></i>\n          </button>\n          <span class="text-danger" v-if="authErr">Credenciais inválidas</span><br>\n        </form>\n\n          <div class="social-login clearfix">\n            <a v-class="disabled: fbLoading" class="btn btn-primary facebook btn-block" v-on="click: fbLogin">\n              <i v-if="!fbLoading" class="fa fa-facebook"></i>{{!fbLoading ? \' Entrar com o facebook\' : \' \'}}\n              <i v-if="fbLoading" class="fa fa-spinner fa-pulse"></i>\n            </a>\n          </div>\n        <hr>\n        <p>\n          Ainda não tem uma conta?\n        </p>\n        <a v-link="{path: \'/cadastro\'}" style="margin-bottom:20px;" class="btn btn-default-outline btn-block btn-large">Cadastre-se</a>\n      </div>\n    </div>\n  </div>\n</div>\n';
 },{}],119:[function(require,module,exports){
 'use strict';
 

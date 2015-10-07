@@ -7,7 +7,8 @@ module.exports = {
       password: '',
       authErr: false,
       fbLoading: false,
-      loading: false
+      loading: false,
+      remember: null
     };
   },
 
@@ -29,12 +30,14 @@ module.exports = {
         'auth/login',
         {
           email: this.email,
-          password: this.password
+          password: this.password,
+          remember: this.remember
         }
       ).success(function(data){
         if (data == true) {
           window.location="app";
         }else {
+          this.loading = false;
           this.authErr = true;
         }
       }).error(function(data){

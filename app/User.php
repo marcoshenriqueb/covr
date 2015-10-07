@@ -115,7 +115,7 @@ class User extends Model implements AuthenticatableContract,
 
     public function getProfilePicAttribute($value)
     {
-        if (substr($value, 0, 4) == "http") {
+        if (substr($value, 0, 4) == "http" || $value == null) {
           return $value;
         }else {
           return '/images/profile/' . $value;

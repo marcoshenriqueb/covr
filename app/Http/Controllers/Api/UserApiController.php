@@ -59,9 +59,13 @@ class UserApiController extends Controller
         return json_encode($user->editLocalizacao($request));
     }
 
-    public function postPicture(Request $request, UserRepo $user)
+    public function fbRegisterProfilePic(Request $request, UserRepo $user)
     {
-        return json_encode($user->editProfilePic($request->input('profilePic')));
+        if ($user->profilePicIsNotNull()) {
+          return json_encode(true);
+        }else {
+          return json_encode($user->editProfilePic($request->input('profilePic')));
+        }
     }
 
     public function postPictureDrop(Request $request, ImageRepo $imageRepo, UserRepo $repo)

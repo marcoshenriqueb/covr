@@ -177,12 +177,13 @@ module.exports = {
         this.currentBids = true;
       }
     },
-    cancelBid: function(index){
-      var id = this.bids[index].id;
-      this.$http.delete('api/bid/destroy', {id: id}, function(data){
-        // this.bids.splice(index, 1);
-        this.getBids();
-      });
+    cancelBid: function(b){
+      var id = b.id;
+      this.$http.delete('api/bid/destroy', {id: id})
+        .success(function(data){
+          // this.bids.splice(index, 1);
+          this.getBids();
+        });
     },
     getBids: function(){
       this.offers = [];

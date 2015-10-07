@@ -93,27 +93,50 @@ module.exports = {
         this.requests.push(n);
       })
     },
-    confirmFriend: function(r, e, i){
+    confirmFriend: function(r, e){
       this.$http.post('api/friends/confirm', {id: r.id}, function(data){
         e.target.disabled = true;
       }).success(function(){
         this.friends.push(r);
-        this.requested.splice(i, 1);
+        for(var k in this.requested){
+          if (this.requested[k].id == r.id) {
+            this.requested.splice(k, 1);
+          }
+        }
       })
     },
-    removeRequested: function(r, e, i){
+    removeRequested: function(r, e){
       this.$http.post('api/friends/removeRequest', {id: r.id}, function(data){
         e.target.disabled = true;
       }).success(function(){
-        this.requested.splice(i, 1);
+        for(var k in this.requested){
+          if (this.requested[k].id == r.id) {
+            this.requested.splice(k, 1);
+          }
+        }
       })
     },
-    cancelRequest: function(r, e, i){
+    cancelRequest: function(r, e){
       this.$http.post('api/friends/cancelRequest', {id: r.id}, function(data){
         e.target.disabled = true;
       }).success(function(){
-        this.requests.splice(i, 1);
-      })
+        for(var k in this.requests){
+          if (this.requests[k].id == r.id) {
+            this.requests.splice(k, 1);
+          }
+        }
+      });
+    },
+    cancelFriend: function(f, e){
+      e.target.disabled = true;
+      this.$http.delete('api/friends', {id: f.id})
+        .success(function(){
+          for(var k in this.friends){
+            if (this.friends[k].id == f.id) {
+              this.friends.splice(k, 1);
+            }
+          }
+        });
     },
     getNotFriends: function(){
       if (this.searchFriends.length >= 3) {
@@ -123,12 +146,12 @@ module.exports = {
         })
       }
     },
-    openChat: function(index){
+    openChat: function(c){
       this.loadMore = true;
       var that = this;
-      this.$http.get('api/message/' + this.availableChats[index].id)
+      this.$http.get('api/message/' + c.id)
         .success(function(data){
-          that.currentChat = that.availableChats[index];
+          that.currentChat = c;
           that.currentChat.messages = data;
           setTimeout(function(){
             var box = document.getElementById("chat-scroll");
@@ -136,7 +159,11 @@ module.exports = {
           }, 10);
           that.$http.put('api/message/read', that.currentChat)
             .success(function(){
-              that.availableChats[index].countNotRead = 0;
+              for(var k in that.availableChats){
+                if (that.availableChats[k].id == c.id) {
+                  that.availableChats[k].countNotRead = 0;
+                }
+              }
             })
             .error(function(data){
               console.log(data);
