@@ -99,7 +99,7 @@
                 <a data-toggle="dropdown" class="dropdown-toggle" href="#">
                   <img width="34"
                        height="34"
-                       src="{{(isset($user->profilePic) ? $user->profilePic : 'images/int.jpg')}}" />
+                       src="{{(isset($user->profile_pic) ? $user->profile_pic : 'images/int.jpg')}}" />
                   {{$user->getFullName()}}<b class="caret"></b>
                 </a>
                 <ul class="dropdown-menu">

@@ -8,7 +8,7 @@ module.exports = {
       sobrenome: '',
       localizacao: '',
       place_id: '',
-      profilePic: '',
+      profile_pic: '',
       readyData: {},
       erros: false,
       readyOk: false
@@ -17,7 +17,7 @@ module.exports = {
 
   ready: function(){
     this.$http.get('api/user', function(data){
-      this.profilePic = data.profilePic;
+      this.profile_pic = data.profile_pic;
       this.nome = data.nome;
       this.sobrenome = data.sobrenome;
       this.localizacao = data.localizacao;
@@ -45,7 +45,11 @@ module.exports = {
       dictInvalidFileType: 'Favor colocar uma imagem',
       dictFileTooBig: 'A imagem é muito grande',
       dictResponseError: 'Erro ao fazer upload',
-      dictMaxFilesExceeded: 'Excedido o número de uploads permitidos'
+      dictMaxFilesExceeded: 'Excedido o número de uploads permitidos',
+      success: function(data, response){
+        response = JSON.parse(response);
+        that.profile_pic = response.profile_pic;
+      }
     });
   },
 

@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Http\Requests;
 use App\Http\Controllers\Controller;
 use App\Own\Repositories\UserRepo;
+use App\Own\Repositories\ImageRepo;
 
 class UserApiController extends Controller
 {
@@ -60,8 +61,19 @@ class UserApiController extends Controller
 
     public function postPicture(Request $request, UserRepo $user)
     {
-        return json_encode($user->editProfilePic($request));
+        return json_encode($user->editProfilePic($request->input('profilePic')));
     }
 
+    public function postPictureDrop(Request $request, ImageRepo $imageRepo, UserRepo $repo)
+    {
+        $image = $imageRepo->storeDropzonePic($request->file('profilePic'));
+        $imageRepo->resizeProfileImage($image);
+        return json_encode($repo->editProfilePic($image['arquivo']));
+    }
+
+    public function destroy(UserRepo $repo)
+    {
+        return $repo->destroy();
+    }
 
 }

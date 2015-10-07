@@ -47,12 +47,12 @@ class UserRepo
     return $result;
   }
 
-  public function editProfilePic($request)
+  public function editProfilePic($profilePic)
   {
     $user = Auth::user();
-    $user->profilePic = $request->input('profilePic');
+    $user->profile_pic = $profilePic;
     if ($result = $user->save()) {
-      return $result;
+      return $user;
     }
     return $result;
   }
@@ -90,7 +90,7 @@ class UserRepo
     $user->nome = $request->input('user')['first_name'];
     $user->sobrenome = $request->input('user')['last_name'];
     $user->email = $request->input('user')['email'];
-    $user->profilePic = $request->input('user')['picture']['data']['url'];
+    $user->profile_pic = $request->input('user')['picture']['data']['url'];
     $user->fbId = $request->input('user')['id'];
     $user->verifiedToken = null;
     $user->verified = 1;
@@ -143,6 +143,9 @@ class UserRepo
     }
   }
 
-
+  public function destroy()
+  {
+      return User::destroy(Auth::id());
+  }
 
 }

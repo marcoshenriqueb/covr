@@ -20,7 +20,7 @@ class CreateUsersTable extends Migration
             $table->string('localizacao')->nullable();
             $table->string('place_id')->nullable();
             $table->string('password', 60);
-            $table->string('profilePic')->nullable();
+            $table->string('profile_pic')->nullable();
             $table->string('fbId')->nullable();
             $table->boolean('verified')->default(false);
             $table->string('verifiedToken')->nullable();

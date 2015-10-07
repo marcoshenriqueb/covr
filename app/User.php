@@ -113,6 +113,15 @@ class User extends Model implements AuthenticatableContract,
         $this->attributes['place_id'] = json_encode($value);
     }
 
+    public function getProfilePicAttribute($value)
+    {
+        if (substr($value, 0, 4) == "http") {
+          return $value;
+        }else {
+          return '/images/profile/' . $value;
+        }
+    }
+
     public function scopeSearch($query, $search)
     {
         return $query->where('id', '!=', Auth::user()->id)

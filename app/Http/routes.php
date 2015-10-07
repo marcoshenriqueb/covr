@@ -47,6 +47,7 @@ Route::put('api/user/nome', 'Api\UserApiController@postNome');
 Route::put('api/user/sobrenome', 'Api\UserApiController@postSobrenome');
 Route::put('api/user/localizacao', 'Api\UserApiController@postLocalizacao');
 Route::put('api/user/profilePic', 'Api\UserApiController@postPicture');
+Route::post('api/user/profilePicDrop', 'Api\UserApiController@postPictureDrop');
 Route::delete('api/user', 'Api\UserApiController@destroy');
 Route::post('api/bid', 'Api\BidApiController@store');
 Route::get('api/bid', 'Api\BidApiController@index');
