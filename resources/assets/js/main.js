@@ -39,6 +39,10 @@
     $('.navbar-toggle').click(function() {
       return $('body, html').toggleClass("nav-open");
     });
+    $('.main-nav .nav a').click(function() {
+      console.log('veio');
+      return $('body, html').removeClass("nav-open");
+    });
 
     /*
      * =============================================================================
@@ -69,5 +73,3 @@
     $(window).load(function() {
       return $(".login-container").addClass("active");
     });
-
-  

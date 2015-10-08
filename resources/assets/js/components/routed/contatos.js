@@ -15,9 +15,11 @@ module.exports = {
       currentChat: null,
       messageInput: '',
       messagePagination: 1,
-      loadMore: true
+      loadMore: true,
+      hidden_xs: false
     };
   },
+
 
   filters: {
     dontShow: function(value){
@@ -41,7 +43,7 @@ module.exports = {
       if (window.chatToGoUpId != undefined) {
         this.takeChatUp(window.chatToGoUpId);
         window.chatToGoUpId = undefined;
-        this.openChat(0);
+        this.openChat(this.availableChats[0]);
       }
     });
     this.$http.get('api/user', function(data){
@@ -151,6 +153,7 @@ module.exports = {
       var that = this;
       this.$http.get('api/message/' + c.id)
         .success(function(data){
+          that.hidden_xs = true;
           that.currentChat = c;
           that.currentChat.messages = data;
           setTimeout(function(){
@@ -191,6 +194,7 @@ module.exports = {
         });
     },
     closeChat: function(){
+      this.hidden_xs = false;
       this.currentChat = null;
       this.messagePagination = 1;
     },
@@ -247,6 +251,9 @@ module.exports = {
         .error(function(data){
           console.log(data);
         });
+    },
+    callModal(modal){
+      $(modal).modal();
     }
   }
 }

@@ -28,6 +28,6 @@ class MessageRepo
   public function updateRead($request)
   {
      $chat = Chat::find($request->input('id'));
-     $chat->messages()->whereNotIn('user_id', [Auth::id()])->update(['read' => 1]);
+     return $chat->messages()->whereNotIn('user_id', [Auth::id()])->update(['read' => 1]);
   }
 }

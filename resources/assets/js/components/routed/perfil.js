@@ -37,7 +37,7 @@ module.exports = {
     var dropzoneProfile = new window.Drop("form#dropzone-demo", {
       url: 'api/user/profilePicDrop',
       parallelUploads: 1,
-      maxFilesize: 2,
+      maxFilesize: 5,
       paramName: 'profilePic',
       headers: {'X-CSRF-TOKEN': document.querySelector('#token').getAttribute('value')},
       acceptedFiles: '.jpg, .jpeg, .png, .bmp, .gif, .svg',
@@ -178,6 +178,9 @@ module.exports = {
       this.$http.delete('api/user', function(){
         window.location.href = "/";
       });
+    },
+    openModal(modal){
+      $(modal).modal();
     }
   }
 };

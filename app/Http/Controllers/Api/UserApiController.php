@@ -8,6 +8,7 @@ use App\Http\Requests;
 use App\Http\Controllers\Controller;
 use App\Own\Repositories\UserRepo;
 use App\Own\Repositories\ImageRepo;
+use App\Http\Requests\UpdateProfilePicRequest;
 
 class UserApiController extends Controller
 {
@@ -68,7 +69,7 @@ class UserApiController extends Controller
         }
     }
 
-    public function postPictureDrop(Request $request, ImageRepo $imageRepo, UserRepo $repo)
+    public function postPictureDrop(UpdateProfilePicRequest $request, ImageRepo $imageRepo, UserRepo $repo)
     {
         $image = $imageRepo->storeDropzonePic($request->file('profilePic'));
         $imageRepo->resizeProfileImage($image);

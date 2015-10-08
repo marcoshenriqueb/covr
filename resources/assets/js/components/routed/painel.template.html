@@ -130,7 +130,7 @@
               </div>
             </div>
             <div class="col-sm-8">
-              <div style="height:400px;width:100%;" id="map"></div>
+              <div id="map-new-bid"></div>
             </div>
           </div>
           <div class="row">
@@ -149,8 +149,8 @@
   </div>
 
   <!-- Resultado de ofertas -->
-  <div class="row">
-    <div v-repeat="o: offers | filterBy searchBid | filterBy currencyFilter" class="col-sm-6 col-md-4">
+  <div class="row grid">
+    <div v-repeat="o: offers | filterBy searchBid | filterBy currencyFilter" class="col-sm-6 col-md-4 grid-item">
       <div class="col-sm-offset-0 col-sm-12 bid widget-container fluid-height" style="margin-bottom:1em;">
         <div class="widget-content padded">
           <div class="row">

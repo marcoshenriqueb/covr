@@ -69,18 +69,20 @@
             </div>
           </div>
 
-          <button v-class="disabled: loading" v-on="click: postRegister" class="btn btn-lg btn-primary btn-block">
-            {{!loading ? 'Cadastrar' : ''}}
-            <i v-if="loading" class="fa fa-spinner fa-pulse"></i>
+          <button v-class="disabled: loading" v-on="click: postRegister" class="btn btn-lg btn-primary btn-block ladda-button" data-style="zoom-in">
+            <span class="ladda-label">
+              Cadastrar
+            </span>
           </button>
-          <span class="text-danger" v-if="emailExists">Este email já está cadastrado.</span>
-        <br>
+          <div class="alert alert-danger" style="margin-bottom:0" v-if="emailExists" role="alert">Este email já está cadastrado.</div>
         </form>
+        <br>
 
           <div class="social-login clearfix">
-            <a v-class="disabled: fbLoading" class="btn btn-primary facebook btn-block" v-on="click: fbLogin">
-              <i v-if="!fbLoading" class="fa fa-facebook"></i>{{!fbLoading ? ' Cadastro com o facebook' : ' '}}
-              <i v-if="fbLoading" class="fa fa-spinner fa-pulse"></i>
+            <a v-class="disabled: fbLoading" class="btn btn-primary facebook btn-block ladda-button" v-on="click: fbLogin" data-style="zoom-in">
+              <span class="ladda-label">
+                <i v-if="!fbLoading" class="fa fa-facebook"></i> Cadastro com o facebook
+              </span>
             </a>
           </div>
 

@@ -1,7 +1,7 @@
 
 <div class="row">
   <!-- Chat widget -->
-  <div class="col-sm-3">
+  <div class="col-sm-3" v-class="hidden-xs: hidden_xs">
     <div class="widget-container scrollable chat chat-page">
       <div class="contact-list alone">
         <div class="heading">
@@ -9,9 +9,9 @@
         </div>
         <input v-model="searchBar" class="form-control input-sm" placeholder="Procure por amigos">
         <ul>
-          <li v-repeat="c: availableChats | filterBy searchBar" v-on="click: openChat(c)">
+          <li v-repeat="c: availableChats | filterBy searchBar" v-touch="tap: openChat(c)">
             <a href="#">
-              <img src="images/int.jpg" width="30" height="30" />
+              <img src="{{((c.user.profile_pic != null) ? c.user.profile_pic : 'images/int.jpg')}}" width="30" height="30" />
               {{c.user.nome + ' ' + c.user.sobrenome}}
               <span v-if="c.countNotRead > 0" class="badge pull-right">{{c.countNotRead}}</span>
             </a>
@@ -162,9 +162,9 @@
     <div v-if="currentChat != null" class="widget-container scrollable chat">
       <div class="heading">
         <i class="fa fa-users"></i>
-        Chat com {{currentChat.user.nome + ' ' + currentChat.user.sobrenome}}
-        <i class="fa fa-close pull-right" style="font-size:1.4em;" v-on="click: closeChat"></i>
-        <i class="fa fa-trash-o pull-right" style="font-size:1.4em;" data-toggle="modal" data-target="#myModal"></i>
+        {{currentChat.user.nome + ' ' + currentChat.user.sobrenome}}
+        <i class="fa fa-close pull-right" style="font-size:1.4em;" v-touch="tap: closeChat"></i>
+        <i class="fa fa-trash-o pull-right" style="font-size:1.4em;" v-touch="tap: callModal('#myModal')"></i>
       </div>
       <div class="widget-content padded" id="chat-scroll">
         <div v-if="loadMore" class="row">
@@ -174,7 +174,7 @@
         </div>
         <ul>
           <li v-repeat="m: currentChat.messages" v-class="current-user: user.id == m.user_id">
-            <img src="images/int.jpg" width="30" height="30" />
+            <img src="{{(user.id == m.user_id) ? (user.profile_pic != null) ? user.profile_pic: 'images/int.jpg' : (currentChat.user.profile_pic != null) ? currentChat.user.profile_pic : 'images/int.jpg'}}" width="30" height="30" />
             <div class="bubble">
               <p class="message">{{m.message}}</p>
               <p class="time">
@@ -186,7 +186,7 @@
       </div>
       <div class="post-message">
         <input class="form-control" type="text" v-model="messageInput" v-on="keyup: sendMessage | key 'enter'">
-        <input type="submit" value="Enviar" v-on="click: sendMessage">
+        <a v-on="click: sendMessage"><i class="fa fa-paper-plane-o"></i></a>
       </div>
     </div>
   <!-- Fim do segundo widget -->

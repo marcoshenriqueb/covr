@@ -22,9 +22,6 @@
 .bid .rates > div:nth-child(3) {
   border-left: solid 1px #d1d1d1;
 }
-.bid p{
-  /*margin-bottom: 0;*/
-}
 .bid .row+.row{
   margin-top: 5px;
 }
@@ -46,10 +43,28 @@
 .navbar .container-fluid.main-nav .nav-collapse .nav > li > a.v-link-active-exact{
   color: #007aff;
 }
+
+#map-new-bid{
+  height:200px;
+  width:100%;
+}
+
+.chat .post-message a{
+  position: absolute;
+  top: 12px;
+  right: 20px;
+  margin: 0;
+  border: 0;
+  background: transparent;
+  color: #007aff;
+  font-weight: 600;
+  font-size: 20px;
+  cursor: pointer;
+}
 @media (min-width: 768px) {
-  .profile-pic .profile-img{
-    /*height: 300px;
-    width: 300px;*/
+  #map-new-bid{
+    height:400px;
+    width:100%;
   }
 }
 

@@ -1,6 +1,8 @@
 var Vue = require('vue');
 var VueRouter = require('vue-router');
 var VueResource = require('vue-resource');
+var VueTouch = require('vue-touch');
+Vue.use(VueTouch);
 window.Drop = require('dropzone');
 Vue.use(VueRouter);
 Vue.use(VueResource);

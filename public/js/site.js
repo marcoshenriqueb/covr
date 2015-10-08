@@ -17693,7 +17693,7 @@ module.exports = {
 };
 
 },{"./painelCotacoes.template.html":110}],110:[function(require,module,exports){
-module.exports = '<!-- Statistics -->\n<div class="row">\n  <div class="col-xs-6" style="padding:0;">\n    <div class="widget-container cot-container">\n      <div class="col-sm-3"\n           v-class="animated: animate, fadeIn: animate">\n        <div class="number">\n          {{cotacao.USD.preco}}\n        </div>\n        <div class="text" v-class="USDcolor">\n          {{cotacao.USD.variacao}}\n        </div>\n      </div>\n      <div class="col-sm-3"\n           v-class="animated: animate, fadeIn: animate">\n        <div class="number">\n          {{cotacao.CAD.preco}}\n        </div>\n        <div class="text" v-class="CADcolor">\n          {{cotacao.CAD.variacao}}\n        </div>\n      </div>\n      <div class="col-sm-3"\n           v-class="animated: animate, fadeIn: animate">\n        <div class="number">\n          {{cotacao.AUD.preco}}\n        </div>\n        <div class="text" v-class="AUDcolor">\n          {{cotacao.AUD.variacao}}\n        </div>\n      </div>\n      <div class="col-sm-3"\n           style="border-right:none;"\n           v-class="animated: animate, fadeIn: animate">\n        <div class="number">\n          {{cotacao.EUR.preco}}\n        </div>\n        <div class="text" v-class="EURcolor">\n          {{cotacao.EUR.variacao}}\n        </div>\n      </div>\n    </div>\n  </div>\n  <div class="col-xs-6" style="padding:0;">\n    <div class="widget-container cot-container">\n      <div class="col-sm-3"\n           v-class="animated: animate, fadeIn: animate">\n        <div class="number">\n          {{cotacao.GBP.preco}}\n        </div>\n        <div class="text" v-class="GBPcolor">\n          {{cotacao.GBP.variacao}}\n        </div>\n      </div>\n      <div class="col-sm-3"\n           v-class="animated: animate, fadeIn: animate">\n        <div class="number">\n          {{cotacao.CLP.preco}}\n        </div>\n        <div class="text" v-class="CLPcolor">\n          {{cotacao.CLP.variacao}}\n        </div>\n      </div>\n      <div class="col-sm-3"\n           v-class="animated: animate, fadeIn: animate">\n        <div class="number">\n          {{cotacao.ARS.preco}}\n        </div>\n        <div class="text" v-class="ARScolor">\n          {{cotacao.ARS.variacao}}\n        </div>\n      </div>\n      <div class="col-sm-3"\n           v-class="animated: animate, fadeIn: animate">\n        <div class="number">\n          {{cotacao.MXN.preco}}\n        </div>\n        <div class="text" v-class="MXNcolor">\n          {{cotacao.MXN.variacao}}\n        </div>\n      </div>\n    </div>\n  </div>\n</div>\n<!-- End Statistics -->\n';
+module.exports = '<!-- Statistics -->\n<div class="row">\n  <div class="col-sm-6 hidden-xs" style="padding:0;">\n    <div class="widget-container cot-container">\n      <div class="col-sm-3"\n           v-class="animated: animate, fadeIn: animate">\n        <div class="number">\n          {{cotacao.USD.preco}}\n        </div>\n        <div class="text" v-class="USDcolor">\n          {{cotacao.USD.variacao}}\n        </div>\n      </div>\n      <div class="col-sm-3"\n           v-class="animated: animate, fadeIn: animate">\n        <div class="number">\n          {{cotacao.CAD.preco}}\n        </div>\n        <div class="text" v-class="CADcolor">\n          {{cotacao.CAD.variacao}}\n        </div>\n      </div>\n      <div class="col-sm-3"\n           v-class="animated: animate, fadeIn: animate">\n        <div class="number">\n          {{cotacao.AUD.preco}}\n        </div>\n        <div class="text" v-class="AUDcolor">\n          {{cotacao.AUD.variacao}}\n        </div>\n      </div>\n      <div class="col-sm-3"\n           style="border-right:none;"\n           v-class="animated: animate, fadeIn: animate">\n        <div class="number">\n          {{cotacao.EUR.preco}}\n        </div>\n        <div class="text" v-class="EURcolor">\n          {{cotacao.EUR.variacao}}\n        </div>\n      </div>\n    </div>\n  </div>\n  <div class="col-sm-6 hidden-xs" style="padding:0;">\n    <div class="widget-container cot-container">\n      <div class="col-sm-3"\n           v-class="animated: animate, fadeIn: animate">\n        <div class="number">\n          {{cotacao.GBP.preco}}\n        </div>\n        <div class="text" v-class="GBPcolor">\n          {{cotacao.GBP.variacao}}\n        </div>\n      </div>\n      <div class="col-sm-3"\n           v-class="animated: animate, fadeIn: animate">\n        <div class="number">\n          {{cotacao.CLP.preco}}\n        </div>\n        <div class="text" v-class="CLPcolor">\n          {{cotacao.CLP.variacao}}\n        </div>\n      </div>\n      <div class="col-sm-3"\n           v-class="animated: animate, fadeIn: animate">\n        <div class="number">\n          {{cotacao.ARS.preco}}\n        </div>\n        <div class="text" v-class="ARScolor">\n          {{cotacao.ARS.variacao}}\n        </div>\n      </div>\n      <div class="col-sm-3"\n           v-class="animated: animate, fadeIn: animate">\n        <div class="number">\n          {{cotacao.MXN.preco}}\n        </div>\n        <div class="text" v-class="MXNcolor">\n          {{cotacao.MXN.variacao}}\n        </div>\n      </div>\n    </div>\n  </div>\n</div>\n<!-- End Statistics -->\n';
 },{}],111:[function(require,module,exports){
 'use strict';
 
@@ -17712,9 +17712,7 @@ module.exports = {
       emailInvalid: false,
       passwordInvalid: false,
       confirmationInvalid: false,
-      emailExists: false,
-      fbLoading: false,
-      loading: false
+      emailExists: false
     };
   },
 
@@ -17748,8 +17746,9 @@ module.exports = {
       }
     },
     postRegister: function postRegister(e) {
-      this.loading = true;
       e.preventDefault();
+      var l = Ladda.create(e.target);
+      l.start();
       this.nomeInvalid = false;
       this.sobrenomeInvalid = false;
       this.emailInvalid = false;
@@ -17768,7 +17767,7 @@ module.exports = {
           console.log(data);
         }
       }).error(function (data) {
-        this.loading = false;
+        l.stop();
         for (var err in data) {
           if (data[err][0] == "A confirmação para o campo password não coincide.") {
             console.log(data[err][0]);
@@ -17782,8 +17781,9 @@ module.exports = {
         }
       });
     },
-    fbLogin: function fbLogin() {
-      this.fbLoading = true;
+    fbLogin: function fbLogin(e) {
+      var l = Ladda.create(e.target);
+      l.start();
       FB.login(function (response) {
         // console.log(JSON.stringify(response));
         FB.getLoginStatus(function (response) {
@@ -17795,7 +17795,7 @@ module.exports = {
 };
 
 },{"./cadastro.template.html":112}],112:[function(require,module,exports){
-module.exports = '<div class="col-sm-offset-2 col-sm-8 col-md-offset-3 col-md-6">\n  <div class="widget-container fluid-height clearfix">\n    <div class="heading">\n      <i class="fa fa-sign-in"></i>\n      Cadastro\n    </div>\n    <div class="widget-content padded text-center">\n      <div class="login-wrapper col-sm-offset-1 col-sm-10">\n        <form method="POST">\n\n          <div class="form-group" v-class="has-error: nomeInvalid,\n                                          animated: nomeInvalid,\n                                          shake: nomeInvalid">\n            <div class="input-group">\n              <span class="input-group-addon"><i class="fa fa-user"></i></span>\n              <input type="text"\n                     v-model="nome"\n                     v-on="blur: validaNome"\n                     class="form-control"\n                     placeholder="Digite o seu nome">\n            </div>\n          </div>\n\n          <div class="form-group" v-class="has-error: sobrenomeInvalid,\n                                          animated: sobrenomeInvalid,\n                                          shake: sobrenomeInvalid">\n            <div class="input-group">\n              <span class="input-group-addon"><i class="fa fa-user-secret"></i></span>\n              <input type="text"\n                     v-model="sobrenome"\n                     v-on="blur: validaSobrenome"\n                     class="form-control"\n                     placeholder="Digite o seu sobrenome">\n            </div>\n          </div>\n\n          <div class="form-group" v-class="has-error: emailInvalid,\n                                          animated: emailInvalid,\n                                          shake: emailInvalid">\n            <div class="input-group">\n              <span class="input-group-addon"><i class="fa fa-envelope"></i></span>\n              <input type="text"\n                     v-model="email"\n                     v-on="blur: validaEmail"\n                     class="form-control"\n                     placeholder="Digite o email">\n            </div>\n          </div>\n\n          <div class="form-group" v-class="has-error: passwordInvalid,\n                                          animated: passwordInvalid,\n                                          shake: passwordInvalid">\n            <div class="input-group">\n              <span class="input-group-addon"><i class="fa fa-lock"></i></span>\n              <input type="password"\n                     v-model="password"\n                     v-on="blur: validaPassword"\n                     class="form-control"\n                     placeholder="Digite a senha">\n            </div>\n          </div>\n\n          <div class="form-group" v-class="has-error: confirmationInvalid,\n                                          animated: confirmationInvalid,\n                                          shake: confirmationInvalid">\n            <div class="input-group">\n              <span class="input-group-addon"><i class="fa fa-lock"></i></span>\n              <input type="password" v-model="password_confirmation" class="form-control" placeholder="Confirme a senha">\n            </div>\n          </div>\n\n          <button v-class="disabled: loading" v-on="click: postRegister" class="btn btn-lg btn-primary btn-block">\n            {{!loading ? \'Cadastrar\' : \'\'}}\n            <i v-if="loading" class="fa fa-spinner fa-pulse"></i>\n          </button>\n          <span class="text-danger" v-if="emailExists">Este email já está cadastrado.</span>\n        <br>\n        </form>\n\n          <div class="social-login clearfix">\n            <a v-class="disabled: fbLoading" class="btn btn-primary facebook btn-block" v-on="click: fbLogin">\n              <i v-if="!fbLoading" class="fa fa-facebook"></i>{{!fbLoading ? \' Cadastro com o facebook\' : \' \'}}\n              <i v-if="fbLoading" class="fa fa-spinner fa-pulse"></i>\n            </a>\n          </div>\n\n          <hr>\n\n          <p>\n            Já tem uma conta?\n          </p>\n\n          <a v-link="{path: \'/login\'}" style="margin-bottom:20px;" class="btn btn-default-outline btn-block">Login</a>\n      </div>\n    </div>\n  </div>\n</div>\n';
+module.exports = '<div class="col-sm-offset-2 col-sm-8 col-md-offset-3 col-md-6">\n  <div class="widget-container fluid-height clearfix">\n    <div class="heading">\n      <i class="fa fa-sign-in"></i>\n      Cadastro\n    </div>\n    <div class="widget-content padded text-center">\n      <div class="login-wrapper col-sm-offset-1 col-sm-10">\n        <form method="POST">\n\n          <div class="form-group" v-class="has-error: nomeInvalid,\n                                          animated: nomeInvalid,\n                                          shake: nomeInvalid">\n            <div class="input-group">\n              <span class="input-group-addon"><i class="fa fa-user"></i></span>\n              <input type="text"\n                     v-model="nome"\n                     v-on="blur: validaNome"\n                     class="form-control"\n                     placeholder="Digite o seu nome">\n            </div>\n          </div>\n\n          <div class="form-group" v-class="has-error: sobrenomeInvalid,\n                                          animated: sobrenomeInvalid,\n                                          shake: sobrenomeInvalid">\n            <div class="input-group">\n              <span class="input-group-addon"><i class="fa fa-user-secret"></i></span>\n              <input type="text"\n                     v-model="sobrenome"\n                     v-on="blur: validaSobrenome"\n                     class="form-control"\n                     placeholder="Digite o seu sobrenome">\n            </div>\n          </div>\n\n          <div class="form-group" v-class="has-error: emailInvalid,\n                                          animated: emailInvalid,\n                                          shake: emailInvalid">\n            <div class="input-group">\n              <span class="input-group-addon"><i class="fa fa-envelope"></i></span>\n              <input type="text"\n                     v-model="email"\n                     v-on="blur: validaEmail"\n                     class="form-control"\n                     placeholder="Digite o email">\n            </div>\n          </div>\n\n          <div class="form-group" v-class="has-error: passwordInvalid,\n                                          animated: passwordInvalid,\n                                          shake: passwordInvalid">\n            <div class="input-group">\n              <span class="input-group-addon"><i class="fa fa-lock"></i></span>\n              <input type="password"\n                     v-model="password"\n                     v-on="blur: validaPassword"\n                     class="form-control"\n                     placeholder="Digite a senha">\n            </div>\n          </div>\n\n          <div class="form-group" v-class="has-error: confirmationInvalid,\n                                          animated: confirmationInvalid,\n                                          shake: confirmationInvalid">\n            <div class="input-group">\n              <span class="input-group-addon"><i class="fa fa-lock"></i></span>\n              <input type="password" v-model="password_confirmation" class="form-control" placeholder="Confirme a senha">\n            </div>\n          </div>\n\n          <button v-class="disabled: loading" v-on="click: postRegister" class="btn btn-lg btn-primary btn-block ladda-button" data-style="zoom-in">\n            <span class="ladda-label">\n              Cadastrar\n            </span>\n          </button>\n          <div class="alert alert-danger" style="margin-bottom:0" v-if="emailExists" role="alert">Este email já está cadastrado.</div>\n        </form>\n        <br>\n\n          <div class="social-login clearfix">\n            <a v-class="disabled: fbLoading" class="btn btn-primary facebook btn-block ladda-button" v-on="click: fbLogin" data-style="zoom-in">\n              <span class="ladda-label">\n                <i v-if="!fbLoading" class="fa fa-facebook"></i> Cadastro com o facebook\n              </span>\n            </a>\n          </div>\n\n          <hr>\n\n          <p>\n            Já tem uma conta?\n          </p>\n\n          <a v-link="{path: \'/login\'}" style="margin-bottom:20px;" class="btn btn-default-outline btn-block">Login</a>\n      </div>\n    </div>\n  </div>\n</div>\n';
 },{}],113:[function(require,module,exports){
 'use strict';
 
@@ -17831,15 +17831,34 @@ module.exports = {
       email: '',
       password: '',
       authErr: false,
-      fbLoading: false,
-      loading: false,
-      remember: null
+      remember: null,
+      emailInvalid: false,
+      passwordInvalid: false
     };
   },
 
+  ready: function ready() {
+    Ladda.bind('ladda-button');
+  },
+
   methods: {
-    fbLogin: function fbLogin() {
-      this.fbLoading = true;
+    validaEmail: function validaEmail() {
+      if (this.email.length > 0 && this.email.length < 255) {
+        this.emailInvalid = false;
+      } else {
+        this.emailInvalid = 'O email tem que ter entre 0 e 255 caracteres';
+      }
+    },
+    validaPassword: function validaPassword() {
+      if (this.password.length > 0 && this.password.length < 255) {
+        this.passwordInvalid = false;
+      } else {
+        this.passwordInvalid = 'A senha tem que ter mais de 6 dígitos';
+      }
+    },
+    fbLogin: function fbLogin(e) {
+      var l = Ladda.create(e.target);
+      l.start();
       FB.login(function (response) {
         // console.log(JSON.stringify(response));
         FB.getLoginStatus(function (response) {
@@ -17848,8 +17867,9 @@ module.exports = {
       }, { scope: "public_profile,email,user_friends,user_location" });
     },
     postLogin: function postLogin(e) {
-      this.loading = true;
       e.preventDefault();
+      var l = Ladda.create(e.target);
+      l.start();
       this.$http.post('auth/login', {
         email: this.email,
         password: this.password,
@@ -17858,11 +17878,14 @@ module.exports = {
         if (data == true) {
           window.location = "app";
         } else {
-          this.loading = false;
+          l.stop();
           this.authErr = true;
         }
       }).error(function (data) {
-        this.loading = false;
+        l.stop();
+        for (var err in data) {
+          this.$set(err + 'Invalid', data[err]);
+        }
         console.log(data);
       });
     }
@@ -17870,7 +17893,7 @@ module.exports = {
 };
 
 },{"./login.template.html":118}],118:[function(require,module,exports){
-module.exports = '\n\n<div class="col-sm-offset-2 col-sm-8 col-md-offset-3 col-md-6">\n  <div class="widget-container fluid-height clearfix">\n    <div class="heading">\n      <i class="fa fa-sign-in"></i>\n      Login\n    </div>\n    <div class="widget-content padded text-center">\n      <div class="login-wrapper col-sm-offset-1 col-sm-10">\n        <form method="POST">\n          <div class="form-group">\n            <div class="input-group">\n              <span class="input-group-addon"><i class="fa fa-envelope"></i></span>\n              <input type="text" v-model="email" class="form-control" placeholder="Digite o email">\n            </div>\n          </div>\n\n          <div class="form-group">\n            <div class="input-group">\n              <span class="input-group-addon"><i class="fa fa-lock"></i></span>\n              <input type="password" v-model="password" class="form-control" placeholder="Digite a senha">\n            </div>\n          </div>\n\n          <a class="pull-right">Esqueceu a senha?</a>\n\n          <div style="left:20px;position:relative;" class="text-left">\n            <label class="checkbox">\n              <input type="checkbox" value="1" v-model="remember">\n              <span>Manter-me conectado</span>\n            </label>\n          </div>\n\n\n          <button v-class="disabled: loading" v-on="click: postLogin" class="btn btn-lg btn-primary btn-block">\n            {{!loading ? \'Login\' : \'\'}}\n            <i v-if="loading" class="fa fa-spinner fa-pulse"></i>\n          </button>\n          <span class="text-danger" v-if="authErr">Credenciais inválidas</span><br>\n        </form>\n\n          <div class="social-login clearfix">\n            <a v-class="disabled: fbLoading" class="btn btn-primary facebook btn-block" v-on="click: fbLogin">\n              <i v-if="!fbLoading" class="fa fa-facebook"></i>{{!fbLoading ? \' Entrar com o facebook\' : \' \'}}\n              <i v-if="fbLoading" class="fa fa-spinner fa-pulse"></i>\n            </a>\n          </div>\n        <hr>\n        <p>\n          Ainda não tem uma conta?\n        </p>\n        <a v-link="{path: \'/cadastro\'}" style="margin-bottom:20px;" class="btn btn-default-outline btn-block btn-large">Cadastre-se</a>\n      </div>\n    </div>\n  </div>\n</div>\n';
+module.exports = '\n\n<div class="col-sm-offset-2 col-sm-8 col-md-offset-3 col-md-6">\n  <div class="widget-container fluid-height clearfix">\n    <div class="heading">\n      <i class="fa fa-sign-in"></i>\n      Login\n    </div>\n    <div class="widget-content padded text-center">\n      <div class="login-wrapper col-sm-offset-1 col-sm-10">\n        <form method="POST">\n\n          <div class="form-group" v-class="has-error: emailInvalid,\n                                          animated: emailInvalid,\n                                          shake: emailInvalid">\n            <div class="input-group">\n              <span class="input-group-addon"><i class="fa fa-envelope"></i></span>\n              <input type="text"\n                     v-model="email"\n                     v-on="blur: validaEmail"\n                     class="form-control"\n                     placeholder="Digite o email">\n            </div>\n          </div>\n\n          <div class="form-group" v-class="has-error: passwordInvalid,\n                                          animated: passwordInvalid,\n                                          shake: passwordInvalid">\n            <div class="input-group">\n              <span class="input-group-addon"><i class="fa fa-lock"></i></span>\n              <input type="password"\n                     v-model="password"\n                     v-on="blur: validaPassword"\n                     class="form-control"\n                     placeholder="Digite a senha">\n            </div>\n          </div>\n\n          <a class="pull-right">Esqueceu a senha?</a>\n\n          <div style="left:20px;position:relative;" class="text-left">\n            <label class="checkbox">\n              <input type="checkbox" value="1" v-model="remember">\n              <span>Manter-me conectado</span>\n            </label>\n          </div>\n\n\n          <button v-class="disabled: loading" v-on="click: postLogin" class="btn btn-lg btn-primary btn-block ladda-button" data-style="zoom-in">\n            <span class="ladda-label">\n              Login\n            </span>\n          </button>\n          <div class="alert alert-danger" style="margin-bottom:0" v-if="authErr" role="alert">Credenciais inválidas</div>\n        </form><br>\n\n          <div class="social-login clearfix">\n            <a v-class="disabled: fbLoading" class="btn btn-primary facebook btn-block ladda-button" v-on="click: fbLogin" data-style="zoom-in">\n              <span class="ladda-label">\n                <i v-if="!fbLoading" class="fa fa-facebook"></i> Entrar com o facebook\n              </span>\n            </a>\n          </div>\n        <hr>\n        <p>\n          Ainda não tem uma conta?\n        </p>\n        <a v-link="{path: \'/cadastro\'}" style="margin-bottom:20px;" class="btn btn-default-outline btn-block btn-large">Cadastre-se</a>\n      </div>\n    </div>\n  </div>\n</div>\n';
 },{}],119:[function(require,module,exports){
 'use strict';
 

@@ -13,9 +13,7 @@ module.exports = {
       emailInvalid: false,
       passwordInvalid: false,
       confirmationInvalid: false,
-      emailExists: false,
-      fbLoading: false,
-      loading: false
+      emailExists: false
     };
   },
 
@@ -49,8 +47,9 @@ module.exports = {
       }
     },
     postRegister: function(e){
-      this.loading = true;
       e.preventDefault();
+      var l = Ladda.create(e.target);
+      l.start();
       this.nomeInvalid = false;
       this.sobrenomeInvalid = false;
       this.emailInvalid = false;
@@ -72,7 +71,7 @@ module.exports = {
           console.log(data);
         }
       }).error(function(data){
-        this.loading = false;
+        l.stop();
         for (var err in  data){
           if (data[err][0] == "A confirmação para o campo password não coincide.") {
             console.log(data[err][0]);
@@ -86,8 +85,9 @@ module.exports = {
         }
       });
     },
-    fbLogin: function(){
-      this.fbLoading = true;
+    fbLogin: function(e){
+      var l = Ladda.create(e.target);
+      l.start();
       FB.login(function(response){
         // console.log(JSON.stringify(response));
         FB.getLoginStatus(function(response) {

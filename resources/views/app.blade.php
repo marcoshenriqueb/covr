@@ -106,9 +106,6 @@
                   <li><a v-link="{path: '/perfil'}">
                     <i class="fa fa-user"></i>Perfil</a>
                   </li>
-                  <li><a href="#">
-                    <i class="fa fa-gear"></i>Account Settings</a>
-                  </li>
                   <li><a href="logout">
                     <i class="fa fa-sign-out"></i>Logout</a>
                   </li>
@@ -116,7 +113,8 @@
               </li>
             </ul>
           </div>
-          <button class="navbar-toggle"><span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span></button><a class="logo" href="index.html">COvr</a>
+          <button class="navbar-toggle"><span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span></button>
+          <a class="logo" href="index.html">COvr</a>
         </div>
         <div class="container-fluid main-nav clearfix">
           <div class="nav-collapse">

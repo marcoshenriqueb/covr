@@ -8588,6 +8588,2584 @@ require('./$.object-sap')('keys', function($keys){
 
 
 },{}],42:[function(require,module,exports){
+/*! Hammer.JS - v2.0.4 - 2014-09-28
+ * http://hammerjs.github.io/
+ *
+ * Copyright (c) 2014 Jorik Tangelder;
+ * Licensed under the MIT license */
+(function(window, document, exportName, undefined) {
+  'use strict';
+
+var VENDOR_PREFIXES = ['', 'webkit', 'moz', 'MS', 'ms', 'o'];
+var TEST_ELEMENT = document.createElement('div');
+
+var TYPE_FUNCTION = 'function';
+
+var round = Math.round;
+var abs = Math.abs;
+var now = Date.now;
+
+/**
+ * set a timeout with a given scope
+ * @param {Function} fn
+ * @param {Number} timeout
+ * @param {Object} context
+ * @returns {number}
+ */
+function setTimeoutContext(fn, timeout, context) {
+    return setTimeout(bindFn(fn, context), timeout);
+}
+
+/**
+ * if the argument is an array, we want to execute the fn on each entry
+ * if it aint an array we don't want to do a thing.
+ * this is used by all the methods that accept a single and array argument.
+ * @param {*|Array} arg
+ * @param {String} fn
+ * @param {Object} [context]
+ * @returns {Boolean}
+ */
+function invokeArrayArg(arg, fn, context) {
+    if (Array.isArray(arg)) {
+        each(arg, context[fn], context);
+        return true;
+    }
+    return false;
+}
+
+/**
+ * walk objects and arrays
+ * @param {Object} obj
+ * @param {Function} iterator
+ * @param {Object} context
+ */
+function each(obj, iterator, context) {
+    var i;
+
+    if (!obj) {
+        return;
+    }
+
+    if (obj.forEach) {
+        obj.forEach(iterator, context);
+    } else if (obj.length !== undefined) {
+        i = 0;
+        while (i < obj.length) {
+            iterator.call(context, obj[i], i, obj);
+            i++;
+        }
+    } else {
+        for (i in obj) {
+            obj.hasOwnProperty(i) && iterator.call(context, obj[i], i, obj);
+        }
+    }
+}
+
+/**
+ * extend object.
+ * means that properties in dest will be overwritten by the ones in src.
+ * @param {Object} dest
+ * @param {Object} src
+ * @param {Boolean} [merge]
+ * @returns {Object} dest
+ */
+function extend(dest, src, merge) {
+    var keys = Object.keys(src);
+    var i = 0;
+    while (i < keys.length) {
+        if (!merge || (merge && dest[keys[i]] === undefined)) {
+            dest[keys[i]] = src[keys[i]];
+        }
+        i++;
+    }
+    return dest;
+}
+
+/**
+ * merge the values from src in the dest.
+ * means that properties that exist in dest will not be overwritten by src
+ * @param {Object} dest
+ * @param {Object} src
+ * @returns {Object} dest
+ */
+function merge(dest, src) {
+    return extend(dest, src, true);
+}
+
+/**
+ * simple class inheritance
+ * @param {Function} child
+ * @param {Function} base
+ * @param {Object} [properties]
+ */
+function inherit(child, base, properties) {
+    var baseP = base.prototype,
+        childP;
+
+    childP = child.prototype = Object.create(baseP);
+    childP.constructor = child;
+    childP._super = baseP;
+
+    if (properties) {
+        extend(childP, properties);
+    }
+}
+
+/**
+ * simple function bind
+ * @param {Function} fn
+ * @param {Object} context
+ * @returns {Function}
+ */
+function bindFn(fn, context) {
+    return function boundFn() {
+        return fn.apply(context, arguments);
+    };
+}
+
+/**
+ * let a boolean value also be a function that must return a boolean
+ * this first item in args will be used as the context
+ * @param {Boolean|Function} val
+ * @param {Array} [args]
+ * @returns {Boolean}
+ */
+function boolOrFn(val, args) {
+    if (typeof val == TYPE_FUNCTION) {
+        return val.apply(args ? args[0] || undefined : undefined, args);
+    }
+    return val;
+}
+
+/**
+ * use the val2 when val1 is undefined
+ * @param {*} val1
+ * @param {*} val2
+ * @returns {*}
+ */
+function ifUndefined(val1, val2) {
+    return (val1 === undefined) ? val2 : val1;
+}
+
+/**
+ * addEventListener with multiple events at once
+ * @param {EventTarget} target
+ * @param {String} types
+ * @param {Function} handler
+ */
+function addEventListeners(target, types, handler) {
+    each(splitStr(types), function(type) {
+        target.addEventListener(type, handler, false);
+    });
+}
+
+/**
+ * removeEventListener with multiple events at once
+ * @param {EventTarget} target
+ * @param {String} types
+ * @param {Function} handler
+ */
+function removeEventListeners(target, types, handler) {
+    each(splitStr(types), function(type) {
+        target.removeEventListener(type, handler, false);
+    });
+}
+
+/**
+ * find if a node is in the given parent
+ * @method hasParent
+ * @param {HTMLElement} node
+ * @param {HTMLElement} parent
+ * @return {Boolean} found
+ */
+function hasParent(node, parent) {
+    while (node) {
+        if (node == parent) {
+            return true;
+        }
+        node = node.parentNode;
+    }
+    return false;
+}
+
+/**
+ * small indexOf wrapper
+ * @param {String} str
+ * @param {String} find
+ * @returns {Boolean} found
+ */
+function inStr(str, find) {
+    return str.indexOf(find) > -1;
+}
+
+/**
+ * split string on whitespace
+ * @param {String} str
+ * @returns {Array} words
+ */
+function splitStr(str) {
+    return str.trim().split(/\s+/g);
+}
+
+/**
+ * find if a array contains the object using indexOf or a simple polyFill
+ * @param {Array} src
+ * @param {String} find
+ * @param {String} [findByKey]
+ * @return {Boolean|Number} false when not found, or the index
+ */
+function inArray(src, find, findByKey) {
+    if (src.indexOf && !findByKey) {
+        return src.indexOf(find);
+    } else {
+        var i = 0;
+        while (i < src.length) {
+            if ((findByKey && src[i][findByKey] == find) || (!findByKey && src[i] === find)) {
+                return i;
+            }
+            i++;
+        }
+        return -1;
+    }
+}
+
+/**
+ * convert array-like objects to real arrays
+ * @param {Object} obj
+ * @returns {Array}
+ */
+function toArray(obj) {
+    return Array.prototype.slice.call(obj, 0);
+}
+
+/**
+ * unique array with objects based on a key (like 'id') or just by the array's value
+ * @param {Array} src [{id:1},{id:2},{id:1}]
+ * @param {String} [key]
+ * @param {Boolean} [sort=False]
+ * @returns {Array} [{id:1},{id:2}]
+ */
+function uniqueArray(src, key, sort) {
+    var results = [];
+    var values = [];
+    var i = 0;
+
+    while (i < src.length) {
+        var val = key ? src[i][key] : src[i];
+        if (inArray(values, val) < 0) {
+            results.push(src[i]);
+        }
+        values[i] = val;
+        i++;
+    }
+
+    if (sort) {
+        if (!key) {
+            results = results.sort();
+        } else {
+            results = results.sort(function sortUniqueArray(a, b) {
+                return a[key] > b[key];
+            });
+        }
+    }
+
+    return results;
+}
+
+/**
+ * get the prefixed property
+ * @param {Object} obj
+ * @param {String} property
+ * @returns {String|Undefined} prefixed
+ */
+function prefixed(obj, property) {
+    var prefix, prop;
+    var camelProp = property[0].toUpperCase() + property.slice(1);
+
+    var i = 0;
+    while (i < VENDOR_PREFIXES.length) {
+        prefix = VENDOR_PREFIXES[i];
+        prop = (prefix) ? prefix + camelProp : property;
+
+        if (prop in obj) {
+            return prop;
+        }
+        i++;
+    }
+    return undefined;
+}
+
+/**
+ * get a unique id
+ * @returns {number} uniqueId
+ */
+var _uniqueId = 1;
+function uniqueId() {
+    return _uniqueId++;
+}
+
+/**
+ * get the window object of an element
+ * @param {HTMLElement} element
+ * @returns {DocumentView|Window}
+ */
+function getWindowForElement(element) {
+    var doc = element.ownerDocument;
+    return (doc.defaultView || doc.parentWindow);
+}
+
+var MOBILE_REGEX = /mobile|tablet|ip(ad|hone|od)|android/i;
+
+var SUPPORT_TOUCH = ('ontouchstart' in window);
+var SUPPORT_POINTER_EVENTS = prefixed(window, 'PointerEvent') !== undefined;
+var SUPPORT_ONLY_TOUCH = SUPPORT_TOUCH && MOBILE_REGEX.test(navigator.userAgent);
+
+var INPUT_TYPE_TOUCH = 'touch';
+var INPUT_TYPE_PEN = 'pen';
+var INPUT_TYPE_MOUSE = 'mouse';
+var INPUT_TYPE_KINECT = 'kinect';
+
+var COMPUTE_INTERVAL = 25;
+
+var INPUT_START = 1;
+var INPUT_MOVE = 2;
+var INPUT_END = 4;
+var INPUT_CANCEL = 8;
+
+var DIRECTION_NONE = 1;
+var DIRECTION_LEFT = 2;
+var DIRECTION_RIGHT = 4;
+var DIRECTION_UP = 8;
+var DIRECTION_DOWN = 16;
+
+var DIRECTION_HORIZONTAL = DIRECTION_LEFT | DIRECTION_RIGHT;
+var DIRECTION_VERTICAL = DIRECTION_UP | DIRECTION_DOWN;
+var DIRECTION_ALL = DIRECTION_HORIZONTAL | DIRECTION_VERTICAL;
+
+var PROPS_XY = ['x', 'y'];
+var PROPS_CLIENT_XY = ['clientX', 'clientY'];
+
+/**
+ * create new input type manager
+ * @param {Manager} manager
+ * @param {Function} callback
+ * @returns {Input}
+ * @constructor
+ */
+function Input(manager, callback) {
+    var self = this;
+    this.manager = manager;
+    this.callback = callback;
+    this.element = manager.element;
+    this.target = manager.options.inputTarget;
+
+    // smaller wrapper around the handler, for the scope and the enabled state of the manager,
+    // so when disabled the input events are completely bypassed.
+    this.domHandler = function(ev) {
+        if (boolOrFn(manager.options.enable, [manager])) {
+            self.handler(ev);
+        }
+    };
+
+    this.init();
+
+}
+
+Input.prototype = {
+    /**
+     * should handle the inputEvent data and trigger the callback
+     * @virtual
+     */
+    handler: function() { },
+
+    /**
+     * bind the events
+     */
+    init: function() {
+        this.evEl && addEventListeners(this.element, this.evEl, this.domHandler);
+        this.evTarget && addEventListeners(this.target, this.evTarget, this.domHandler);
+        this.evWin && addEventListeners(getWindowForElement(this.element), this.evWin, this.domHandler);
+    },
+
+    /**
+     * unbind the events
+     */
+    destroy: function() {
+        this.evEl && removeEventListeners(this.element, this.evEl, this.domHandler);
+        this.evTarget && removeEventListeners(this.target, this.evTarget, this.domHandler);
+        this.evWin && removeEventListeners(getWindowForElement(this.element), this.evWin, this.domHandler);
+    }
+};
+
+/**
+ * create new input type manager
+ * called by the Manager constructor
+ * @param {Hammer} manager
+ * @returns {Input}
+ */
+function createInputInstance(manager) {
+    var Type;
+    var inputClass = manager.options.inputClass;
+
+    if (inputClass) {
+        Type = inputClass;
+    } else if (SUPPORT_POINTER_EVENTS) {
+        Type = PointerEventInput;
+    } else if (SUPPORT_ONLY_TOUCH) {
+        Type = TouchInput;
+    } else if (!SUPPORT_TOUCH) {
+        Type = MouseInput;
+    } else {
+        Type = TouchMouseInput;
+    }
+    return new (Type)(manager, inputHandler);
+}
+
+/**
+ * handle input events
+ * @param {Manager} manager
+ * @param {String} eventType
+ * @param {Object} input
+ */
+function inputHandler(manager, eventType, input) {
+    var pointersLen = input.pointers.length;
+    var changedPointersLen = input.changedPointers.length;
+    var isFirst = (eventType & INPUT_START && (pointersLen - changedPointersLen === 0));
+    var isFinal = (eventType & (INPUT_END | INPUT_CANCEL) && (pointersLen - changedPointersLen === 0));
+
+    input.isFirst = !!isFirst;
+    input.isFinal = !!isFinal;
+
+    if (isFirst) {
+        manager.session = {};
+    }
+
+    // source event is the normalized value of the domEvents
+    // like 'touchstart, mouseup, pointerdown'
+    input.eventType = eventType;
+
+    // compute scale, rotation etc
+    computeInputData(manager, input);
+
+    // emit secret event
+    manager.emit('hammer.input', input);
+
+    manager.recognize(input);
+    manager.session.prevInput = input;
+}
+
+/**
+ * extend the data with some usable properties like scale, rotate, velocity etc
+ * @param {Object} manager
+ * @param {Object} input
+ */
+function computeInputData(manager, input) {
+    var session = manager.session;
+    var pointers = input.pointers;
+    var pointersLength = pointers.length;
+
+    // store the first input to calculate the distance and direction
+    if (!session.firstInput) {
+        session.firstInput = simpleCloneInputData(input);
+    }
+
+    // to compute scale and rotation we need to store the multiple touches
+    if (pointersLength > 1 && !session.firstMultiple) {
+        session.firstMultiple = simpleCloneInputData(input);
+    } else if (pointersLength === 1) {
+        session.firstMultiple = false;
+    }
+
+    var firstInput = session.firstInput;
+    var firstMultiple = session.firstMultiple;
+    var offsetCenter = firstMultiple ? firstMultiple.center : firstInput.center;
+
+    var center = input.center = getCenter(pointers);
+    input.timeStamp = now();
+    input.deltaTime = input.timeStamp - firstInput.timeStamp;
+
+    input.angle = getAngle(offsetCenter, center);
+    input.distance = getDistance(offsetCenter, center);
+
+    computeDeltaXY(session, input);
+    input.offsetDirection = getDirection(input.deltaX, input.deltaY);
+
+    input.scale = firstMultiple ? getScale(firstMultiple.pointers, pointers) : 1;
+    input.rotation = firstMultiple ? getRotation(firstMultiple.pointers, pointers) : 0;
+
+    computeIntervalInputData(session, input);
+
+    // find the correct target
+    var target = manager.element;
+    if (hasParent(input.srcEvent.target, target)) {
+        target = input.srcEvent.target;
+    }
+    input.target = target;
+}
+
+function computeDeltaXY(session, input) {
+    var center = input.center;
+    var offset = session.offsetDelta || {};
+    var prevDelta = session.prevDelta || {};
+    var prevInput = session.prevInput || {};
+
+    if (input.eventType === INPUT_START || prevInput.eventType === INPUT_END) {
+        prevDelta = session.prevDelta = {
+            x: prevInput.deltaX || 0,
+            y: prevInput.deltaY || 0
+        };
+
+        offset = session.offsetDelta = {
+            x: center.x,
+            y: center.y
+        };
+    }
+
+    input.deltaX = prevDelta.x + (center.x - offset.x);
+    input.deltaY = prevDelta.y + (center.y - offset.y);
+}
+
+/**
+ * velocity is calculated every x ms
+ * @param {Object} session
+ * @param {Object} input
+ */
+function computeIntervalInputData(session, input) {
+    var last = session.lastInterval || input,
+        deltaTime = input.timeStamp - last.timeStamp,
+        velocity, velocityX, velocityY, direction;
+
+    if (input.eventType != INPUT_CANCEL && (deltaTime > COMPUTE_INTERVAL || last.velocity === undefined)) {
+        var deltaX = last.deltaX - input.deltaX;
+        var deltaY = last.deltaY - input.deltaY;
+
+        var v = getVelocity(deltaTime, deltaX, deltaY);
+        velocityX = v.x;
+        velocityY = v.y;
+        velocity = (abs(v.x) > abs(v.y)) ? v.x : v.y;
+        direction = getDirection(deltaX, deltaY);
+
+        session.lastInterval = input;
+    } else {
+        // use latest velocity info if it doesn't overtake a minimum period
+        velocity = last.velocity;
+        velocityX = last.velocityX;
+        velocityY = last.velocityY;
+        direction = last.direction;
+    }
+
+    input.velocity = velocity;
+    input.velocityX = velocityX;
+    input.velocityY = velocityY;
+    input.direction = direction;
+}
+
+/**
+ * create a simple clone from the input used for storage of firstInput and firstMultiple
+ * @param {Object} input
+ * @returns {Object} clonedInputData
+ */
+function simpleCloneInputData(input) {
+    // make a simple copy of the pointers because we will get a reference if we don't
+    // we only need clientXY for the calculations
+    var pointers = [];
+    var i = 0;
+    while (i < input.pointers.length) {
+        pointers[i] = {
+            clientX: round(input.pointers[i].clientX),
+            clientY: round(input.pointers[i].clientY)
+        };
+        i++;
+    }
+
+    return {
+        timeStamp: now(),
+        pointers: pointers,
+        center: getCenter(pointers),
+        deltaX: input.deltaX,
+        deltaY: input.deltaY
+    };
+}
+
+/**
+ * get the center of all the pointers
+ * @param {Array} pointers
+ * @return {Object} center contains `x` and `y` properties
+ */
+function getCenter(pointers) {
+    var pointersLength = pointers.length;
+
+    // no need to loop when only one touch
+    if (pointersLength === 1) {
+        return {
+            x: round(pointers[0].clientX),
+            y: round(pointers[0].clientY)
+        };
+    }
+
+    var x = 0, y = 0, i = 0;
+    while (i < pointersLength) {
+        x += pointers[i].clientX;
+        y += pointers[i].clientY;
+        i++;
+    }
+
+    return {
+        x: round(x / pointersLength),
+        y: round(y / pointersLength)
+    };
+}
+
+/**
+ * calculate the velocity between two points. unit is in px per ms.
+ * @param {Number} deltaTime
+ * @param {Number} x
+ * @param {Number} y
+ * @return {Object} velocity `x` and `y`
+ */
+function getVelocity(deltaTime, x, y) {
+    return {
+        x: x / deltaTime || 0,
+        y: y / deltaTime || 0
+    };
+}
+
+/**
+ * get the direction between two points
+ * @param {Number} x
+ * @param {Number} y
+ * @return {Number} direction
+ */
+function getDirection(x, y) {
+    if (x === y) {
+        return DIRECTION_NONE;
+    }
+
+    if (abs(x) >= abs(y)) {
+        return x > 0 ? DIRECTION_LEFT : DIRECTION_RIGHT;
+    }
+    return y > 0 ? DIRECTION_UP : DIRECTION_DOWN;
+}
+
+/**
+ * calculate the absolute distance between two points
+ * @param {Object} p1 {x, y}
+ * @param {Object} p2 {x, y}
+ * @param {Array} [props] containing x and y keys
+ * @return {Number} distance
+ */
+function getDistance(p1, p2, props) {
+    if (!props) {
+        props = PROPS_XY;
+    }
+    var x = p2[props[0]] - p1[props[0]],
+        y = p2[props[1]] - p1[props[1]];
+
+    return Math.sqrt((x * x) + (y * y));
+}
+
+/**
+ * calculate the angle between two coordinates
+ * @param {Object} p1
+ * @param {Object} p2
+ * @param {Array} [props] containing x and y keys
+ * @return {Number} angle
+ */
+function getAngle(p1, p2, props) {
+    if (!props) {
+        props = PROPS_XY;
+    }
+    var x = p2[props[0]] - p1[props[0]],
+        y = p2[props[1]] - p1[props[1]];
+    return Math.atan2(y, x) * 180 / Math.PI;
+}
+
+/**
+ * calculate the rotation degrees between two pointersets
+ * @param {Array} start array of pointers
+ * @param {Array} end array of pointers
+ * @return {Number} rotation
+ */
+function getRotation(start, end) {
+    return getAngle(end[1], end[0], PROPS_CLIENT_XY) - getAngle(start[1], start[0], PROPS_CLIENT_XY);
+}
+
+/**
+ * calculate the scale factor between two pointersets
+ * no scale is 1, and goes down to 0 when pinched together, and bigger when pinched out
+ * @param {Array} start array of pointers
+ * @param {Array} end array of pointers
+ * @return {Number} scale
+ */
+function getScale(start, end) {
+    return getDistance(end[0], end[1], PROPS_CLIENT_XY) / getDistance(start[0], start[1], PROPS_CLIENT_XY);
+}
+
+var MOUSE_INPUT_MAP = {
+    mousedown: INPUT_START,
+    mousemove: INPUT_MOVE,
+    mouseup: INPUT_END
+};
+
+var MOUSE_ELEMENT_EVENTS = 'mousedown';
+var MOUSE_WINDOW_EVENTS = 'mousemove mouseup';
+
+/**
+ * Mouse events input
+ * @constructor
+ * @extends Input
+ */
+function MouseInput() {
+    this.evEl = MOUSE_ELEMENT_EVENTS;
+    this.evWin = MOUSE_WINDOW_EVENTS;
+
+    this.allow = true; // used by Input.TouchMouse to disable mouse events
+    this.pressed = false; // mousedown state
+
+    Input.apply(this, arguments);
+}
+
+inherit(MouseInput, Input, {
+    /**
+     * handle mouse events
+     * @param {Object} ev
+     */
+    handler: function MEhandler(ev) {
+        var eventType = MOUSE_INPUT_MAP[ev.type];
+
+        // on start we want to have the left mouse button down
+        if (eventType & INPUT_START && ev.button === 0) {
+            this.pressed = true;
+        }
+
+        if (eventType & INPUT_MOVE && ev.which !== 1) {
+            eventType = INPUT_END;
+        }
+
+        // mouse must be down, and mouse events are allowed (see the TouchMouse input)
+        if (!this.pressed || !this.allow) {
+            return;
+        }
+
+        if (eventType & INPUT_END) {
+            this.pressed = false;
+        }
+
+        this.callback(this.manager, eventType, {
+            pointers: [ev],
+            changedPointers: [ev],
+            pointerType: INPUT_TYPE_MOUSE,
+            srcEvent: ev
+        });
+    }
+});
+
+var POINTER_INPUT_MAP = {
+    pointerdown: INPUT_START,
+    pointermove: INPUT_MOVE,
+    pointerup: INPUT_END,
+    pointercancel: INPUT_CANCEL,
+    pointerout: INPUT_CANCEL
+};
+
+// in IE10 the pointer types is defined as an enum
+var IE10_POINTER_TYPE_ENUM = {
+    2: INPUT_TYPE_TOUCH,
+    3: INPUT_TYPE_PEN,
+    4: INPUT_TYPE_MOUSE,
+    5: INPUT_TYPE_KINECT // see https://twitter.com/jacobrossi/status/480596438489890816
+};
+
+var POINTER_ELEMENT_EVENTS = 'pointerdown';
+var POINTER_WINDOW_EVENTS = 'pointermove pointerup pointercancel';
+
+// IE10 has prefixed support, and case-sensitive
+if (window.MSPointerEvent) {
+    POINTER_ELEMENT_EVENTS = 'MSPointerDown';
+    POINTER_WINDOW_EVENTS = 'MSPointerMove MSPointerUp MSPointerCancel';
+}
+
+/**
+ * Pointer events input
+ * @constructor
+ * @extends Input
+ */
+function PointerEventInput() {
+    this.evEl = POINTER_ELEMENT_EVENTS;
+    this.evWin = POINTER_WINDOW_EVENTS;
+
+    Input.apply(this, arguments);
+
+    this.store = (this.manager.session.pointerEvents = []);
+}
+
+inherit(PointerEventInput, Input, {
+    /**
+     * handle mouse events
+     * @param {Object} ev
+     */
+    handler: function PEhandler(ev) {
+        var store = this.store;
+        var removePointer = false;
+
+        var eventTypeNormalized = ev.type.toLowerCase().replace('ms', '');
+        var eventType = POINTER_INPUT_MAP[eventTypeNormalized];
+        var pointerType = IE10_POINTER_TYPE_ENUM[ev.pointerType] || ev.pointerType;
+
+        var isTouch = (pointerType == INPUT_TYPE_TOUCH);
+
+        // get index of the event in the store
+        var storeIndex = inArray(store, ev.pointerId, 'pointerId');
+
+        // start and mouse must be down
+        if (eventType & INPUT_START && (ev.button === 0 || isTouch)) {
+            if (storeIndex < 0) {
+                store.push(ev);
+                storeIndex = store.length - 1;
+            }
+        } else if (eventType & (INPUT_END | INPUT_CANCEL)) {
+            removePointer = true;
+        }
+
+        // it not found, so the pointer hasn't been down (so it's probably a hover)
+        if (storeIndex < 0) {
+            return;
+        }
+
+        // update the event in the store
+        store[storeIndex] = ev;
+
+        this.callback(this.manager, eventType, {
+            pointers: store,
+            changedPointers: [ev],
+            pointerType: pointerType,
+            srcEvent: ev
+        });
+
+        if (removePointer) {
+            // remove from the store
+            store.splice(storeIndex, 1);
+        }
+    }
+});
+
+var SINGLE_TOUCH_INPUT_MAP = {
+    touchstart: INPUT_START,
+    touchmove: INPUT_MOVE,
+    touchend: INPUT_END,
+    touchcancel: INPUT_CANCEL
+};
+
+var SINGLE_TOUCH_TARGET_EVENTS = 'touchstart';
+var SINGLE_TOUCH_WINDOW_EVENTS = 'touchstart touchmove touchend touchcancel';
+
+/**
+ * Touch events input
+ * @constructor
+ * @extends Input
+ */
+function SingleTouchInput() {
+    this.evTarget = SINGLE_TOUCH_TARGET_EVENTS;
+    this.evWin = SINGLE_TOUCH_WINDOW_EVENTS;
+    this.started = false;
+
+    Input.apply(this, arguments);
+}
+
+inherit(SingleTouchInput, Input, {
+    handler: function TEhandler(ev) {
+        var type = SINGLE_TOUCH_INPUT_MAP[ev.type];
+
+        // should we handle the touch events?
+        if (type === INPUT_START) {
+            this.started = true;
+        }
+
+        if (!this.started) {
+            return;
+        }
+
+        var touches = normalizeSingleTouches.call(this, ev, type);
+
+        // when done, reset the started state
+        if (type & (INPUT_END | INPUT_CANCEL) && touches[0].length - touches[1].length === 0) {
+            this.started = false;
+        }
+
+        this.callback(this.manager, type, {
+            pointers: touches[0],
+            changedPointers: touches[1],
+            pointerType: INPUT_TYPE_TOUCH,
+            srcEvent: ev
+        });
+    }
+});
+
+/**
+ * @this {TouchInput}
+ * @param {Object} ev
+ * @param {Number} type flag
+ * @returns {undefined|Array} [all, changed]
+ */
+function normalizeSingleTouches(ev, type) {
+    var all = toArray(ev.touches);
+    var changed = toArray(ev.changedTouches);
+
+    if (type & (INPUT_END | INPUT_CANCEL)) {
+        all = uniqueArray(all.concat(changed), 'identifier', true);
+    }
+
+    return [all, changed];
+}
+
+var TOUCH_INPUT_MAP = {
+    touchstart: INPUT_START,
+    touchmove: INPUT_MOVE,
+    touchend: INPUT_END,
+    touchcancel: INPUT_CANCEL
+};
+
+var TOUCH_TARGET_EVENTS = 'touchstart touchmove touchend touchcancel';
+
+/**
+ * Multi-user touch events input
+ * @constructor
+ * @extends Input
+ */
+function TouchInput() {
+    this.evTarget = TOUCH_TARGET_EVENTS;
+    this.targetIds = {};
+
+    Input.apply(this, arguments);
+}
+
+inherit(TouchInput, Input, {
+    handler: function MTEhandler(ev) {
+        var type = TOUCH_INPUT_MAP[ev.type];
+        var touches = getTouches.call(this, ev, type);
+        if (!touches) {
+            return;
+        }
+
+        this.callback(this.manager, type, {
+            pointers: touches[0],
+            changedPointers: touches[1],
+            pointerType: INPUT_TYPE_TOUCH,
+            srcEvent: ev
+        });
+    }
+});
+
+/**
+ * @this {TouchInput}
+ * @param {Object} ev
+ * @param {Number} type flag
+ * @returns {undefined|Array} [all, changed]
+ */
+function getTouches(ev, type) {
+    var allTouches = toArray(ev.touches);
+    var targetIds = this.targetIds;
+
+    // when there is only one touch, the process can be simplified
+    if (type & (INPUT_START | INPUT_MOVE) && allTouches.length === 1) {
+        targetIds[allTouches[0].identifier] = true;
+        return [allTouches, allTouches];
+    }
+
+    var i,
+        targetTouches,
+        changedTouches = toArray(ev.changedTouches),
+        changedTargetTouches = [],
+        target = this.target;
+
+    // get target touches from touches
+    targetTouches = allTouches.filter(function(touch) {
+        return hasParent(touch.target, target);
+    });
+
+    // collect touches
+    if (type === INPUT_START) {
+        i = 0;
+        while (i < targetTouches.length) {
+            targetIds[targetTouches[i].identifier] = true;
+            i++;
+        }
+    }
+
+    // filter changed touches to only contain touches that exist in the collected target ids
+    i = 0;
+    while (i < changedTouches.length) {
+        if (targetIds[changedTouches[i].identifier]) {
+            changedTargetTouches.push(changedTouches[i]);
+        }
+
+        // cleanup removed touches
+        if (type & (INPUT_END | INPUT_CANCEL)) {
+            delete targetIds[changedTouches[i].identifier];
+        }
+        i++;
+    }
+
+    if (!changedTargetTouches.length) {
+        return;
+    }
+
+    return [
+        // merge targetTouches with changedTargetTouches so it contains ALL touches, including 'end' and 'cancel'
+        uniqueArray(targetTouches.concat(changedTargetTouches), 'identifier', true),
+        changedTargetTouches
+    ];
+}
+
+/**
+ * Combined touch and mouse input
+ *
+ * Touch has a higher priority then mouse, and while touching no mouse events are allowed.
+ * This because touch devices also emit mouse events while doing a touch.
+ *
+ * @constructor
+ * @extends Input
+ */
+function TouchMouseInput() {
+    Input.apply(this, arguments);
+
+    var handler = bindFn(this.handler, this);
+    this.touch = new TouchInput(this.manager, handler);
+    this.mouse = new MouseInput(this.manager, handler);
+}
+
+inherit(TouchMouseInput, Input, {
+    /**
+     * handle mouse and touch events
+     * @param {Hammer} manager
+     * @param {String} inputEvent
+     * @param {Object} inputData
+     */
+    handler: function TMEhandler(manager, inputEvent, inputData) {
+        var isTouch = (inputData.pointerType == INPUT_TYPE_TOUCH),
+            isMouse = (inputData.pointerType == INPUT_TYPE_MOUSE);
+
+        // when we're in a touch event, so  block all upcoming mouse events
+        // most mobile browser also emit mouseevents, right after touchstart
+        if (isTouch) {
+            this.mouse.allow = false;
+        } else if (isMouse && !this.mouse.allow) {
+            return;
+        }
+
+        // reset the allowMouse when we're done
+        if (inputEvent & (INPUT_END | INPUT_CANCEL)) {
+            this.mouse.allow = true;
+        }
+
+        this.callback(manager, inputEvent, inputData);
+    },
+
+    /**
+     * remove the event listeners
+     */
+    destroy: function destroy() {
+        this.touch.destroy();
+        this.mouse.destroy();
+    }
+});
+
+var PREFIXED_TOUCH_ACTION = prefixed(TEST_ELEMENT.style, 'touchAction');
+var NATIVE_TOUCH_ACTION = PREFIXED_TOUCH_ACTION !== undefined;
+
+// magical touchAction value
+var TOUCH_ACTION_COMPUTE = 'compute';
+var TOUCH_ACTION_AUTO = 'auto';
+var TOUCH_ACTION_MANIPULATION = 'manipulation'; // not implemented
+var TOUCH_ACTION_NONE = 'none';
+var TOUCH_ACTION_PAN_X = 'pan-x';
+var TOUCH_ACTION_PAN_Y = 'pan-y';
+
+/**
+ * Touch Action
+ * sets the touchAction property or uses the js alternative
+ * @param {Manager} manager
+ * @param {String} value
+ * @constructor
+ */
+function TouchAction(manager, value) {
+    this.manager = manager;
+    this.set(value);
+}
+
+TouchAction.prototype = {
+    /**
+     * set the touchAction value on the element or enable the polyfill
+     * @param {String} value
+     */
+    set: function(value) {
+        // find out the touch-action by the event handlers
+        if (value == TOUCH_ACTION_COMPUTE) {
+            value = this.compute();
+        }
+
+        if (NATIVE_TOUCH_ACTION) {
+            this.manager.element.style[PREFIXED_TOUCH_ACTION] = value;
+        }
+        this.actions = value.toLowerCase().trim();
+    },
+
+    /**
+     * just re-set the touchAction value
+     */
+    update: function() {
+        this.set(this.manager.options.touchAction);
+    },
+
+    /**
+     * compute the value for the touchAction property based on the recognizer's settings
+     * @returns {String} value
+     */
+    compute: function() {
+        var actions = [];
+        each(this.manager.recognizers, function(recognizer) {
+            if (boolOrFn(recognizer.options.enable, [recognizer])) {
+                actions = actions.concat(recognizer.getTouchAction());
+            }
+        });
+        return cleanTouchActions(actions.join(' '));
+    },
+
+    /**
+     * this method is called on each input cycle and provides the preventing of the browser behavior
+     * @param {Object} input
+     */
+    preventDefaults: function(input) {
+        // not needed with native support for the touchAction property
+        if (NATIVE_TOUCH_ACTION) {
+            return;
+        }
+
+        var srcEvent = input.srcEvent;
+        var direction = input.offsetDirection;
+
+        // if the touch action did prevented once this session
+        if (this.manager.session.prevented) {
+            srcEvent.preventDefault();
+            return;
+        }
+
+        var actions = this.actions;
+        var hasNone = inStr(actions, TOUCH_ACTION_NONE);
+        var hasPanY = inStr(actions, TOUCH_ACTION_PAN_Y);
+        var hasPanX = inStr(actions, TOUCH_ACTION_PAN_X);
+
+        if (hasNone ||
+            (hasPanY && direction & DIRECTION_HORIZONTAL) ||
+            (hasPanX && direction & DIRECTION_VERTICAL)) {
+            return this.preventSrc(srcEvent);
+        }
+    },
+
+    /**
+     * call preventDefault to prevent the browser's default behavior (scrolling in most cases)
+     * @param {Object} srcEvent
+     */
+    preventSrc: function(srcEvent) {
+        this.manager.session.prevented = true;
+        srcEvent.preventDefault();
+    }
+};
+
+/**
+ * when the touchActions are collected they are not a valid value, so we need to clean things up. *
+ * @param {String} actions
+ * @returns {*}
+ */
+function cleanTouchActions(actions) {
+    // none
+    if (inStr(actions, TOUCH_ACTION_NONE)) {
+        return TOUCH_ACTION_NONE;
+    }
+
+    var hasPanX = inStr(actions, TOUCH_ACTION_PAN_X);
+    var hasPanY = inStr(actions, TOUCH_ACTION_PAN_Y);
+
+    // pan-x and pan-y can be combined
+    if (hasPanX && hasPanY) {
+        return TOUCH_ACTION_PAN_X + ' ' + TOUCH_ACTION_PAN_Y;
+    }
+
+    // pan-x OR pan-y
+    if (hasPanX || hasPanY) {
+        return hasPanX ? TOUCH_ACTION_PAN_X : TOUCH_ACTION_PAN_Y;
+    }
+
+    // manipulation
+    if (inStr(actions, TOUCH_ACTION_MANIPULATION)) {
+        return TOUCH_ACTION_MANIPULATION;
+    }
+
+    return TOUCH_ACTION_AUTO;
+}
+
+/**
+ * Recognizer flow explained; *
+ * All recognizers have the initial state of POSSIBLE when a input session starts.
+ * The definition of a input session is from the first input until the last input, with all it's movement in it. *
+ * Example session for mouse-input: mousedown -> mousemove -> mouseup
+ *
+ * On each recognizing cycle (see Manager.recognize) the .recognize() method is executed
+ * which determines with state it should be.
+ *
+ * If the recognizer has the state FAILED, CANCELLED or RECOGNIZED (equals ENDED), it is reset to
+ * POSSIBLE to give it another change on the next cycle.
+ *
+ *               Possible
+ *                  |
+ *            +-----+---------------+
+ *            |                     |
+ *      +-----+-----+               |
+ *      |           |               |
+ *   Failed      Cancelled          |
+ *                          +-------+------+
+ *                          |              |
+ *                      Recognized       Began
+ *                                         |
+ *                                      Changed
+ *                                         |
+ *                                  Ended/Recognized
+ */
+var STATE_POSSIBLE = 1;
+var STATE_BEGAN = 2;
+var STATE_CHANGED = 4;
+var STATE_ENDED = 8;
+var STATE_RECOGNIZED = STATE_ENDED;
+var STATE_CANCELLED = 16;
+var STATE_FAILED = 32;
+
+/**
+ * Recognizer
+ * Every recognizer needs to extend from this class.
+ * @constructor
+ * @param {Object} options
+ */
+function Recognizer(options) {
+    this.id = uniqueId();
+
+    this.manager = null;
+    this.options = merge(options || {}, this.defaults);
+
+    // default is enable true
+    this.options.enable = ifUndefined(this.options.enable, true);
+
+    this.state = STATE_POSSIBLE;
+
+    this.simultaneous = {};
+    this.requireFail = [];
+}
+
+Recognizer.prototype = {
+    /**
+     * @virtual
+     * @type {Object}
+     */
+    defaults: {},
+
+    /**
+     * set options
+     * @param {Object} options
+     * @return {Recognizer}
+     */
+    set: function(options) {
+        extend(this.options, options);
+
+        // also update the touchAction, in case something changed about the directions/enabled state
+        this.manager && this.manager.touchAction.update();
+        return this;
+    },
+
+    /**
+     * recognize simultaneous with an other recognizer.
+     * @param {Recognizer} otherRecognizer
+     * @returns {Recognizer} this
+     */
+    recognizeWith: function(otherRecognizer) {
+        if (invokeArrayArg(otherRecognizer, 'recognizeWith', this)) {
+            return this;
+        }
+
+        var simultaneous = this.simultaneous;
+        otherRecognizer = getRecognizerByNameIfManager(otherRecognizer, this);
+        if (!simultaneous[otherRecognizer.id]) {
+            simultaneous[otherRecognizer.id] = otherRecognizer;
+            otherRecognizer.recognizeWith(this);
+        }
+        return this;
+    },
+
+    /**
+     * drop the simultaneous link. it doesnt remove the link on the other recognizer.
+     * @param {Recognizer} otherRecognizer
+     * @returns {Recognizer} this
+     */
+    dropRecognizeWith: function(otherRecognizer) {
+        if (invokeArrayArg(otherRecognizer, 'dropRecognizeWith', this)) {
+            return this;
+        }
+
+        otherRecognizer = getRecognizerByNameIfManager(otherRecognizer, this);
+        delete this.simultaneous[otherRecognizer.id];
+        return this;
+    },
+
+    /**
+     * recognizer can only run when an other is failing
+     * @param {Recognizer} otherRecognizer
+     * @returns {Recognizer} this
+     */
+    requireFailure: function(otherRecognizer) {
+        if (invokeArrayArg(otherRecognizer, 'requireFailure', this)) {
+            return this;
+        }
+
+        var requireFail = this.requireFail;
+        otherRecognizer = getRecognizerByNameIfManager(otherRecognizer, this);
+        if (inArray(requireFail, otherRecognizer) === -1) {
+            requireFail.push(otherRecognizer);
+            otherRecognizer.requireFailure(this);
+        }
+        return this;
+    },
+
+    /**
+     * drop the requireFailure link. it does not remove the link on the other recognizer.
+     * @param {Recognizer} otherRecognizer
+     * @returns {Recognizer} this
+     */
+    dropRequireFailure: function(otherRecognizer) {
+        if (invokeArrayArg(otherRecognizer, 'dropRequireFailure', this)) {
+            return this;
+        }
+
+        otherRecognizer = getRecognizerByNameIfManager(otherRecognizer, this);
+        var index = inArray(this.requireFail, otherRecognizer);
+        if (index > -1) {
+            this.requireFail.splice(index, 1);
+        }
+        return this;
+    },
+
+    /**
+     * has require failures boolean
+     * @returns {boolean}
+     */
+    hasRequireFailures: function() {
+        return this.requireFail.length > 0;
+    },
+
+    /**
+     * if the recognizer can recognize simultaneous with an other recognizer
+     * @param {Recognizer} otherRecognizer
+     * @returns {Boolean}
+     */
+    canRecognizeWith: function(otherRecognizer) {
+        return !!this.simultaneous[otherRecognizer.id];
+    },
+
+    /**
+     * You should use `tryEmit` instead of `emit` directly to check
+     * that all the needed recognizers has failed before emitting.
+     * @param {Object} input
+     */
+    emit: function(input) {
+        var self = this;
+        var state = this.state;
+
+        function emit(withState) {
+            self.manager.emit(self.options.event + (withState ? stateStr(state) : ''), input);
+        }
+
+        // 'panstart' and 'panmove'
+        if (state < STATE_ENDED) {
+            emit(true);
+        }
+
+        emit(); // simple 'eventName' events
+
+        // panend and pancancel
+        if (state >= STATE_ENDED) {
+            emit(true);
+        }
+    },
+
+    /**
+     * Check that all the require failure recognizers has failed,
+     * if true, it emits a gesture event,
+     * otherwise, setup the state to FAILED.
+     * @param {Object} input
+     */
+    tryEmit: function(input) {
+        if (this.canEmit()) {
+            return this.emit(input);
+        }
+        // it's failing anyway
+        this.state = STATE_FAILED;
+    },
+
+    /**
+     * can we emit?
+     * @returns {boolean}
+     */
+    canEmit: function() {
+        var i = 0;
+        while (i < this.requireFail.length) {
+            if (!(this.requireFail[i].state & (STATE_FAILED | STATE_POSSIBLE))) {
+                return false;
+            }
+            i++;
+        }
+        return true;
+    },
+
+    /**
+     * update the recognizer
+     * @param {Object} inputData
+     */
+    recognize: function(inputData) {
+        // make a new copy of the inputData
+        // so we can change the inputData without messing up the other recognizers
+        var inputDataClone = extend({}, inputData);
+
+        // is is enabled and allow recognizing?
+        if (!boolOrFn(this.options.enable, [this, inputDataClone])) {
+            this.reset();
+            this.state = STATE_FAILED;
+            return;
+        }
+
+        // reset when we've reached the end
+        if (this.state & (STATE_RECOGNIZED | STATE_CANCELLED | STATE_FAILED)) {
+            this.state = STATE_POSSIBLE;
+        }
+
+        this.state = this.process(inputDataClone);
+
+        // the recognizer has recognized a gesture
+        // so trigger an event
+        if (this.state & (STATE_BEGAN | STATE_CHANGED | STATE_ENDED | STATE_CANCELLED)) {
+            this.tryEmit(inputDataClone);
+        }
+    },
+
+    /**
+     * return the state of the recognizer
+     * the actual recognizing happens in this method
+     * @virtual
+     * @param {Object} inputData
+     * @returns {Const} STATE
+     */
+    process: function(inputData) { }, // jshint ignore:line
+
+    /**
+     * return the preferred touch-action
+     * @virtual
+     * @returns {Array}
+     */
+    getTouchAction: function() { },
+
+    /**
+     * called when the gesture isn't allowed to recognize
+     * like when another is being recognized or it is disabled
+     * @virtual
+     */
+    reset: function() { }
+};
+
+/**
+ * get a usable string, used as event postfix
+ * @param {Const} state
+ * @returns {String} state
+ */
+function stateStr(state) {
+    if (state & STATE_CANCELLED) {
+        return 'cancel';
+    } else if (state & STATE_ENDED) {
+        return 'end';
+    } else if (state & STATE_CHANGED) {
+        return 'move';
+    } else if (state & STATE_BEGAN) {
+        return 'start';
+    }
+    return '';
+}
+
+/**
+ * direction cons to string
+ * @param {Const} direction
+ * @returns {String}
+ */
+function directionStr(direction) {
+    if (direction == DIRECTION_DOWN) {
+        return 'down';
+    } else if (direction == DIRECTION_UP) {
+        return 'up';
+    } else if (direction == DIRECTION_LEFT) {
+        return 'left';
+    } else if (direction == DIRECTION_RIGHT) {
+        return 'right';
+    }
+    return '';
+}
+
+/**
+ * get a recognizer by name if it is bound to a manager
+ * @param {Recognizer|String} otherRecognizer
+ * @param {Recognizer} recognizer
+ * @returns {Recognizer}
+ */
+function getRecognizerByNameIfManager(otherRecognizer, recognizer) {
+    var manager = recognizer.manager;
+    if (manager) {
+        return manager.get(otherRecognizer);
+    }
+    return otherRecognizer;
+}
+
+/**
+ * This recognizer is just used as a base for the simple attribute recognizers.
+ * @constructor
+ * @extends Recognizer
+ */
+function AttrRecognizer() {
+    Recognizer.apply(this, arguments);
+}
+
+inherit(AttrRecognizer, Recognizer, {
+    /**
+     * @namespace
+     * @memberof AttrRecognizer
+     */
+    defaults: {
+        /**
+         * @type {Number}
+         * @default 1
+         */
+        pointers: 1
+    },
+
+    /**
+     * Used to check if it the recognizer receives valid input, like input.distance > 10.
+     * @memberof AttrRecognizer
+     * @param {Object} input
+     * @returns {Boolean} recognized
+     */
+    attrTest: function(input) {
+        var optionPointers = this.options.pointers;
+        return optionPointers === 0 || input.pointers.length === optionPointers;
+    },
+
+    /**
+     * Process the input and return the state for the recognizer
+     * @memberof AttrRecognizer
+     * @param {Object} input
+     * @returns {*} State
+     */
+    process: function(input) {
+        var state = this.state;
+        var eventType = input.eventType;
+
+        var isRecognized = state & (STATE_BEGAN | STATE_CHANGED);
+        var isValid = this.attrTest(input);
+
+        // on cancel input and we've recognized before, return STATE_CANCELLED
+        if (isRecognized && (eventType & INPUT_CANCEL || !isValid)) {
+            return state | STATE_CANCELLED;
+        } else if (isRecognized || isValid) {
+            if (eventType & INPUT_END) {
+                return state | STATE_ENDED;
+            } else if (!(state & STATE_BEGAN)) {
+                return STATE_BEGAN;
+            }
+            return state | STATE_CHANGED;
+        }
+        return STATE_FAILED;
+    }
+});
+
+/**
+ * Pan
+ * Recognized when the pointer is down and moved in the allowed direction.
+ * @constructor
+ * @extends AttrRecognizer
+ */
+function PanRecognizer() {
+    AttrRecognizer.apply(this, arguments);
+
+    this.pX = null;
+    this.pY = null;
+}
+
+inherit(PanRecognizer, AttrRecognizer, {
+    /**
+     * @namespace
+     * @memberof PanRecognizer
+     */
+    defaults: {
+        event: 'pan',
+        threshold: 10,
+        pointers: 1,
+        direction: DIRECTION_ALL
+    },
+
+    getTouchAction: function() {
+        var direction = this.options.direction;
+        var actions = [];
+        if (direction & DIRECTION_HORIZONTAL) {
+            actions.push(TOUCH_ACTION_PAN_Y);
+        }
+        if (direction & DIRECTION_VERTICAL) {
+            actions.push(TOUCH_ACTION_PAN_X);
+        }
+        return actions;
+    },
+
+    directionTest: function(input) {
+        var options = this.options;
+        var hasMoved = true;
+        var distance = input.distance;
+        var direction = input.direction;
+        var x = input.deltaX;
+        var y = input.deltaY;
+
+        // lock to axis?
+        if (!(direction & options.direction)) {
+            if (options.direction & DIRECTION_HORIZONTAL) {
+                direction = (x === 0) ? DIRECTION_NONE : (x < 0) ? DIRECTION_LEFT : DIRECTION_RIGHT;
+                hasMoved = x != this.pX;
+                distance = Math.abs(input.deltaX);
+            } else {
+                direction = (y === 0) ? DIRECTION_NONE : (y < 0) ? DIRECTION_UP : DIRECTION_DOWN;
+                hasMoved = y != this.pY;
+                distance = Math.abs(input.deltaY);
+            }
+        }
+        input.direction = direction;
+        return hasMoved && distance > options.threshold && direction & options.direction;
+    },
+
+    attrTest: function(input) {
+        return AttrRecognizer.prototype.attrTest.call(this, input) &&
+            (this.state & STATE_BEGAN || (!(this.state & STATE_BEGAN) && this.directionTest(input)));
+    },
+
+    emit: function(input) {
+        this.pX = input.deltaX;
+        this.pY = input.deltaY;
+
+        var direction = directionStr(input.direction);
+        if (direction) {
+            this.manager.emit(this.options.event + direction, input);
+        }
+
+        this._super.emit.call(this, input);
+    }
+});
+
+/**
+ * Pinch
+ * Recognized when two or more pointers are moving toward (zoom-in) or away from each other (zoom-out).
+ * @constructor
+ * @extends AttrRecognizer
+ */
+function PinchRecognizer() {
+    AttrRecognizer.apply(this, arguments);
+}
+
+inherit(PinchRecognizer, AttrRecognizer, {
+    /**
+     * @namespace
+     * @memberof PinchRecognizer
+     */
+    defaults: {
+        event: 'pinch',
+        threshold: 0,
+        pointers: 2
+    },
+
+    getTouchAction: function() {
+        return [TOUCH_ACTION_NONE];
+    },
+
+    attrTest: function(input) {
+        return this._super.attrTest.call(this, input) &&
+            (Math.abs(input.scale - 1) > this.options.threshold || this.state & STATE_BEGAN);
+    },
+
+    emit: function(input) {
+        this._super.emit.call(this, input);
+        if (input.scale !== 1) {
+            var inOut = input.scale < 1 ? 'in' : 'out';
+            this.manager.emit(this.options.event + inOut, input);
+        }
+    }
+});
+
+/**
+ * Press
+ * Recognized when the pointer is down for x ms without any movement.
+ * @constructor
+ * @extends Recognizer
+ */
+function PressRecognizer() {
+    Recognizer.apply(this, arguments);
+
+    this._timer = null;
+    this._input = null;
+}
+
+inherit(PressRecognizer, Recognizer, {
+    /**
+     * @namespace
+     * @memberof PressRecognizer
+     */
+    defaults: {
+        event: 'press',
+        pointers: 1,
+        time: 500, // minimal time of the pointer to be pressed
+        threshold: 5 // a minimal movement is ok, but keep it low
+    },
+
+    getTouchAction: function() {
+        return [TOUCH_ACTION_AUTO];
+    },
+
+    process: function(input) {
+        var options = this.options;
+        var validPointers = input.pointers.length === options.pointers;
+        var validMovement = input.distance < options.threshold;
+        var validTime = input.deltaTime > options.time;
+
+        this._input = input;
+
+        // we only allow little movement
+        // and we've reached an end event, so a tap is possible
+        if (!validMovement || !validPointers || (input.eventType & (INPUT_END | INPUT_CANCEL) && !validTime)) {
+            this.reset();
+        } else if (input.eventType & INPUT_START) {
+            this.reset();
+            this._timer = setTimeoutContext(function() {
+                this.state = STATE_RECOGNIZED;
+                this.tryEmit();
+            }, options.time, this);
+        } else if (input.eventType & INPUT_END) {
+            return STATE_RECOGNIZED;
+        }
+        return STATE_FAILED;
+    },
+
+    reset: function() {
+        clearTimeout(this._timer);
+    },
+
+    emit: function(input) {
+        if (this.state !== STATE_RECOGNIZED) {
+            return;
+        }
+
+        if (input && (input.eventType & INPUT_END)) {
+            this.manager.emit(this.options.event + 'up', input);
+        } else {
+            this._input.timeStamp = now();
+            this.manager.emit(this.options.event, this._input);
+        }
+    }
+});
+
+/**
+ * Rotate
+ * Recognized when two or more pointer are moving in a circular motion.
+ * @constructor
+ * @extends AttrRecognizer
+ */
+function RotateRecognizer() {
+    AttrRecognizer.apply(this, arguments);
+}
+
+inherit(RotateRecognizer, AttrRecognizer, {
+    /**
+     * @namespace
+     * @memberof RotateRecognizer
+     */
+    defaults: {
+        event: 'rotate',
+        threshold: 0,
+        pointers: 2
+    },
+
+    getTouchAction: function() {
+        return [TOUCH_ACTION_NONE];
+    },
+
+    attrTest: function(input) {
+        return this._super.attrTest.call(this, input) &&
+            (Math.abs(input.rotation) > this.options.threshold || this.state & STATE_BEGAN);
+    }
+});
+
+/**
+ * Swipe
+ * Recognized when the pointer is moving fast (velocity), with enough distance in the allowed direction.
+ * @constructor
+ * @extends AttrRecognizer
+ */
+function SwipeRecognizer() {
+    AttrRecognizer.apply(this, arguments);
+}
+
+inherit(SwipeRecognizer, AttrRecognizer, {
+    /**
+     * @namespace
+     * @memberof SwipeRecognizer
+     */
+    defaults: {
+        event: 'swipe',
+        threshold: 10,
+        velocity: 0.65,
+        direction: DIRECTION_HORIZONTAL | DIRECTION_VERTICAL,
+        pointers: 1
+    },
+
+    getTouchAction: function() {
+        return PanRecognizer.prototype.getTouchAction.call(this);
+    },
+
+    attrTest: function(input) {
+        var direction = this.options.direction;
+        var velocity;
+
+        if (direction & (DIRECTION_HORIZONTAL | DIRECTION_VERTICAL)) {
+            velocity = input.velocity;
+        } else if (direction & DIRECTION_HORIZONTAL) {
+            velocity = input.velocityX;
+        } else if (direction & DIRECTION_VERTICAL) {
+            velocity = input.velocityY;
+        }
+
+        return this._super.attrTest.call(this, input) &&
+            direction & input.direction &&
+            input.distance > this.options.threshold &&
+            abs(velocity) > this.options.velocity && input.eventType & INPUT_END;
+    },
+
+    emit: function(input) {
+        var direction = directionStr(input.direction);
+        if (direction) {
+            this.manager.emit(this.options.event + direction, input);
+        }
+
+        this.manager.emit(this.options.event, input);
+    }
+});
+
+/**
+ * A tap is ecognized when the pointer is doing a small tap/click. Multiple taps are recognized if they occur
+ * between the given interval and position. The delay option can be used to recognize multi-taps without firing
+ * a single tap.
+ *
+ * The eventData from the emitted event contains the property `tapCount`, which contains the amount of
+ * multi-taps being recognized.
+ * @constructor
+ * @extends Recognizer
+ */
+function TapRecognizer() {
+    Recognizer.apply(this, arguments);
+
+    // previous time and center,
+    // used for tap counting
+    this.pTime = false;
+    this.pCenter = false;
+
+    this._timer = null;
+    this._input = null;
+    this.count = 0;
+}
+
+inherit(TapRecognizer, Recognizer, {
+    /**
+     * @namespace
+     * @memberof PinchRecognizer
+     */
+    defaults: {
+        event: 'tap',
+        pointers: 1,
+        taps: 1,
+        interval: 300, // max time between the multi-tap taps
+        time: 250, // max time of the pointer to be down (like finger on the screen)
+        threshold: 2, // a minimal movement is ok, but keep it low
+        posThreshold: 10 // a multi-tap can be a bit off the initial position
+    },
+
+    getTouchAction: function() {
+        return [TOUCH_ACTION_MANIPULATION];
+    },
+
+    process: function(input) {
+        var options = this.options;
+
+        var validPointers = input.pointers.length === options.pointers;
+        var validMovement = input.distance < options.threshold;
+        var validTouchTime = input.deltaTime < options.time;
+
+        this.reset();
+
+        if ((input.eventType & INPUT_START) && (this.count === 0)) {
+            return this.failTimeout();
+        }
+
+        // we only allow little movement
+        // and we've reached an end event, so a tap is possible
+        if (validMovement && validTouchTime && validPointers) {
+            if (input.eventType != INPUT_END) {
+                return this.failTimeout();
+            }
+
+            var validInterval = this.pTime ? (input.timeStamp - this.pTime < options.interval) : true;
+            var validMultiTap = !this.pCenter || getDistance(this.pCenter, input.center) < options.posThreshold;
+
+            this.pTime = input.timeStamp;
+            this.pCenter = input.center;
+
+            if (!validMultiTap || !validInterval) {
+                this.count = 1;
+            } else {
+                this.count += 1;
+            }
+
+            this._input = input;
+
+            // if tap count matches we have recognized it,
+            // else it has began recognizing...
+            var tapCount = this.count % options.taps;
+            if (tapCount === 0) {
+                // no failing requirements, immediately trigger the tap event
+                // or wait as long as the multitap interval to trigger
+                if (!this.hasRequireFailures()) {
+                    return STATE_RECOGNIZED;
+                } else {
+                    this._timer = setTimeoutContext(function() {
+                        this.state = STATE_RECOGNIZED;
+                        this.tryEmit();
+                    }, options.interval, this);
+                    return STATE_BEGAN;
+                }
+            }
+        }
+        return STATE_FAILED;
+    },
+
+    failTimeout: function() {
+        this._timer = setTimeoutContext(function() {
+            this.state = STATE_FAILED;
+        }, this.options.interval, this);
+        return STATE_FAILED;
+    },
+
+    reset: function() {
+        clearTimeout(this._timer);
+    },
+
+    emit: function() {
+        if (this.state == STATE_RECOGNIZED ) {
+            this._input.tapCount = this.count;
+            this.manager.emit(this.options.event, this._input);
+        }
+    }
+});
+
+/**
+ * Simple way to create an manager with a default set of recognizers.
+ * @param {HTMLElement} element
+ * @param {Object} [options]
+ * @constructor
+ */
+function Hammer(element, options) {
+    options = options || {};
+    options.recognizers = ifUndefined(options.recognizers, Hammer.defaults.preset);
+    return new Manager(element, options);
+}
+
+/**
+ * @const {string}
+ */
+Hammer.VERSION = '2.0.4';
+
+/**
+ * default settings
+ * @namespace
+ */
+Hammer.defaults = {
+    /**
+     * set if DOM events are being triggered.
+     * But this is slower and unused by simple implementations, so disabled by default.
+     * @type {Boolean}
+     * @default false
+     */
+    domEvents: false,
+
+    /**
+     * The value for the touchAction property/fallback.
+     * When set to `compute` it will magically set the correct value based on the added recognizers.
+     * @type {String}
+     * @default compute
+     */
+    touchAction: TOUCH_ACTION_COMPUTE,
+
+    /**
+     * @type {Boolean}
+     * @default true
+     */
+    enable: true,
+
+    /**
+     * EXPERIMENTAL FEATURE -- can be removed/changed
+     * Change the parent input target element.
+     * If Null, then it is being set the to main element.
+     * @type {Null|EventTarget}
+     * @default null
+     */
+    inputTarget: null,
+
+    /**
+     * force an input class
+     * @type {Null|Function}
+     * @default null
+     */
+    inputClass: null,
+
+    /**
+     * Default recognizer setup when calling `Hammer()`
+     * When creating a new Manager these will be skipped.
+     * @type {Array}
+     */
+    preset: [
+        // RecognizerClass, options, [recognizeWith, ...], [requireFailure, ...]
+        [RotateRecognizer, { enable: false }],
+        [PinchRecognizer, { enable: false }, ['rotate']],
+        [SwipeRecognizer,{ direction: DIRECTION_HORIZONTAL }],
+        [PanRecognizer, { direction: DIRECTION_HORIZONTAL }, ['swipe']],
+        [TapRecognizer],
+        [TapRecognizer, { event: 'doubletap', taps: 2 }, ['tap']],
+        [PressRecognizer]
+    ],
+
+    /**
+     * Some CSS properties can be used to improve the working of Hammer.
+     * Add them to this method and they will be set when creating a new Manager.
+     * @namespace
+     */
+    cssProps: {
+        /**
+         * Disables text selection to improve the dragging gesture. Mainly for desktop browsers.
+         * @type {String}
+         * @default 'none'
+         */
+        userSelect: 'none',
+
+        /**
+         * Disable the Windows Phone grippers when pressing an element.
+         * @type {String}
+         * @default 'none'
+         */
+        touchSelect: 'none',
+
+        /**
+         * Disables the default callout shown when you touch and hold a touch target.
+         * On iOS, when you touch and hold a touch target such as a link, Safari displays
+         * a callout containing information about the link. This property allows you to disable that callout.
+         * @type {String}
+         * @default 'none'
+         */
+        touchCallout: 'none',
+
+        /**
+         * Specifies whether zooming is enabled. Used by IE10>
+         * @type {String}
+         * @default 'none'
+         */
+        contentZooming: 'none',
+
+        /**
+         * Specifies that an entire element should be draggable instead of its contents. Mainly for desktop browsers.
+         * @type {String}
+         * @default 'none'
+         */
+        userDrag: 'none',
+
+        /**
+         * Overrides the highlight color shown when the user taps a link or a JavaScript
+         * clickable element in iOS. This property obeys the alpha value, if specified.
+         * @type {String}
+         * @default 'rgba(0,0,0,0)'
+         */
+        tapHighlightColor: 'rgba(0,0,0,0)'
+    }
+};
+
+var STOP = 1;
+var FORCED_STOP = 2;
+
+/**
+ * Manager
+ * @param {HTMLElement} element
+ * @param {Object} [options]
+ * @constructor
+ */
+function Manager(element, options) {
+    options = options || {};
+
+    this.options = merge(options, Hammer.defaults);
+    this.options.inputTarget = this.options.inputTarget || element;
+
+    this.handlers = {};
+    this.session = {};
+    this.recognizers = [];
+
+    this.element = element;
+    this.input = createInputInstance(this);
+    this.touchAction = new TouchAction(this, this.options.touchAction);
+
+    toggleCssProps(this, true);
+
+    each(options.recognizers, function(item) {
+        var recognizer = this.add(new (item[0])(item[1]));
+        item[2] && recognizer.recognizeWith(item[2]);
+        item[3] && recognizer.requireFailure(item[3]);
+    }, this);
+}
+
+Manager.prototype = {
+    /**
+     * set options
+     * @param {Object} options
+     * @returns {Manager}
+     */
+    set: function(options) {
+        extend(this.options, options);
+
+        // Options that need a little more setup
+        if (options.touchAction) {
+            this.touchAction.update();
+        }
+        if (options.inputTarget) {
+            // Clean up existing event listeners and reinitialize
+            this.input.destroy();
+            this.input.target = options.inputTarget;
+            this.input.init();
+        }
+        return this;
+    },
+
+    /**
+     * stop recognizing for this session.
+     * This session will be discarded, when a new [input]start event is fired.
+     * When forced, the recognizer cycle is stopped immediately.
+     * @param {Boolean} [force]
+     */
+    stop: function(force) {
+        this.session.stopped = force ? FORCED_STOP : STOP;
+    },
+
+    /**
+     * run the recognizers!
+     * called by the inputHandler function on every movement of the pointers (touches)
+     * it walks through all the recognizers and tries to detect the gesture that is being made
+     * @param {Object} inputData
+     */
+    recognize: function(inputData) {
+        var session = this.session;
+        if (session.stopped) {
+            return;
+        }
+
+        // run the touch-action polyfill
+        this.touchAction.preventDefaults(inputData);
+
+        var recognizer;
+        var recognizers = this.recognizers;
+
+        // this holds the recognizer that is being recognized.
+        // so the recognizer's state needs to be BEGAN, CHANGED, ENDED or RECOGNIZED
+        // if no recognizer is detecting a thing, it is set to `null`
+        var curRecognizer = session.curRecognizer;
+
+        // reset when the last recognizer is recognized
+        // or when we're in a new session
+        if (!curRecognizer || (curRecognizer && curRecognizer.state & STATE_RECOGNIZED)) {
+            curRecognizer = session.curRecognizer = null;
+        }
+
+        var i = 0;
+        while (i < recognizers.length) {
+            recognizer = recognizers[i];
+
+            // find out if we are allowed try to recognize the input for this one.
+            // 1.   allow if the session is NOT forced stopped (see the .stop() method)
+            // 2.   allow if we still haven't recognized a gesture in this session, or the this recognizer is the one
+            //      that is being recognized.
+            // 3.   allow if the recognizer is allowed to run simultaneous with the current recognized recognizer.
+            //      this can be setup with the `recognizeWith()` method on the recognizer.
+            if (session.stopped !== FORCED_STOP && ( // 1
+                    !curRecognizer || recognizer == curRecognizer || // 2
+                    recognizer.canRecognizeWith(curRecognizer))) { // 3
+                recognizer.recognize(inputData);
+            } else {
+                recognizer.reset();
+            }
+
+            // if the recognizer has been recognizing the input as a valid gesture, we want to store this one as the
+            // current active recognizer. but only if we don't already have an active recognizer
+            if (!curRecognizer && recognizer.state & (STATE_BEGAN | STATE_CHANGED | STATE_ENDED)) {
+                curRecognizer = session.curRecognizer = recognizer;
+            }
+            i++;
+        }
+    },
+
+    /**
+     * get a recognizer by its event name.
+     * @param {Recognizer|String} recognizer
+     * @returns {Recognizer|Null}
+     */
+    get: function(recognizer) {
+        if (recognizer instanceof Recognizer) {
+            return recognizer;
+        }
+
+        var recognizers = this.recognizers;
+        for (var i = 0; i < recognizers.length; i++) {
+            if (recognizers[i].options.event == recognizer) {
+                return recognizers[i];
+            }
+        }
+        return null;
+    },
+
+    /**
+     * add a recognizer to the manager
+     * existing recognizers with the same event name will be removed
+     * @param {Recognizer} recognizer
+     * @returns {Recognizer|Manager}
+     */
+    add: function(recognizer) {
+        if (invokeArrayArg(recognizer, 'add', this)) {
+            return this;
+        }
+
+        // remove existing
+        var existing = this.get(recognizer.options.event);
+        if (existing) {
+            this.remove(existing);
+        }
+
+        this.recognizers.push(recognizer);
+        recognizer.manager = this;
+
+        this.touchAction.update();
+        return recognizer;
+    },
+
+    /**
+     * remove a recognizer by name or instance
+     * @param {Recognizer|String} recognizer
+     * @returns {Manager}
+     */
+    remove: function(recognizer) {
+        if (invokeArrayArg(recognizer, 'remove', this)) {
+            return this;
+        }
+
+        var recognizers = this.recognizers;
+        recognizer = this.get(recognizer);
+        recognizers.splice(inArray(recognizers, recognizer), 1);
+
+        this.touchAction.update();
+        return this;
+    },
+
+    /**
+     * bind event
+     * @param {String} events
+     * @param {Function} handler
+     * @returns {EventEmitter} this
+     */
+    on: function(events, handler) {
+        var handlers = this.handlers;
+        each(splitStr(events), function(event) {
+            handlers[event] = handlers[event] || [];
+            handlers[event].push(handler);
+        });
+        return this;
+    },
+
+    /**
+     * unbind event, leave emit blank to remove all handlers
+     * @param {String} events
+     * @param {Function} [handler]
+     * @returns {EventEmitter} this
+     */
+    off: function(events, handler) {
+        var handlers = this.handlers;
+        each(splitStr(events), function(event) {
+            if (!handler) {
+                delete handlers[event];
+            } else {
+                handlers[event].splice(inArray(handlers[event], handler), 1);
+            }
+        });
+        return this;
+    },
+
+    /**
+     * emit event to the listeners
+     * @param {String} event
+     * @param {Object} data
+     */
+    emit: function(event, data) {
+        // we also want to trigger dom events
+        if (this.options.domEvents) {
+            triggerDomEvent(event, data);
+        }
+
+        // no handlers, so skip it all
+        var handlers = this.handlers[event] && this.handlers[event].slice();
+        if (!handlers || !handlers.length) {
+            return;
+        }
+
+        data.type = event;
+        data.preventDefault = function() {
+            data.srcEvent.preventDefault();
+        };
+
+        var i = 0;
+        while (i < handlers.length) {
+            handlers[i](data);
+            i++;
+        }
+    },
+
+    /**
+     * destroy the manager and unbinds all events
+     * it doesn't unbind dom events, that is the user own responsibility
+     */
+    destroy: function() {
+        this.element && toggleCssProps(this, false);
+
+        this.handlers = {};
+        this.session = {};
+        this.input.destroy();
+        this.element = null;
+    }
+};
+
+/**
+ * add/remove the css properties as defined in manager.options.cssProps
+ * @param {Manager} manager
+ * @param {Boolean} add
+ */
+function toggleCssProps(manager, add) {
+    var element = manager.element;
+    each(manager.options.cssProps, function(value, name) {
+        element.style[prefixed(element.style, name)] = add ? value : '';
+    });
+}
+
+/**
+ * trigger dom event
+ * @param {String} event
+ * @param {Object} data
+ */
+function triggerDomEvent(event, data) {
+    var gestureEvent = document.createEvent('Event');
+    gestureEvent.initEvent(event, true, true);
+    gestureEvent.gesture = data;
+    data.target.dispatchEvent(gestureEvent);
+}
+
+extend(Hammer, {
+    INPUT_START: INPUT_START,
+    INPUT_MOVE: INPUT_MOVE,
+    INPUT_END: INPUT_END,
+    INPUT_CANCEL: INPUT_CANCEL,
+
+    STATE_POSSIBLE: STATE_POSSIBLE,
+    STATE_BEGAN: STATE_BEGAN,
+    STATE_CHANGED: STATE_CHANGED,
+    STATE_ENDED: STATE_ENDED,
+    STATE_RECOGNIZED: STATE_RECOGNIZED,
+    STATE_CANCELLED: STATE_CANCELLED,
+    STATE_FAILED: STATE_FAILED,
+
+    DIRECTION_NONE: DIRECTION_NONE,
+    DIRECTION_LEFT: DIRECTION_LEFT,
+    DIRECTION_RIGHT: DIRECTION_RIGHT,
+    DIRECTION_UP: DIRECTION_UP,
+    DIRECTION_DOWN: DIRECTION_DOWN,
+    DIRECTION_HORIZONTAL: DIRECTION_HORIZONTAL,
+    DIRECTION_VERTICAL: DIRECTION_VERTICAL,
+    DIRECTION_ALL: DIRECTION_ALL,
+
+    Manager: Manager,
+    Input: Input,
+    TouchAction: TouchAction,
+
+    TouchInput: TouchInput,
+    MouseInput: MouseInput,
+    PointerEventInput: PointerEventInput,
+    TouchMouseInput: TouchMouseInput,
+    SingleTouchInput: SingleTouchInput,
+
+    Recognizer: Recognizer,
+    AttrRecognizer: AttrRecognizer,
+    Tap: TapRecognizer,
+    Pan: PanRecognizer,
+    Swipe: SwipeRecognizer,
+    Pinch: PinchRecognizer,
+    Rotate: RotateRecognizer,
+    Press: PressRecognizer,
+
+    on: addEventListeners,
+    off: removeEventListeners,
+    each: each,
+    merge: merge,
+    extend: extend,
+    inherit: inherit,
+    bindFn: bindFn,
+    prefixed: prefixed
+});
+
+if (typeof define == TYPE_FUNCTION && define.amd) {
+    define(function() {
+        return Hammer;
+    });
+} else if (typeof module != 'undefined' && module.exports) {
+    module.exports = Hammer;
+} else {
+    window[exportName] = Hammer;
+}
+
+})(window, document, 'Hammer');
+
+},{}],43:[function(require,module,exports){
+;(function () {
+
+  var vueTouch = {}
+  var Hammer = typeof require === 'function'
+    ? require('hammerjs')
+    : window.Hammer
+  var gestures = ['tap', 'pan', 'pinch', 'press', 'rotate', 'swipe']
+  var customeEvents = {}
+
+  vueTouch.install = function (Vue) {
+
+    Vue.directive('touch', {
+
+      isFn: true,
+      acceptStatement: true,
+
+      bind: function () {
+        if (!this.el.hammer) {
+          this.el.hammer = new Hammer.Manager(this.el)
+        }
+        var mc = this.mc = this.el.hammer
+        // determine event type
+        var event = this.arg
+        var recognizerType, recognizer
+
+        if (customeEvents[event]) { // custom event
+
+          var custom = customeEvents[event]
+          recognizerType = custom.type
+          recognizer = new Hammer[capitalize(recognizerType)](custom)
+          recognizer.recognizeWith(mc.recognizers)
+          mc.add(recognizer)
+
+        } else { // built-in event
+
+          for (var i = 0; i < gestures.length; i++) {
+            if (event.indexOf(gestures[i]) === 0) {
+              recognizerType = gestures[i]
+              break
+            }
+          }
+          if (!recognizerType) {
+            console.warn('Invalid v-touch event: ' + event)
+            return
+          }
+          recognizer = mc.get(recognizerType)
+          if (!recognizer) {
+            // add recognizer
+            recognizer = new Hammer[capitalize(recognizerType)]()
+            // make sure multiple recognizers work together...
+            recognizer.recognizeWith(mc.recognizers)
+            mc.add(recognizer)
+          }
+
+        }
+      },
+
+      update: function (fn) {
+        var mc = this.mc
+        var vm = this.vm
+        var event = this.arg
+        // teardown old handler
+        if (this.handler) {
+          mc.off(event, this.handler)
+        }
+        // define new handler
+        this.handler = function (e) {
+          e.targetVM = vm
+          fn.call(vm, e)
+        }
+        mc.on(event, this.handler)
+      },
+
+      unbind: function () {
+        this.mc.off(this.arg, this.handler)
+        if (!Object.keys(this.mc.handlers).length) {
+          this.mc.destroy()
+          this.el.hammer = null
+        }
+      }
+
+    })
+  }
+
+  /**
+   * Register a custom event.
+   *
+   * @param {String} event
+   * @param {Object} options - a Hammer.js recognizer option object.
+   *                           required fields:
+   *                           - type: the base recognizer to use for this event
+   */
+
+  vueTouch.registerCustomEvent = function (event, options) {
+    options.event = event
+    customeEvents[event] = options
+  }
+
+  function capitalize (str) {
+    return str.charAt(0).toUpperCase() + str.slice(1)
+  }
+
+  if (typeof exports == "object") {
+    module.exports = vueTouch
+  } else if (typeof define == "function" && define.amd) {
+    define([], function(){ return vueTouch })
+  } else if (window.Vue) {
+    window.VueTouch = vueTouch
+    Vue.use(vueTouch)
+  }
+
+})()
+},{"hammerjs":42}],44:[function(require,module,exports){
 var _ = require('../util')
 
 /**
@@ -8638,7 +11216,7 @@ exports.$addChild = function (opts, BaseCtor) {
   return child
 }
 
-},{"../util":103}],43:[function(require,module,exports){
+},{"../util":105}],45:[function(require,module,exports){
 var Watcher = require('../watcher')
 var Path = require('../parsers/path')
 var textParser = require('../parsers/text')
@@ -8799,7 +11377,7 @@ exports.$log = function (path) {
   console.log(data)
 }
 
-},{"../parsers/directive":91,"../parsers/expression":92,"../parsers/path":93,"../parsers/text":95,"../watcher":107}],44:[function(require,module,exports){
+},{"../parsers/directive":93,"../parsers/expression":94,"../parsers/path":95,"../parsers/text":97,"../watcher":109}],46:[function(require,module,exports){
 var _ = require('../util')
 var transition = require('../transition')
 
@@ -9027,7 +11605,7 @@ function remove (el, vm, cb) {
   if (cb) cb()
 }
 
-},{"../transition":96,"../util":103}],45:[function(require,module,exports){
+},{"../transition":98,"../util":105}],47:[function(require,module,exports){
 var _ = require('../util')
 
 /**
@@ -9203,7 +11781,7 @@ function modifyListenerCount (vm, event, count) {
   }
 }
 
-},{"../util":103}],46:[function(require,module,exports){
+},{"../util":105}],48:[function(require,module,exports){
 var _ = require('../util')
 var config = require('../config')
 
@@ -9334,7 +11912,7 @@ config._assetTypes.forEach(function (type) {
   }
 })
 
-},{"../compiler":52,"../config":54,"../parsers/directive":91,"../parsers/expression":92,"../parsers/path":93,"../parsers/template":94,"../parsers/text":95,"../util":103}],47:[function(require,module,exports){
+},{"../compiler":54,"../config":56,"../parsers/directive":93,"../parsers/expression":94,"../parsers/path":95,"../parsers/template":96,"../parsers/text":97,"../util":105}],49:[function(require,module,exports){
 (function (process){
 var _ = require('../util')
 var compiler = require('../compiler')
@@ -9406,7 +11984,7 @@ exports.$compile = function (el, host) {
 }
 
 }).call(this,require('_process'))
-},{"../compiler":52,"../util":103,"_process":2}],48:[function(require,module,exports){
+},{"../compiler":54,"../util":105,"_process":2}],50:[function(require,module,exports){
 (function (process){
 var _ = require('./util')
 var config = require('./config')
@@ -9508,7 +12086,7 @@ exports.push = function (watcher) {
 }
 
 }).call(this,require('_process'))
-},{"./config":54,"./util":103,"_process":2}],49:[function(require,module,exports){
+},{"./config":56,"./util":105,"_process":2}],51:[function(require,module,exports){
 /**
  * A doubly linked list-based Least Recently Used (LRU)
  * cache. Will keep most recently used items while
@@ -9622,7 +12200,7 @@ p.get = function (key, returnEntry) {
 
 module.exports = Cache
 
-},{}],50:[function(require,module,exports){
+},{}],52:[function(require,module,exports){
 (function (process){
 var _ = require('../util')
 var textParser = require('../parsers/text')
@@ -9809,7 +12387,7 @@ function getDefault (options) {
 }
 
 }).call(this,require('_process'))
-},{"../config":54,"../directives/prop":70,"../parsers/path":93,"../parsers/text":95,"../util":103,"_process":2}],51:[function(require,module,exports){
+},{"../config":56,"../directives/prop":72,"../parsers/path":95,"../parsers/text":97,"../util":105,"_process":2}],53:[function(require,module,exports){
 (function (process){
 var _ = require('../util')
 var compileProps = require('./compile-props')
@@ -10443,13 +13021,13 @@ function directiveComparator (a, b) {
 }
 
 }).call(this,require('_process'))
-},{"../config":54,"../directives/component":59,"../parsers/directive":91,"../parsers/template":94,"../parsers/text":95,"../util":103,"./compile-props":50,"_process":2}],52:[function(require,module,exports){
+},{"../config":56,"../directives/component":61,"../parsers/directive":93,"../parsers/template":96,"../parsers/text":97,"../util":105,"./compile-props":52,"_process":2}],54:[function(require,module,exports){
 var _ = require('../util')
 
 _.extend(exports, require('./compile'))
 _.extend(exports, require('./transclude'))
 
-},{"../util":103,"./compile":51,"./transclude":53}],53:[function(require,module,exports){
+},{"../util":105,"./compile":53,"./transclude":55}],55:[function(require,module,exports){
 (function (process){
 var _ = require('../util')
 var config = require('../config')
@@ -10597,7 +13175,7 @@ function mergeAttrs (from, to) {
 }
 
 }).call(this,require('_process'))
-},{"../config":54,"../parsers/template":94,"../util":103,"_process":2}],54:[function(require,module,exports){
+},{"../config":56,"../parsers/template":96,"../util":105,"_process":2}],56:[function(require,module,exports){
 module.exports = {
 
   /**
@@ -10723,7 +13301,7 @@ Object.defineProperty(module.exports, 'delimiters', {
   }
 })
 
-},{}],55:[function(require,module,exports){
+},{}],57:[function(require,module,exports){
 (function (process){
 var _ = require('./util')
 var config = require('./config')
@@ -10981,7 +13559,7 @@ Directive.prototype._teardown = function () {
 module.exports = Directive
 
 }).call(this,require('_process'))
-},{"./config":54,"./parsers/expression":92,"./parsers/text":95,"./util":103,"./watcher":107,"_process":2}],56:[function(require,module,exports){
+},{"./config":56,"./parsers/expression":94,"./parsers/text":97,"./util":105,"./watcher":109,"_process":2}],58:[function(require,module,exports){
 // xlink
 var xlinkNS = 'http://www.w3.org/1999/xlink'
 var xlinkRE = /^xlink:/
@@ -11042,7 +13620,7 @@ module.exports = {
   }
 }
 
-},{}],57:[function(require,module,exports){
+},{}],59:[function(require,module,exports){
 var _ = require('../util')
 var addClass = _.addClass
 var removeClass = _.removeClass
@@ -11114,7 +13692,7 @@ function stringToObject (value) {
   return res
 }
 
-},{"../util":103}],58:[function(require,module,exports){
+},{"../util":105}],60:[function(require,module,exports){
 var config = require('../config')
 
 module.exports = {
@@ -11126,7 +13704,7 @@ module.exports = {
   }
 }
 
-},{"../config":54}],59:[function(require,module,exports){
+},{"../config":56}],61:[function(require,module,exports){
 (function (process){
 var _ = require('../util')
 var config = require('../config')
@@ -11474,7 +14052,7 @@ module.exports = {
 }
 
 }).call(this,require('_process'))
-},{"../config":54,"../parsers/template":94,"../util":103,"_process":2}],60:[function(require,module,exports){
+},{"../config":56,"../parsers/template":96,"../util":105,"_process":2}],62:[function(require,module,exports){
 module.exports = {
 
   isLiteral: true,
@@ -11488,7 +14066,7 @@ module.exports = {
   }
 }
 
-},{}],61:[function(require,module,exports){
+},{}],63:[function(require,module,exports){
 var _ = require('../util')
 var templateParser = require('../parsers/template')
 
@@ -11530,7 +14108,7 @@ module.exports = {
   }
 }
 
-},{"../parsers/template":94,"../util":103}],62:[function(require,module,exports){
+},{"../parsers/template":96,"../util":105}],64:[function(require,module,exports){
 (function (process){
 var _ = require('../util')
 var compiler = require('../compiler')
@@ -11659,7 +14237,7 @@ function callDetach (child) {
 }
 
 }).call(this,require('_process'))
-},{"../cache":49,"../compiler":52,"../parsers/template":94,"../transition":96,"../util":103,"_process":2}],63:[function(require,module,exports){
+},{"../cache":51,"../compiler":54,"../parsers/template":96,"../transition":98,"../util":105,"_process":2}],65:[function(require,module,exports){
 // manipulation directives
 exports.text = require('./text')
 exports.html = require('./html')
@@ -11685,7 +14263,7 @@ exports['if'] = require('./if')
 exports._component = require('./component')
 exports._prop = require('./prop')
 
-},{"./attr":56,"./class":57,"./cloak":58,"./component":59,"./el":60,"./html":61,"./if":62,"./model":65,"./on":69,"./prop":70,"./ref":71,"./repeat":72,"./show":73,"./style":74,"./text":75,"./transition":76}],64:[function(require,module,exports){
+},{"./attr":58,"./class":59,"./cloak":60,"./component":61,"./el":62,"./html":63,"./if":64,"./model":67,"./on":71,"./prop":72,"./ref":73,"./repeat":74,"./show":75,"./style":76,"./text":77,"./transition":78}],66:[function(require,module,exports){
 var _ = require('../../util')
 
 module.exports = {
@@ -11729,7 +14307,7 @@ module.exports = {
   }
 }
 
-},{"../../util":103}],65:[function(require,module,exports){
+},{"../../util":105}],67:[function(require,module,exports){
 (function (process){
 var _ = require('../../util')
 
@@ -11815,7 +14393,7 @@ module.exports = {
 }
 
 }).call(this,require('_process'))
-},{"../../util":103,"./checkbox":64,"./radio":66,"./select":67,"./text":68,"_process":2}],66:[function(require,module,exports){
+},{"../../util":105,"./checkbox":66,"./radio":68,"./select":69,"./text":70,"_process":2}],68:[function(require,module,exports){
 var _ = require('../../util')
 
 module.exports = {
@@ -11850,7 +14428,7 @@ module.exports = {
   }
 }
 
-},{"../../util":103}],67:[function(require,module,exports){
+},{"../../util":105}],69:[function(require,module,exports){
 (function (process){
 var _ = require('../../util')
 var Watcher = require('../../watcher')
@@ -12090,7 +14668,7 @@ function indexOf (arr, val) {
 }
 
 }).call(this,require('_process'))
-},{"../../parsers/directive":91,"../../util":103,"../../watcher":107,"_process":2}],68:[function(require,module,exports){
+},{"../../parsers/directive":93,"../../util":105,"../../watcher":109,"_process":2}],70:[function(require,module,exports){
 var _ = require('../../util')
 
 module.exports = {
@@ -12224,7 +14802,7 @@ module.exports = {
   }
 }
 
-},{"../../util":103}],69:[function(require,module,exports){
+},{"../../util":105}],71:[function(require,module,exports){
 (function (process){
 var _ = require('../util')
 
@@ -12287,7 +14865,7 @@ module.exports = {
 }
 
 }).call(this,require('_process'))
-},{"../util":103,"_process":2}],70:[function(require,module,exports){
+},{"../util":105,"_process":2}],72:[function(require,module,exports){
 // NOTE: the prop internal directive is compiled and linked
 // during _initScope(), before the created hook is called.
 // The purpose is to make the initial prop values available
@@ -12351,7 +14929,7 @@ module.exports = {
   }
 }
 
-},{"../config":54,"../util":103,"../watcher":107}],71:[function(require,module,exports){
+},{"../config":56,"../util":105,"../watcher":109}],73:[function(require,module,exports){
 (function (process){
 var _ = require('../util')
 
@@ -12377,7 +14955,7 @@ module.exports = {
 }
 
 }).call(this,require('_process'))
-},{"../util":103,"_process":2}],72:[function(require,module,exports){
+},{"../util":105,"_process":2}],74:[function(require,module,exports){
 (function (process){
 var _ = require('../util')
 var config = require('../config')
@@ -13151,7 +15729,7 @@ function isPrimitive (value) {
 }
 
 }).call(this,require('_process'))
-},{"../compiler":52,"../config":54,"../parsers/expression":92,"../parsers/template":94,"../parsers/text":95,"../util":103,"_process":2}],73:[function(require,module,exports){
+},{"../compiler":54,"../config":56,"../parsers/expression":94,"../parsers/template":96,"../parsers/text":97,"../util":105,"_process":2}],75:[function(require,module,exports){
 var transition = require('../transition')
 
 module.exports = function (value) {
@@ -13161,7 +15739,7 @@ module.exports = function (value) {
   }, this.vm)
 }
 
-},{"../transition":96}],74:[function(require,module,exports){
+},{"../transition":98}],76:[function(require,module,exports){
 var _ = require('../util')
 var prefixes = ['-webkit-', '-moz-', '-ms-']
 var camelPrefixes = ['Webkit', 'Moz', 'ms']
@@ -13273,7 +15851,7 @@ function prefix (prop) {
   }
 }
 
-},{"../util":103}],75:[function(require,module,exports){
+},{"../util":105}],77:[function(require,module,exports){
 var _ = require('../util')
 
 module.exports = {
@@ -13289,7 +15867,7 @@ module.exports = {
   }
 }
 
-},{"../util":103}],76:[function(require,module,exports){
+},{"../util":105}],78:[function(require,module,exports){
 var _ = require('../util')
 var Transition = require('../transition/transition')
 
@@ -13317,7 +15895,7 @@ module.exports = {
   }
 }
 
-},{"../transition/transition":98,"../util":103}],77:[function(require,module,exports){
+},{"../transition/transition":100,"../util":105}],79:[function(require,module,exports){
 var _ = require('../util')
 var clone = require('../parsers/template').clone
 
@@ -13430,11 +16008,11 @@ function extractFragment (nodes, parent, main) {
   return frag
 }
 
-},{"../parsers/template":94,"../util":103}],78:[function(require,module,exports){
+},{"../parsers/template":96,"../util":105}],80:[function(require,module,exports){
 exports.content = require('./content')
 exports.partial = require('./partial')
 
-},{"./content":77,"./partial":79}],79:[function(require,module,exports){
+},{"./content":79,"./partial":81}],81:[function(require,module,exports){
 (function (process){
 var _ = require('../util')
 var templateParser = require('../parsers/template')
@@ -13511,7 +16089,7 @@ module.exports = {
 }
 
 }).call(this,require('_process'))
-},{"../cache":49,"../compiler":52,"../directives/if":62,"../parsers/template":94,"../parsers/text":95,"../util":103,"_process":2}],80:[function(require,module,exports){
+},{"../cache":51,"../compiler":54,"../directives/if":64,"../parsers/template":96,"../parsers/text":97,"../util":105,"_process":2}],82:[function(require,module,exports){
 var _ = require('../util')
 var Path = require('../parsers/path')
 
@@ -13610,7 +16188,7 @@ function contains (val, search) {
   }
 }
 
-},{"../parsers/path":93,"../util":103}],81:[function(require,module,exports){
+},{"../parsers/path":95,"../util":105}],83:[function(require,module,exports){
 var _ = require('../util')
 
 /**
@@ -13758,7 +16336,7 @@ exports.debounce = function (handler, delay) {
 
 _.extend(exports, require('./array-filters'))
 
-},{"../util":103,"./array-filters":80}],82:[function(require,module,exports){
+},{"../util":105,"./array-filters":82}],84:[function(require,module,exports){
 var _ = require('../util')
 var Directive = require('../directive')
 var compiler = require('../compiler')
@@ -13960,7 +16538,7 @@ exports._cleanup = function () {
   this.$off()
 }
 
-},{"../compiler":52,"../directive":55,"../util":103}],83:[function(require,module,exports){
+},{"../compiler":54,"../directive":57,"../util":105}],85:[function(require,module,exports){
 (function (process){
 var _ = require('../util')
 var inDoc = _.inDoc
@@ -14103,7 +16681,7 @@ exports._callHook = function (hook) {
 }
 
 }).call(this,require('_process'))
-},{"../util":103,"_process":2}],84:[function(require,module,exports){
+},{"../util":105,"_process":2}],86:[function(require,module,exports){
 var mergeOptions = require('../util').mergeOptions
 
 /**
@@ -14194,7 +16772,7 @@ exports._init = function (options) {
   }
 }
 
-},{"../util":103}],85:[function(require,module,exports){
+},{"../util":105}],87:[function(require,module,exports){
 (function (process){
 var _ = require('../util')
 
@@ -14291,7 +16869,7 @@ exports._resolveComponent = function (id, cb) {
 }
 
 }).call(this,require('_process'))
-},{"../util":103,"_process":2}],86:[function(require,module,exports){
+},{"../util":105,"_process":2}],88:[function(require,module,exports){
 (function (process){
 var _ = require('../util')
 var compiler = require('../compiler')
@@ -14577,7 +17155,7 @@ exports._defineMeta = function (key, value) {
 }
 
 }).call(this,require('_process'))
-},{"../compiler":52,"../observer":89,"../observer/dep":88,"../util":103,"../watcher":107,"_process":2}],87:[function(require,module,exports){
+},{"../compiler":54,"../observer":91,"../observer/dep":90,"../util":105,"../watcher":109,"_process":2}],89:[function(require,module,exports){
 var _ = require('../util')
 var arrayProto = Array.prototype
 var arrayMethods = Object.create(arrayProto)
@@ -14677,7 +17255,7 @@ _.define(
 
 module.exports = arrayMethods
 
-},{"../util":103}],88:[function(require,module,exports){
+},{"../util":105}],90:[function(require,module,exports){
 var _ = require('../util')
 var uid = 0
 
@@ -14740,7 +17318,7 @@ Dep.prototype.notify = function () {
 
 module.exports = Dep
 
-},{"../util":103}],89:[function(require,module,exports){
+},{"../util":105}],91:[function(require,module,exports){
 var _ = require('../util')
 var config = require('../config')
 var Dep = require('./dep')
@@ -14976,7 +17554,7 @@ function copyAugment (target, src, keys) {
 
 module.exports = Observer
 
-},{"../config":54,"../util":103,"./array":87,"./dep":88,"./object":90}],90:[function(require,module,exports){
+},{"../config":56,"../util":105,"./array":89,"./dep":90,"./object":92}],92:[function(require,module,exports){
 var _ = require('../util')
 var objProto = Object.prototype
 
@@ -15060,7 +17638,7 @@ _.define(
   }
 )
 
-},{"../util":103}],91:[function(require,module,exports){
+},{"../util":105}],93:[function(require,module,exports){
 var _ = require('../util')
 var Cache = require('../cache')
 var cache = new Cache(1000)
@@ -15242,7 +17820,7 @@ exports.parse = function (s) {
   return dirs
 }
 
-},{"../cache":49,"../util":103}],92:[function(require,module,exports){
+},{"../cache":51,"../util":105}],94:[function(require,module,exports){
 (function (process){
 var _ = require('../util')
 var Path = require('./path')
@@ -15510,7 +18088,7 @@ exports.isSimplePath = function (exp) {
 }
 
 }).call(this,require('_process'))
-},{"../cache":49,"../util":103,"./path":93,"_process":2}],93:[function(require,module,exports){
+},{"../cache":51,"../util":105,"./path":95,"_process":2}],95:[function(require,module,exports){
 (function (process){
 var _ = require('../util')
 var Cache = require('../cache')
@@ -15862,7 +18440,7 @@ function warnNonExistent (path) {
 }
 
 }).call(this,require('_process'))
-},{"../cache":49,"../util":103,"_process":2}],94:[function(require,module,exports){
+},{"../cache":51,"../util":105,"_process":2}],96:[function(require,module,exports){
 var _ = require('../util')
 var Cache = require('../cache')
 var templateCache = new Cache(1000)
@@ -16152,7 +18730,7 @@ exports.parse = function (template, clone, noSelector) {
     : frag
 }
 
-},{"../cache":49,"../util":103}],95:[function(require,module,exports){
+},{"../cache":51,"../util":105}],97:[function(require,module,exports){
 var Cache = require('../cache')
 var config = require('../config')
 var dirParser = require('./directive')
@@ -16332,7 +18910,7 @@ function inlineFilters (exp, single) {
   }
 }
 
-},{"../cache":49,"../config":54,"./directive":91}],96:[function(require,module,exports){
+},{"../cache":51,"../config":56,"./directive":93}],98:[function(require,module,exports){
 var _ = require('../util')
 
 /**
@@ -16462,7 +19040,7 @@ var apply = exports.apply = function (el, direction, op, vm, cb) {
   transition[action](op, cb)
 }
 
-},{"../util":103}],97:[function(require,module,exports){
+},{"../util":105}],99:[function(require,module,exports){
 var _ = require('../util')
 var queue = []
 var queued = false
@@ -16499,7 +19077,7 @@ function flush () {
   return f
 }
 
-},{"../util":103}],98:[function(require,module,exports){
+},{"../util":105}],100:[function(require,module,exports){
 var _ = require('../util')
 var queue = require('./queue')
 var addClass = _.addClass
@@ -16858,7 +19436,7 @@ function isHidden (el) {
 
 module.exports = Transition
 
-},{"../util":103,"./queue":97}],99:[function(require,module,exports){
+},{"../util":105,"./queue":99}],101:[function(require,module,exports){
 (function (process){
 var _ = require('./index')
 
@@ -16986,7 +19564,7 @@ function formatValue (val) {
 }
 
 }).call(this,require('_process'))
-},{"./index":103,"_process":2}],100:[function(require,module,exports){
+},{"./index":105,"_process":2}],102:[function(require,module,exports){
 (function (process){
 /**
  * Enable debug utilities.
@@ -17054,7 +19632,7 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 }).call(this,require('_process'))
-},{"../config":54,"_process":2}],101:[function(require,module,exports){
+},{"../config":56,"_process":2}],103:[function(require,module,exports){
 (function (process){
 var _ = require('./index')
 var config = require('../config')
@@ -17330,7 +19908,7 @@ exports.createAnchor = function (content, persist) {
 }
 
 }).call(this,require('_process'))
-},{"../config":54,"./index":103,"_process":2}],102:[function(require,module,exports){
+},{"../config":56,"./index":105,"_process":2}],104:[function(require,module,exports){
 // can we use __proto__?
 exports.hasProto = '__proto__' in {}
 
@@ -17417,7 +19995,7 @@ exports.nextTick = (function () {
   }
 })()
 
-},{}],103:[function(require,module,exports){
+},{}],105:[function(require,module,exports){
 var lang = require('./lang')
 var extend = lang.extend
 
@@ -17428,7 +20006,7 @@ extend(exports, require('./options'))
 extend(exports, require('./component'))
 extend(exports, require('./debug'))
 
-},{"./component":99,"./debug":100,"./dom":101,"./env":102,"./lang":104,"./options":105}],104:[function(require,module,exports){
+},{"./component":101,"./debug":102,"./dom":103,"./env":104,"./lang":106,"./options":107}],106:[function(require,module,exports){
 /**
  * Check if a string starts with $ or _
  *
@@ -17740,7 +20318,7 @@ exports.looseEqual = function (a, b) {
   /* eslint-enable eqeqeq */
 }
 
-},{}],105:[function(require,module,exports){
+},{}],107:[function(require,module,exports){
 (function (process){
 var _ = require('./index')
 var config = require('../config')
@@ -18101,7 +20679,7 @@ exports.resolveAsset = function resolve (options, type, id) {
 }
 
 }).call(this,require('_process'))
-},{"../config":54,"./index":103,"_process":2}],106:[function(require,module,exports){
+},{"../config":56,"./index":105,"_process":2}],108:[function(require,module,exports){
 var _ = require('./util')
 var extend = _.extend
 
@@ -18192,7 +20770,7 @@ extend(p, require('./api/lifecycle'))
 
 module.exports = _.Vue = Vue
 
-},{"./api/child":42,"./api/data":43,"./api/dom":44,"./api/events":45,"./api/global":46,"./api/lifecycle":47,"./directives":63,"./element-directives":78,"./filters":81,"./instance/compile":82,"./instance/events":83,"./instance/init":84,"./instance/misc":85,"./instance/scope":86,"./util":103}],107:[function(require,module,exports){
+},{"./api/child":44,"./api/data":45,"./api/dom":46,"./api/events":47,"./api/global":48,"./api/lifecycle":49,"./directives":65,"./element-directives":80,"./filters":83,"./instance/compile":84,"./instance/events":85,"./instance/init":86,"./instance/misc":87,"./instance/scope":88,"./util":105}],109:[function(require,module,exports){
 (function (process){
 var _ = require('./util')
 var config = require('./config')
@@ -18508,12 +21086,14 @@ function traverse (obj) {
 module.exports = Watcher
 
 }).call(this,require('_process'))
-},{"./batcher":48,"./config":54,"./observer/dep":88,"./parsers/expression":92,"./util":103,"_process":2}],108:[function(require,module,exports){
+},{"./batcher":50,"./config":56,"./observer/dep":90,"./parsers/expression":94,"./util":105,"_process":2}],110:[function(require,module,exports){
 'use strict';
 
 var Vue = require('vue');
 var VueRouter = require('vue-router');
 var VueResource = require('vue-resource');
+var VueTouch = require('vue-touch');
+Vue.use(VueTouch);
 window.Drop = require('dropzone');
 Vue.use(VueRouter);
 Vue.use(VueResource);
@@ -18617,7 +21197,7 @@ router.mode = 'hash';
 
 router.start(app, '#app');
 
-},{"./components/global/comparaConversorMoeda":109,"./components/global/painelCotacoes":111,"./components/routed/cadastro":113,"./components/routed/confirmaEmail":115,"./components/routed/contatos":117,"./components/routed/home":119,"./components/routed/login":121,"./components/routed/painel":123,"./components/routed/perfil":125,"dropzone":1,"moment":3,"vue":106,"vue-resource":5,"vue-router":17}],109:[function(require,module,exports){
+},{"./components/global/comparaConversorMoeda":111,"./components/global/painelCotacoes":113,"./components/routed/cadastro":115,"./components/routed/confirmaEmail":117,"./components/routed/contatos":119,"./components/routed/home":121,"./components/routed/login":123,"./components/routed/painel":125,"./components/routed/perfil":127,"dropzone":1,"moment":3,"vue":108,"vue-resource":5,"vue-router":17,"vue-touch":43}],111:[function(require,module,exports){
 'use strict';
 
 module.exports = {
@@ -18672,9 +21252,9 @@ module.exports = {
   }
 };
 
-},{"./comparaConversorMoeda.template.html":110}],110:[function(require,module,exports){
+},{"./comparaConversorMoeda.template.html":112}],112:[function(require,module,exports){
 module.exports = '<div class="heading">\n  <i class="fa fa-calculator"></i>\n  Conversor de Moedas\n</div>\n<div class="widget-content padded text-center">\n  <div class="row">\n    <div class="col-sm-offset-2 col-sm-8">\n      <h3>Veja quanto você economiza com o Covr!</h3>\n    </div>\n  </div>\n  <div class="row">\n    <div class="col-sm-2">\n      <div class="form-group">\n        <label>Digite o valor:</label>\n        <input class="form-control" v-on="keyup: calcula, click: calcula" type="number" v-model="valor">\n      </div>\n    </div>\n    <div class="col-sm-2">\n      <div class="form-group">\n        <label>Moeda que possui:</label>\n        <select class="form-control" v-on="change: calcula" v-model="selectedA" options="cotacao"></select>\n      </div>\n    </div>\n    <div class="col-sm-1">\n      <div class="form-group">\n        <div class="hidden-xs"></div>\n        <button v-on="click: inverte" style="margin-top:5px;" type="button" class="btn btn-block btn-primary">\n          <span style="margin:0;" class="fa fa-refresh"></span>\n        </button>\n      </div>\n    </div>\n    <div class="col-sm-2">\n      <div class="form-group">\n        <label>Moeda que deseja:</label>\n        <select class="form-control" v-on="change: calcula" v-model="selectedB" options="cotacao" id="simbolo"></select>\n      </div>\n    </div>\n    <div class="col-sm-5">\n      <div class="col-sm-6">\n        <span>Banco/Corretora</span>\n        <h2 style="margin-top:3px;"><small>{{simbolo}}</small> {{resultadoSpread}}</h2>\n      </div>\n      <div class="col-sm-6">\n        <span>Com o AppCambio</span>\n        <h2 style="margin-top:3px;"><small>{{simbolo}}</small> {{resultado}}</h2>\n      </div>\n    </div>\n\n    <div class="col-sm-12">\n      <p>\n        *Data base: {{data}}\n      </p>\n    </div>\n  </div>\n</div>\n';
-},{}],111:[function(require,module,exports){
+},{}],113:[function(require,module,exports){
 'use strict';
 
 module.exports = {
@@ -18740,9 +21320,9 @@ module.exports = {
   props: ['cotacao']
 };
 
-},{"./painelCotacoes.template.html":112}],112:[function(require,module,exports){
-module.exports = '<!-- Statistics -->\n<div class="row">\n  <div class="col-xs-6" style="padding:0;">\n    <div class="widget-container cot-container">\n      <div class="col-sm-3"\n           v-class="animated: animate, fadeIn: animate">\n        <div class="number">\n          {{cotacao.USD.preco}}\n        </div>\n        <div class="text" v-class="USDcolor">\n          {{cotacao.USD.variacao}}\n        </div>\n      </div>\n      <div class="col-sm-3"\n           v-class="animated: animate, fadeIn: animate">\n        <div class="number">\n          {{cotacao.CAD.preco}}\n        </div>\n        <div class="text" v-class="CADcolor">\n          {{cotacao.CAD.variacao}}\n        </div>\n      </div>\n      <div class="col-sm-3"\n           v-class="animated: animate, fadeIn: animate">\n        <div class="number">\n          {{cotacao.AUD.preco}}\n        </div>\n        <div class="text" v-class="AUDcolor">\n          {{cotacao.AUD.variacao}}\n        </div>\n      </div>\n      <div class="col-sm-3"\n           style="border-right:none;"\n           v-class="animated: animate, fadeIn: animate">\n        <div class="number">\n          {{cotacao.EUR.preco}}\n        </div>\n        <div class="text" v-class="EURcolor">\n          {{cotacao.EUR.variacao}}\n        </div>\n      </div>\n    </div>\n  </div>\n  <div class="col-xs-6" style="padding:0;">\n    <div class="widget-container cot-container">\n      <div class="col-sm-3"\n           v-class="animated: animate, fadeIn: animate">\n        <div class="number">\n          {{cotacao.GBP.preco}}\n        </div>\n        <div class="text" v-class="GBPcolor">\n          {{cotacao.GBP.variacao}}\n        </div>\n      </div>\n      <div class="col-sm-3"\n           v-class="animated: animate, fadeIn: animate">\n        <div class="number">\n          {{cotacao.CLP.preco}}\n        </div>\n        <div class="text" v-class="CLPcolor">\n          {{cotacao.CLP.variacao}}\n        </div>\n      </div>\n      <div class="col-sm-3"\n           v-class="animated: animate, fadeIn: animate">\n        <div class="number">\n          {{cotacao.ARS.preco}}\n        </div>\n        <div class="text" v-class="ARScolor">\n          {{cotacao.ARS.variacao}}\n        </div>\n      </div>\n      <div class="col-sm-3"\n           v-class="animated: animate, fadeIn: animate">\n        <div class="number">\n          {{cotacao.MXN.preco}}\n        </div>\n        <div class="text" v-class="MXNcolor">\n          {{cotacao.MXN.variacao}}\n        </div>\n      </div>\n    </div>\n  </div>\n</div>\n<!-- End Statistics -->\n';
-},{}],113:[function(require,module,exports){
+},{"./painelCotacoes.template.html":114}],114:[function(require,module,exports){
+module.exports = '<!-- Statistics -->\n<div class="row">\n  <div class="col-sm-6 hidden-xs" style="padding:0;">\n    <div class="widget-container cot-container">\n      <div class="col-sm-3"\n           v-class="animated: animate, fadeIn: animate">\n        <div class="number">\n          {{cotacao.USD.preco}}\n        </div>\n        <div class="text" v-class="USDcolor">\n          {{cotacao.USD.variacao}}\n        </div>\n      </div>\n      <div class="col-sm-3"\n           v-class="animated: animate, fadeIn: animate">\n        <div class="number">\n          {{cotacao.CAD.preco}}\n        </div>\n        <div class="text" v-class="CADcolor">\n          {{cotacao.CAD.variacao}}\n        </div>\n      </div>\n      <div class="col-sm-3"\n           v-class="animated: animate, fadeIn: animate">\n        <div class="number">\n          {{cotacao.AUD.preco}}\n        </div>\n        <div class="text" v-class="AUDcolor">\n          {{cotacao.AUD.variacao}}\n        </div>\n      </div>\n      <div class="col-sm-3"\n           style="border-right:none;"\n           v-class="animated: animate, fadeIn: animate">\n        <div class="number">\n          {{cotacao.EUR.preco}}\n        </div>\n        <div class="text" v-class="EURcolor">\n          {{cotacao.EUR.variacao}}\n        </div>\n      </div>\n    </div>\n  </div>\n  <div class="col-sm-6 hidden-xs" style="padding:0;">\n    <div class="widget-container cot-container">\n      <div class="col-sm-3"\n           v-class="animated: animate, fadeIn: animate">\n        <div class="number">\n          {{cotacao.GBP.preco}}\n        </div>\n        <div class="text" v-class="GBPcolor">\n          {{cotacao.GBP.variacao}}\n        </div>\n      </div>\n      <div class="col-sm-3"\n           v-class="animated: animate, fadeIn: animate">\n        <div class="number">\n          {{cotacao.CLP.preco}}\n        </div>\n        <div class="text" v-class="CLPcolor">\n          {{cotacao.CLP.variacao}}\n        </div>\n      </div>\n      <div class="col-sm-3"\n           v-class="animated: animate, fadeIn: animate">\n        <div class="number">\n          {{cotacao.ARS.preco}}\n        </div>\n        <div class="text" v-class="ARScolor">\n          {{cotacao.ARS.variacao}}\n        </div>\n      </div>\n      <div class="col-sm-3"\n           v-class="animated: animate, fadeIn: animate">\n        <div class="number">\n          {{cotacao.MXN.preco}}\n        </div>\n        <div class="text" v-class="MXNcolor">\n          {{cotacao.MXN.variacao}}\n        </div>\n      </div>\n    </div>\n  </div>\n</div>\n<!-- End Statistics -->\n';
+},{}],115:[function(require,module,exports){
 'use strict';
 
 module.exports = {
@@ -18760,9 +21340,7 @@ module.exports = {
       emailInvalid: false,
       passwordInvalid: false,
       confirmationInvalid: false,
-      emailExists: false,
-      fbLoading: false,
-      loading: false
+      emailExists: false
     };
   },
 
@@ -18796,8 +21374,9 @@ module.exports = {
       }
     },
     postRegister: function postRegister(e) {
-      this.loading = true;
       e.preventDefault();
+      var l = Ladda.create(e.target);
+      l.start();
       this.nomeInvalid = false;
       this.sobrenomeInvalid = false;
       this.emailInvalid = false;
@@ -18816,7 +21395,7 @@ module.exports = {
           console.log(data);
         }
       }).error(function (data) {
-        this.loading = false;
+        l.stop();
         for (var err in data) {
           if (data[err][0] == "A confirmação para o campo password não coincide.") {
             console.log(data[err][0]);
@@ -18830,8 +21409,9 @@ module.exports = {
         }
       });
     },
-    fbLogin: function fbLogin() {
-      this.fbLoading = true;
+    fbLogin: function fbLogin(e) {
+      var l = Ladda.create(e.target);
+      l.start();
       FB.login(function (response) {
         // console.log(JSON.stringify(response));
         FB.getLoginStatus(function (response) {
@@ -18842,18 +21422,18 @@ module.exports = {
   }
 };
 
-},{"./cadastro.template.html":114}],114:[function(require,module,exports){
-module.exports = '<div class="col-sm-offset-2 col-sm-8 col-md-offset-3 col-md-6">\n  <div class="widget-container fluid-height clearfix">\n    <div class="heading">\n      <i class="fa fa-sign-in"></i>\n      Cadastro\n    </div>\n    <div class="widget-content padded text-center">\n      <div class="login-wrapper col-sm-offset-1 col-sm-10">\n        <form method="POST">\n\n          <div class="form-group" v-class="has-error: nomeInvalid,\n                                          animated: nomeInvalid,\n                                          shake: nomeInvalid">\n            <div class="input-group">\n              <span class="input-group-addon"><i class="fa fa-user"></i></span>\n              <input type="text"\n                     v-model="nome"\n                     v-on="blur: validaNome"\n                     class="form-control"\n                     placeholder="Digite o seu nome">\n            </div>\n          </div>\n\n          <div class="form-group" v-class="has-error: sobrenomeInvalid,\n                                          animated: sobrenomeInvalid,\n                                          shake: sobrenomeInvalid">\n            <div class="input-group">\n              <span class="input-group-addon"><i class="fa fa-user-secret"></i></span>\n              <input type="text"\n                     v-model="sobrenome"\n                     v-on="blur: validaSobrenome"\n                     class="form-control"\n                     placeholder="Digite o seu sobrenome">\n            </div>\n          </div>\n\n          <div class="form-group" v-class="has-error: emailInvalid,\n                                          animated: emailInvalid,\n                                          shake: emailInvalid">\n            <div class="input-group">\n              <span class="input-group-addon"><i class="fa fa-envelope"></i></span>\n              <input type="text"\n                     v-model="email"\n                     v-on="blur: validaEmail"\n                     class="form-control"\n                     placeholder="Digite o email">\n            </div>\n          </div>\n\n          <div class="form-group" v-class="has-error: passwordInvalid,\n                                          animated: passwordInvalid,\n                                          shake: passwordInvalid">\n            <div class="input-group">\n              <span class="input-group-addon"><i class="fa fa-lock"></i></span>\n              <input type="password"\n                     v-model="password"\n                     v-on="blur: validaPassword"\n                     class="form-control"\n                     placeholder="Digite a senha">\n            </div>\n          </div>\n\n          <div class="form-group" v-class="has-error: confirmationInvalid,\n                                          animated: confirmationInvalid,\n                                          shake: confirmationInvalid">\n            <div class="input-group">\n              <span class="input-group-addon"><i class="fa fa-lock"></i></span>\n              <input type="password" v-model="password_confirmation" class="form-control" placeholder="Confirme a senha">\n            </div>\n          </div>\n\n          <button v-class="disabled: loading" v-on="click: postRegister" class="btn btn-lg btn-primary btn-block">\n            {{!loading ? \'Cadastrar\' : \'\'}}\n            <i v-if="loading" class="fa fa-spinner fa-pulse"></i>\n          </button>\n          <span class="text-danger" v-if="emailExists">Este email já está cadastrado.</span>\n        <br>\n        </form>\n\n          <div class="social-login clearfix">\n            <a v-class="disabled: fbLoading" class="btn btn-primary facebook btn-block" v-on="click: fbLogin">\n              <i v-if="!fbLoading" class="fa fa-facebook"></i>{{!fbLoading ? \' Cadastro com o facebook\' : \' \'}}\n              <i v-if="fbLoading" class="fa fa-spinner fa-pulse"></i>\n            </a>\n          </div>\n\n          <hr>\n\n          <p>\n            Já tem uma conta?\n          </p>\n\n          <a v-link="{path: \'/login\'}" style="margin-bottom:20px;" class="btn btn-default-outline btn-block">Login</a>\n      </div>\n    </div>\n  </div>\n</div>\n';
-},{}],115:[function(require,module,exports){
+},{"./cadastro.template.html":116}],116:[function(require,module,exports){
+module.exports = '<div class="col-sm-offset-2 col-sm-8 col-md-offset-3 col-md-6">\n  <div class="widget-container fluid-height clearfix">\n    <div class="heading">\n      <i class="fa fa-sign-in"></i>\n      Cadastro\n    </div>\n    <div class="widget-content padded text-center">\n      <div class="login-wrapper col-sm-offset-1 col-sm-10">\n        <form method="POST">\n\n          <div class="form-group" v-class="has-error: nomeInvalid,\n                                          animated: nomeInvalid,\n                                          shake: nomeInvalid">\n            <div class="input-group">\n              <span class="input-group-addon"><i class="fa fa-user"></i></span>\n              <input type="text"\n                     v-model="nome"\n                     v-on="blur: validaNome"\n                     class="form-control"\n                     placeholder="Digite o seu nome">\n            </div>\n          </div>\n\n          <div class="form-group" v-class="has-error: sobrenomeInvalid,\n                                          animated: sobrenomeInvalid,\n                                          shake: sobrenomeInvalid">\n            <div class="input-group">\n              <span class="input-group-addon"><i class="fa fa-user-secret"></i></span>\n              <input type="text"\n                     v-model="sobrenome"\n                     v-on="blur: validaSobrenome"\n                     class="form-control"\n                     placeholder="Digite o seu sobrenome">\n            </div>\n          </div>\n\n          <div class="form-group" v-class="has-error: emailInvalid,\n                                          animated: emailInvalid,\n                                          shake: emailInvalid">\n            <div class="input-group">\n              <span class="input-group-addon"><i class="fa fa-envelope"></i></span>\n              <input type="text"\n                     v-model="email"\n                     v-on="blur: validaEmail"\n                     class="form-control"\n                     placeholder="Digite o email">\n            </div>\n          </div>\n\n          <div class="form-group" v-class="has-error: passwordInvalid,\n                                          animated: passwordInvalid,\n                                          shake: passwordInvalid">\n            <div class="input-group">\n              <span class="input-group-addon"><i class="fa fa-lock"></i></span>\n              <input type="password"\n                     v-model="password"\n                     v-on="blur: validaPassword"\n                     class="form-control"\n                     placeholder="Digite a senha">\n            </div>\n          </div>\n\n          <div class="form-group" v-class="has-error: confirmationInvalid,\n                                          animated: confirmationInvalid,\n                                          shake: confirmationInvalid">\n            <div class="input-group">\n              <span class="input-group-addon"><i class="fa fa-lock"></i></span>\n              <input type="password" v-model="password_confirmation" class="form-control" placeholder="Confirme a senha">\n            </div>\n          </div>\n\n          <button v-class="disabled: loading" v-on="click: postRegister" class="btn btn-lg btn-primary btn-block ladda-button" data-style="zoom-in">\n            <span class="ladda-label">\n              Cadastrar\n            </span>\n          </button>\n          <div class="alert alert-danger" style="margin-bottom:0" v-if="emailExists" role="alert">Este email já está cadastrado.</div>\n        </form>\n        <br>\n\n          <div class="social-login clearfix">\n            <a v-class="disabled: fbLoading" class="btn btn-primary facebook btn-block ladda-button" v-on="click: fbLogin" data-style="zoom-in">\n              <span class="ladda-label">\n                <i v-if="!fbLoading" class="fa fa-facebook"></i> Cadastro com o facebook\n              </span>\n            </a>\n          </div>\n\n          <hr>\n\n          <p>\n            Já tem uma conta?\n          </p>\n\n          <a v-link="{path: \'/login\'}" style="margin-bottom:20px;" class="btn btn-default-outline btn-block">Login</a>\n      </div>\n    </div>\n  </div>\n</div>\n';
+},{}],117:[function(require,module,exports){
 'use strict';
 
 module.exports = {
   template: require('./confirmaEmail.template.html')
 };
 
-},{"./confirmaEmail.template.html":116}],116:[function(require,module,exports){
+},{"./confirmaEmail.template.html":118}],118:[function(require,module,exports){
 module.exports = '<div class="col-md-offset-3 col-md-6">\n  <div class="widget-container fluid-height clearfix">\n    <div class="heading">\n      <i class="fa fa-sign-in"></i>\n      Confirmação de email\n    </div>\n    <div class="widget-content padded text-center">\n      <div class="login-wrapper col-md-offset-1 col-md-10">\n        <p>\n          Obrigado por ser cadastrar! Favor confirmar o seu cadastro através do email que lhe enviamos.\n        </p>\n      </div>\n    </div>\n  </div>\n</div>\n';
-},{}],117:[function(require,module,exports){
+},{}],119:[function(require,module,exports){
 'use strict';
 
 module.exports = {
@@ -18873,7 +21453,8 @@ module.exports = {
       currentChat: null,
       messageInput: '',
       messagePagination: 1,
-      loadMore: true
+      loadMore: true,
+      hidden_xs: false
     };
   },
 
@@ -18899,7 +21480,7 @@ module.exports = {
       if (window.chatToGoUpId != undefined) {
         this.takeChatUp(window.chatToGoUpId);
         window.chatToGoUpId = undefined;
-        this.openChat(0);
+        this.openChat(this.availableChats[0]);
       }
     });
     this.$http.get('api/user', function (data) {
@@ -19009,6 +21590,7 @@ module.exports = {
       this.loadMore = true;
       var that = this;
       this.$http.get('api/message/' + c.id).success(function (data) {
+        that.hidden_xs = true;
         that.currentChat = c;
         that.currentChat.messages = data;
         setTimeout(function () {
@@ -19044,6 +21626,7 @@ module.exports = {
       });
     },
     closeChat: function closeChat() {
+      this.hidden_xs = false;
       this.currentChat = null;
       this.messagePagination = 1;
     },
@@ -19098,13 +21681,16 @@ module.exports = {
       }).error(function (data) {
         console.log(data);
       });
+    },
+    callModal: function callModal(modal) {
+      $(modal).modal();
     }
   }
 };
 
-},{"./contatos.template.html":118}],118:[function(require,module,exports){
-module.exports = '\n<div class="row">\n  <!-- Chat widget -->\n  <div class="col-sm-3">\n    <div class="widget-container scrollable chat chat-page">\n      <div class="contact-list alone">\n        <div class="heading">\n          Chats ({{chatsCount}})\n        </div>\n        <input v-model="searchBar" class="form-control input-sm" placeholder="Procure por amigos">\n        <ul>\n          <li v-repeat="c: availableChats | filterBy searchBar" v-on="click: openChat(c)">\n            <a href="#">\n              <img src="images/int.jpg" width="30" height="30" />\n              {{c.user.nome + \' \' + c.user.sobrenome}}\n              <span v-if="c.countNotRead > 0" class="badge pull-right">{{c.countNotRead}}</span>\n            </a>\n          </li>\n        </ul>\n      </div>\n    </div>\n  <!-- Fim do primeiro widget -->\n  </div>\n\n  <!-- Segundo widget -->\n  <div class="col-sm-9">\n\n    <!-- Solicitações de amizades -->\n    <div v-if="currentChat == null" class="widget-container friends-widget scrollable clearfix">\n      <div class="heading">\n        <i class="fa fa-users"></i>\n        Amizades\n      </div>\n      <div class="widget-content padded">\n        <div class="form-group form-inline">\n          <input v-model="searchFriends"\n                 class="form-control input-sm"\n                 placeholder="Digite o nome"\n                 v-on="keyup: getNotFriends">\n        </div>\n\n        <!-- Painel de explicações -->\n        <!-- <div class="text-center" v-if="requests.length == 0 && requested.length == 0 && searchFriends == \'\'">\n          <h2>\n            Adicione mais contatos, a chance será maior de trocar moeda com alguém que conheça!\n          </h2>\n          <i style="font-size:5em;" class="fa fa-smile-o"></i>\n          <p class="lead">\n            Clique no botão + no painel ao lado e procure por conhecidos.\n          </p>\n          <p class="lead">\n            Você também pode adicionar os seus amigos do facebook, que estão no aplicativo.\n            Basta clicar no botão abaixo.\n          </p>\n          <button type="button" class="btn btn-primary">Adicionar fb</button>\n          <hr>\n        </div> -->\n\n        <!-- Soliciatações de amizade -->\n        <div class="friends-requested" v-if="requested.length > 0 && searchFriends == \'\'">\n          <h3>Solicitações pendentes</h3>\n          <div class="row" v-repeat="r: requested">\n            <div class="col-sm-2">\n              <img src="{{ r.profilePic == null ? \'images/int.jpg\' : r.profilePic }}"\n                   class="img-responsive img-rounded" />\n              </div>\n            <div class="col-sm-7">\n              <p style="font-size:1.4em;">{{r.nome + \' \' + r.sobrenome}}</p>\n              <p>\n                <i class="fa fa-map-marker"></i> Rio de Janeiro\n              </p>\n            </div>\n            <div class="col-sm-3">\n              <button class="btn btn-large btn-block btn-success pull-right"\n                      v-on="click: confirmFriend(r, $event)">\n                Aceitar\n              </button>\n              <button class="btn btn-large btn-block btn-warning pull-right"\n                      v-on="click: removeRequested(r, $event)">\n                Cancelar\n              </button>\n            </div>\n          </div>\n        </div>\n\n        <!-- Amizades solicitadas -->\n        <div class="friends-requests" v-if="requests.length > 0 && searchFriends == \'\'">\n          <h3>Solicitações feitas</h3>\n          <div class="row" v-repeat="r: requests">\n            <div class="col-sm-2">\n              <img src="{{ r.profilePic == null ? \'images/int.jpg\' : r.profilePic }}"\n                   class="img-responsive img-rounded" />\n            </div>\n            <div class="col-sm-7">\n              <p style="font-size:1.4em;">{{r.nome + \' \' + r.sobrenome}}</p>\n              <p>\n                <i class="fa fa-map-marker"></i> Rio de Janeiro\n              </p>\n            </div>\n            <div class="col-sm-3">\n              <button class="btn btn-large btn-block btn-warning pull-right"\n                      v-on="click: cancelRequest(r, $event)">\n                Cancelar\n              </button>\n            </div>\n          </div>\n        </div>\n\n\n        <!-- Amigos atuais -->\n        <div class="friends-requests">\n          <h3>Amigos</h3>\n          <div class="row" v-repeat="f: friends | filterBy searchFriends">\n            <div class="col-sm-2">\n              <img src="{{ f.profilePic == null ? \'images/int.jpg\' : f.profilePic }}"\n                   class="img-responsive img-rounded" />\n            </div>\n            <div class="col-sm-7">\n              <p style="font-size:1.4em;">{{f.nome + \' \' + f.sobrenome}}</p>\n              <p>\n                <i class="fa fa-map-marker"></i> Rio de Janeiro\n              </p>\n            </div>\n            <div class="col-sm-3">\n              <button class="btn btn-large btn-block btn-warning pull-right"\n                      v-on="click: cancelFriend(f, $event)">\n                Desfazer amizade\n              </button>\n            </div>\n          </div>\n        </div>\n\n        <!-- Procura por novos amigos -->\n        <div class="friends-requests" v-if="searchFriends != \'\'">\n          <h3>Mais pessoas</h3>\n          <div class="row" v-repeat="n: notFriends | filterBy searchFriends">\n            <div class="col-sm-2">\n              <img src="{{ n.profilePic == null ? \'images/int.jpg\' : n.profilePic }}"\n                   class="img-responsive img-rounded" />\n            </div>\n            <div class="col-sm-7">\n              <p style="font-size:1.4em;">{{n.nome + \' \' + n.sobrenome}}</p>\n              <p>\n                <i class="fa fa-map-marker"></i> Rio de Janeiro\n              </p>\n            </div>\n            <div class="col-sm-3">\n              <button class="btn btn-large btn-block btn-success pull-right"\n                      v-on="click: requestFriend(n, $event)">\n                Solicitar\n              </button>\n            </div>\n          </div>\n        </div>\n\n\n      </div>\n    <!-- Fim das solicitações de amizade -->\n    </div>\n\n    <!-- Chat -->\n    <div v-if="currentChat != null" class="widget-container scrollable chat">\n      <div class="heading">\n        <i class="fa fa-users"></i>\n        Chat com {{currentChat.user.nome + \' \' + currentChat.user.sobrenome}}\n        <i class="fa fa-close pull-right" style="font-size:1.4em;" v-on="click: closeChat"></i>\n        <i class="fa fa-trash-o pull-right" style="font-size:1.4em;" data-toggle="modal" data-target="#myModal"></i>\n      </div>\n      <div class="widget-content padded" id="chat-scroll">\n        <div v-if="loadMore" class="row">\n          <div class="col-sm-offset-2 col-sm-8">\n            <button v-on="click: loadMoreMessages" class="btn btn-large btn-block btn-default-outline">Carregar mais..</button>\n          </div>\n        </div>\n        <ul>\n          <li v-repeat="m: currentChat.messages" v-class="current-user: user.id == m.user_id">\n            <img src="images/int.jpg" width="30" height="30" />\n            <div class="bubble">\n              <p class="message">{{m.message}}</p>\n              <p class="time">\n                <strong>{{m.created_at}}</strong>\n              </p>\n            </div>\n          </li>\n        </ul>\n      </div>\n      <div class="post-message">\n        <input class="form-control" type="text" v-model="messageInput" v-on="keyup: sendMessage | key \'enter\'">\n        <input type="submit" value="Enviar" v-on="click: sendMessage">\n      </div>\n    </div>\n  <!-- Fim do segundo widget -->\n  </div>\n</div>\n<div class="modal fade" id="myModal">\n  <div class="modal-dialog">\n    <div class="modal-content">\n      <div class="modal-body">\n        <h1>\n          Deseja deletar esse chat?\n        </h1>\n        <p>\n          Ao deleter esse chat, tanto você quanto o outro integrante irão perder todo o histórico da conversa.\n        </p>\n      </div>\n      <div class="modal-footer">\n        <button class="btn btn-danger" v-on="click: destroyChat">Deletar</button>\n        <button class="btn btn-default-outline" data-dismiss="modal" type="button">Cancelar</button>\n      </div>\n    </div>\n  </div>\n</div>\n<div class="modal fade" id="deletedChatModal">\n  <div class="modal-dialog modal-sm">\n    <div class="modal-content">\n      <div class="modal-body">\n        <p class="lead">\n          Esse chat foi fechado pelo outro usuário\n        </p>\n        <!-- <p>\n          Ao deleter esse chat, tanto você quanto o outro integrante irão perder todo o histórico da conversa.\n        </p> -->\n      </div>\n      <div class="modal-footer">\n        <button class="btn btn-default-outline" data-dismiss="modal" type="button">Fechar</button>\n      </div>\n    </div>\n  </div>\n</div>\n';
-},{}],119:[function(require,module,exports){
+},{"./contatos.template.html":120}],120:[function(require,module,exports){
+module.exports = '\n<div class="row">\n  <!-- Chat widget -->\n  <div class="col-sm-3" v-class="hidden-xs: hidden_xs">\n    <div class="widget-container scrollable chat chat-page">\n      <div class="contact-list alone">\n        <div class="heading">\n          Chats ({{chatsCount}})\n        </div>\n        <input v-model="searchBar" class="form-control input-sm" placeholder="Procure por amigos">\n        <ul>\n          <li v-repeat="c: availableChats | filterBy searchBar" v-touch="tap: openChat(c)">\n            <a href="#">\n              <img src="{{((c.user.profile_pic != null) ? c.user.profile_pic : \'images/int.jpg\')}}" width="30" height="30" />\n              {{c.user.nome + \' \' + c.user.sobrenome}}\n              <span v-if="c.countNotRead > 0" class="badge pull-right">{{c.countNotRead}}</span>\n            </a>\n          </li>\n        </ul>\n      </div>\n    </div>\n  <!-- Fim do primeiro widget -->\n  </div>\n\n  <!-- Segundo widget -->\n  <div class="col-sm-9">\n\n    <!-- Solicitações de amizades -->\n    <div v-if="currentChat == null" class="widget-container friends-widget scrollable clearfix">\n      <div class="heading">\n        <i class="fa fa-users"></i>\n        Amizades\n      </div>\n      <div class="widget-content padded">\n        <div class="form-group form-inline">\n          <input v-model="searchFriends"\n                 class="form-control input-sm"\n                 placeholder="Digite o nome"\n                 v-on="keyup: getNotFriends">\n        </div>\n\n        <!-- Painel de explicações -->\n        <!-- <div class="text-center" v-if="requests.length == 0 && requested.length == 0 && searchFriends == \'\'">\n          <h2>\n            Adicione mais contatos, a chance será maior de trocar moeda com alguém que conheça!\n          </h2>\n          <i style="font-size:5em;" class="fa fa-smile-o"></i>\n          <p class="lead">\n            Clique no botão + no painel ao lado e procure por conhecidos.\n          </p>\n          <p class="lead">\n            Você também pode adicionar os seus amigos do facebook, que estão no aplicativo.\n            Basta clicar no botão abaixo.\n          </p>\n          <button type="button" class="btn btn-primary">Adicionar fb</button>\n          <hr>\n        </div> -->\n\n        <!-- Soliciatações de amizade -->\n        <div class="friends-requested" v-if="requested.length > 0 && searchFriends == \'\'">\n          <h3>Solicitações pendentes</h3>\n          <div class="row" v-repeat="r: requested">\n            <div class="col-sm-2">\n              <img src="{{ r.profilePic == null ? \'images/int.jpg\' : r.profilePic }}"\n                   class="img-responsive img-rounded" />\n              </div>\n            <div class="col-sm-7">\n              <p style="font-size:1.4em;">{{r.nome + \' \' + r.sobrenome}}</p>\n              <p>\n                <i class="fa fa-map-marker"></i> Rio de Janeiro\n              </p>\n            </div>\n            <div class="col-sm-3">\n              <button class="btn btn-large btn-block btn-success pull-right"\n                      v-on="click: confirmFriend(r, $event)">\n                Aceitar\n              </button>\n              <button class="btn btn-large btn-block btn-warning pull-right"\n                      v-on="click: removeRequested(r, $event)">\n                Cancelar\n              </button>\n            </div>\n          </div>\n        </div>\n\n        <!-- Amizades solicitadas -->\n        <div class="friends-requests" v-if="requests.length > 0 && searchFriends == \'\'">\n          <h3>Solicitações feitas</h3>\n          <div class="row" v-repeat="r: requests">\n            <div class="col-sm-2">\n              <img src="{{ r.profilePic == null ? \'images/int.jpg\' : r.profilePic }}"\n                   class="img-responsive img-rounded" />\n            </div>\n            <div class="col-sm-7">\n              <p style="font-size:1.4em;">{{r.nome + \' \' + r.sobrenome}}</p>\n              <p>\n                <i class="fa fa-map-marker"></i> Rio de Janeiro\n              </p>\n            </div>\n            <div class="col-sm-3">\n              <button class="btn btn-large btn-block btn-warning pull-right"\n                      v-on="click: cancelRequest(r, $event)">\n                Cancelar\n              </button>\n            </div>\n          </div>\n        </div>\n\n\n        <!-- Amigos atuais -->\n        <div class="friends-requests">\n          <h3>Amigos</h3>\n          <div class="row" v-repeat="f: friends | filterBy searchFriends">\n            <div class="col-sm-2">\n              <img src="{{ f.profilePic == null ? \'images/int.jpg\' : f.profilePic }}"\n                   class="img-responsive img-rounded" />\n            </div>\n            <div class="col-sm-7">\n              <p style="font-size:1.4em;">{{f.nome + \' \' + f.sobrenome}}</p>\n              <p>\n                <i class="fa fa-map-marker"></i> Rio de Janeiro\n              </p>\n            </div>\n            <div class="col-sm-3">\n              <button class="btn btn-large btn-block btn-warning pull-right"\n                      v-on="click: cancelFriend(f, $event)">\n                Desfazer amizade\n              </button>\n            </div>\n          </div>\n        </div>\n\n        <!-- Procura por novos amigos -->\n        <div class="friends-requests" v-if="searchFriends != \'\'">\n          <h3>Mais pessoas</h3>\n          <div class="row" v-repeat="n: notFriends | filterBy searchFriends">\n            <div class="col-sm-2">\n              <img src="{{ n.profilePic == null ? \'images/int.jpg\' : n.profilePic }}"\n                   class="img-responsive img-rounded" />\n            </div>\n            <div class="col-sm-7">\n              <p style="font-size:1.4em;">{{n.nome + \' \' + n.sobrenome}}</p>\n              <p>\n                <i class="fa fa-map-marker"></i> Rio de Janeiro\n              </p>\n            </div>\n            <div class="col-sm-3">\n              <button class="btn btn-large btn-block btn-success pull-right"\n                      v-on="click: requestFriend(n, $event)">\n                Solicitar\n              </button>\n            </div>\n          </div>\n        </div>\n\n\n      </div>\n    <!-- Fim das solicitações de amizade -->\n    </div>\n\n    <!-- Chat -->\n    <div v-if="currentChat != null" class="widget-container scrollable chat">\n      <div class="heading">\n        <i class="fa fa-users"></i>\n        {{currentChat.user.nome + \' \' + currentChat.user.sobrenome}}\n        <i class="fa fa-close pull-right" style="font-size:1.4em;" v-touch="tap: closeChat"></i>\n        <i class="fa fa-trash-o pull-right" style="font-size:1.4em;" v-touch="tap: callModal(\'#myModal\')"></i>\n      </div>\n      <div class="widget-content padded" id="chat-scroll">\n        <div v-if="loadMore" class="row">\n          <div class="col-sm-offset-2 col-sm-8">\n            <button v-on="click: loadMoreMessages" class="btn btn-large btn-block btn-default-outline">Carregar mais..</button>\n          </div>\n        </div>\n        <ul>\n          <li v-repeat="m: currentChat.messages" v-class="current-user: user.id == m.user_id">\n            <img src="{{(user.id == m.user_id) ? (user.profile_pic != null) ? user.profile_pic: \'images/int.jpg\' : (currentChat.user.profile_pic != null) ? currentChat.user.profile_pic : \'images/int.jpg\'}}" width="30" height="30" />\n            <div class="bubble">\n              <p class="message">{{m.message}}</p>\n              <p class="time">\n                <strong>{{m.created_at}}</strong>\n              </p>\n            </div>\n          </li>\n        </ul>\n      </div>\n      <div class="post-message">\n        <input class="form-control" type="text" v-model="messageInput" v-on="keyup: sendMessage | key \'enter\'">\n        <a v-on="click: sendMessage"><i class="fa fa-paper-plane-o"></i></a>\n      </div>\n    </div>\n  <!-- Fim do segundo widget -->\n  </div>\n</div>\n<div class="modal fade" id="myModal">\n  <div class="modal-dialog">\n    <div class="modal-content">\n      <div class="modal-body">\n        <h1>\n          Deseja deletar esse chat?\n        </h1>\n        <p>\n          Ao deleter esse chat, tanto você quanto o outro integrante irão perder todo o histórico da conversa.\n        </p>\n      </div>\n      <div class="modal-footer">\n        <button class="btn btn-danger" v-on="click: destroyChat">Deletar</button>\n        <button class="btn btn-default-outline" data-dismiss="modal" type="button">Cancelar</button>\n      </div>\n    </div>\n  </div>\n</div>\n<div class="modal fade" id="deletedChatModal">\n  <div class="modal-dialog modal-sm">\n    <div class="modal-content">\n      <div class="modal-body">\n        <p class="lead">\n          Esse chat foi fechado pelo outro usuário\n        </p>\n        <!-- <p>\n          Ao deleter esse chat, tanto você quanto o outro integrante irão perder todo o histórico da conversa.\n        </p> -->\n      </div>\n      <div class="modal-footer">\n        <button class="btn btn-default-outline" data-dismiss="modal" type="button">Fechar</button>\n      </div>\n    </div>\n  </div>\n</div>\n';
+},{}],121:[function(require,module,exports){
 'use strict';
 
 module.exports = {
@@ -19117,9 +21703,9 @@ module.exports = {
   }
 };
 
-},{"./home.template.html":120}],120:[function(require,module,exports){
+},{"./home.template.html":122}],122:[function(require,module,exports){
 module.exports = '<div>\n  <painel-cotacoes></painel-cotacoes>\n  <div class="row">\n    <div class="col-md-12">\n      <div class="widget-container fluid-height clearfix">\n        <compara-conversor-moeda cotacao=\'{{cotacao}}\'></compara-conversor-moeda>\n      </div>\n    </div>\n  </div>\n</div>\n';
-},{}],121:[function(require,module,exports){
+},{}],123:[function(require,module,exports){
 'use strict';
 
 module.exports = {
@@ -19130,15 +21716,34 @@ module.exports = {
       email: '',
       password: '',
       authErr: false,
-      fbLoading: false,
-      loading: false,
-      remember: null
+      remember: null,
+      emailInvalid: false,
+      passwordInvalid: false
     };
   },
 
+  ready: function ready() {
+    Ladda.bind('ladda-button');
+  },
+
   methods: {
-    fbLogin: function fbLogin() {
-      this.fbLoading = true;
+    validaEmail: function validaEmail() {
+      if (this.email.length > 0 && this.email.length < 255) {
+        this.emailInvalid = false;
+      } else {
+        this.emailInvalid = 'O email tem que ter entre 0 e 255 caracteres';
+      }
+    },
+    validaPassword: function validaPassword() {
+      if (this.password.length > 0 && this.password.length < 255) {
+        this.passwordInvalid = false;
+      } else {
+        this.passwordInvalid = 'A senha tem que ter mais de 6 dígitos';
+      }
+    },
+    fbLogin: function fbLogin(e) {
+      var l = Ladda.create(e.target);
+      l.start();
       FB.login(function (response) {
         // console.log(JSON.stringify(response));
         FB.getLoginStatus(function (response) {
@@ -19147,8 +21752,9 @@ module.exports = {
       }, { scope: "public_profile,email,user_friends,user_location" });
     },
     postLogin: function postLogin(e) {
-      this.loading = true;
       e.preventDefault();
+      var l = Ladda.create(e.target);
+      l.start();
       this.$http.post('auth/login', {
         email: this.email,
         password: this.password,
@@ -19157,20 +21763,23 @@ module.exports = {
         if (data == true) {
           window.location = "app";
         } else {
-          this.loading = false;
+          l.stop();
           this.authErr = true;
         }
       }).error(function (data) {
-        this.loading = false;
+        l.stop();
+        for (var err in data) {
+          this.$set(err + 'Invalid', data[err]);
+        }
         console.log(data);
       });
     }
   }
 };
 
-},{"./login.template.html":122}],122:[function(require,module,exports){
-module.exports = '\n\n<div class="col-sm-offset-2 col-sm-8 col-md-offset-3 col-md-6">\n  <div class="widget-container fluid-height clearfix">\n    <div class="heading">\n      <i class="fa fa-sign-in"></i>\n      Login\n    </div>\n    <div class="widget-content padded text-center">\n      <div class="login-wrapper col-sm-offset-1 col-sm-10">\n        <form method="POST">\n          <div class="form-group">\n            <div class="input-group">\n              <span class="input-group-addon"><i class="fa fa-envelope"></i></span>\n              <input type="text" v-model="email" class="form-control" placeholder="Digite o email">\n            </div>\n          </div>\n\n          <div class="form-group">\n            <div class="input-group">\n              <span class="input-group-addon"><i class="fa fa-lock"></i></span>\n              <input type="password" v-model="password" class="form-control" placeholder="Digite a senha">\n            </div>\n          </div>\n\n          <a class="pull-right">Esqueceu a senha?</a>\n\n          <div style="left:20px;position:relative;" class="text-left">\n            <label class="checkbox">\n              <input type="checkbox" value="1" v-model="remember">\n              <span>Manter-me conectado</span>\n            </label>\n          </div>\n\n\n          <button v-class="disabled: loading" v-on="click: postLogin" class="btn btn-lg btn-primary btn-block">\n            {{!loading ? \'Login\' : \'\'}}\n            <i v-if="loading" class="fa fa-spinner fa-pulse"></i>\n          </button>\n          <span class="text-danger" v-if="authErr">Credenciais inválidas</span><br>\n        </form>\n\n          <div class="social-login clearfix">\n            <a v-class="disabled: fbLoading" class="btn btn-primary facebook btn-block" v-on="click: fbLogin">\n              <i v-if="!fbLoading" class="fa fa-facebook"></i>{{!fbLoading ? \' Entrar com o facebook\' : \' \'}}\n              <i v-if="fbLoading" class="fa fa-spinner fa-pulse"></i>\n            </a>\n          </div>\n        <hr>\n        <p>\n          Ainda não tem uma conta?\n        </p>\n        <a v-link="{path: \'/cadastro\'}" style="margin-bottom:20px;" class="btn btn-default-outline btn-block btn-large">Cadastre-se</a>\n      </div>\n    </div>\n  </div>\n</div>\n';
-},{}],123:[function(require,module,exports){
+},{"./login.template.html":124}],124:[function(require,module,exports){
+module.exports = '\n\n<div class="col-sm-offset-2 col-sm-8 col-md-offset-3 col-md-6">\n  <div class="widget-container fluid-height clearfix">\n    <div class="heading">\n      <i class="fa fa-sign-in"></i>\n      Login\n    </div>\n    <div class="widget-content padded text-center">\n      <div class="login-wrapper col-sm-offset-1 col-sm-10">\n        <form method="POST">\n\n          <div class="form-group" v-class="has-error: emailInvalid,\n                                          animated: emailInvalid,\n                                          shake: emailInvalid">\n            <div class="input-group">\n              <span class="input-group-addon"><i class="fa fa-envelope"></i></span>\n              <input type="text"\n                     v-model="email"\n                     v-on="blur: validaEmail"\n                     class="form-control"\n                     placeholder="Digite o email">\n            </div>\n          </div>\n\n          <div class="form-group" v-class="has-error: passwordInvalid,\n                                          animated: passwordInvalid,\n                                          shake: passwordInvalid">\n            <div class="input-group">\n              <span class="input-group-addon"><i class="fa fa-lock"></i></span>\n              <input type="password"\n                     v-model="password"\n                     v-on="blur: validaPassword"\n                     class="form-control"\n                     placeholder="Digite a senha">\n            </div>\n          </div>\n\n          <a class="pull-right">Esqueceu a senha?</a>\n\n          <div style="left:20px;position:relative;" class="text-left">\n            <label class="checkbox">\n              <input type="checkbox" value="1" v-model="remember">\n              <span>Manter-me conectado</span>\n            </label>\n          </div>\n\n\n          <button v-class="disabled: loading" v-on="click: postLogin" class="btn btn-lg btn-primary btn-block ladda-button" data-style="zoom-in">\n            <span class="ladda-label">\n              Login\n            </span>\n          </button>\n          <div class="alert alert-danger" style="margin-bottom:0" v-if="authErr" role="alert">Credenciais inválidas</div>\n        </form><br>\n\n          <div class="social-login clearfix">\n            <a v-class="disabled: fbLoading" class="btn btn-primary facebook btn-block ladda-button" v-on="click: fbLogin" data-style="zoom-in">\n              <span class="ladda-label">\n                <i v-if="!fbLoading" class="fa fa-facebook"></i> Entrar com o facebook\n              </span>\n            </a>\n          </div>\n        <hr>\n        <p>\n          Ainda não tem uma conta?\n        </p>\n        <a v-link="{path: \'/cadastro\'}" style="margin-bottom:20px;" class="btn btn-default-outline btn-block btn-large">Cadastre-se</a>\n      </div>\n    </div>\n  </div>\n</div>\n';
+},{}],125:[function(require,module,exports){
 'use strict';
 
 module.exports = {
@@ -19257,7 +21866,7 @@ module.exports = {
     },
     initMap: function initMap() {
       infowindow = new google.maps.InfoWindow();
-      map = new google.maps.Map(document.getElementById('map'), {
+      map = new google.maps.Map(document.getElementById('map-new-bid'), {
         center: { lat: -22.998657, lng: -43.398863 },
         zoom: 12
       });
@@ -19330,7 +21939,7 @@ module.exports = {
         this.currentBids = false;
         var that = this;
         var init = function rec() {
-          var check = document.getElementById("map");
+          var check = document.getElementById("map-new-bid");
           if (mapOk && check != null) {
             that.initMap();
           } else {
@@ -19369,6 +21978,12 @@ module.exports = {
             this.offers.push(data[key].offers[k]);
           }
         }
+        setTimeout(function () {
+          $('.grid').masonry({
+            // options
+            itemSelector: '.grid-item'
+          }, 50);
+        });
       });
     },
     loadPagination: function loadPagination() {
@@ -19398,9 +22013,9 @@ module.exports = {
   }
 };
 
-},{"./painel.template.html":124}],124:[function(require,module,exports){
-module.exports = '<div>\n  <painel-cotacoes></painel-cotacoes>\n  <div class="row">\n    <div class="col-sm-3">\n      <button v-on="click: openNewBid" class="btn btn-large btn-block btn-primary">Nova Proposta</button>\n    </div>\n    <div class="col-sm-3">\n      <button v-on="click: openCurrentBids" class="btn btn-large btn-block btn-primary">Bids existentes</button>\n    </div>\n    <div class="pull-right form-inline hidden-xs">\n      <label>Procure aqui: </label>\n      <select class="form-control" options="availableCurrencies" v-model="currencyFilter"></select>\n      <input type="text" class="form-control" v-model="searchBid" placeholder="Digite aqui para filtrar">\n    </div>\n  </div>\n\n  <!-- Bids existentes -->\n  <div class="row" v-if="currentBids && !newBid" v-transition="slide">\n    <div class="col-sm-12">\n      <div class="widget-container fluid-height clearfix scrollable">\n        <div class="heading">\n          <i class="fa fa-money"></i>\n          Bids\n        </div>\n        <div class="widget-content padded bids">\n          <div class="row" v-repeat="b: bids | filterBy searchBid | filterBy currencyFilter">\n            <div class="col-sm-8">\n              <p class="lead">\n                {{ b.operation == 0 ? "Comprar" : "Vender" }} {{ b.amount | currency b.currency }} {{ b.operation == 0 ? "a" : "por" }} R$ {{ b.price }}\n              </p>\n              <p>\n                <i class="fa fa-map-marker"></i>\n                {{ b.address }}\n              </p>\n            </div>\n            <div class="col-sm-4">\n              <button v-on="click: cancelBid(b)" class="btn btn-large btn-block btn-warning">Cancelar Bid</button>\n            </div>\n          </div>\n        </div>\n      </div>\n    </div>\n  </div>\n\n  <!-- Post de novo Bid -->\n  <div class="row" v-if="newBid && !currentBids" v-transition="slide">\n    <div class="col-sm-12">\n      <div class="widget-container fluid-height clearfix">\n        <div class="heading">\n          <i class="fa fa-money"></i>\n          Faça aqui a sua proposta\n        </div>\n        <div class="widget-content padded">\n          <div class="row">\n            <div class="col-sm-4 opacity">\n              <div class="row">\n                <div class="col-sm-12" v-class="has-error: operationError,\n                                                animated: operationError,\n                                                shake: operationError">\n                  <label class="radio-inline">\n                    <input type="radio" value="0" v-model="operation">\n                    <span>Quero comprar</span>\n                  </label>\n                  <label class="radio-inline">\n                    <input type="radio" value="1" v-model="operation">\n                    <span>Quero vender</span>\n                  </label>\n                </div>\n              </div>\n\n              <div class="row">\n                <div class="col-sm-12" v-class="has-error: currencyError,\n                                                animated: currencyError,\n                                                shake: currencyError">\n                  <label v-class="">Escolha uma moeda*: </label>\n                  <select v-model="currency"\n                          options="availableCurrencies"\n                          class="form-control">\n                  </select>\n                </div>\n              </div>\n\n              <div class="row">\n                <div class="col-sm-12" v-class="has-error: amountError,\n                                                animated: amountError,\n                                                shake: amountError">\n                  <label>Digite um valor*: </label>\n                  <input class="form-control" type="number" v-model="amount">\n                </div>\n              </div>\n\n              <div class="row">\n                <div class="col-sm-12" v-class="has-error: priceError,\n                                                animated: priceError,\n                                                shake: priceError">\n                  <label>Digite um preço*: </label>\n                  <input class="form-control" type="number" v-model="price">\n                </div>\n              </div>\n\n              <div class="row">\n                <div class="col-sm-12" v-class="has-error: addressError,\n                                                animated: addressError,\n                                                shake: addressError">\n                  <div class="row">\n                    <div class="col-sm-12">\n                      <label>Localização: </label>\n                      <input data-toggle="tooltip"\n                             data-placement="top"\n                             title="Digite o local e clique em \'Achar\' no botão abaixo, ou apenas clique em \'Localização Atual\' para podermos achar as suas coordenadas!"\n                             class="form-control"\n                             type="text"\n                             v-model="address">\n                    </div>\n                  </div>\n                  <div class="row">\n                    <div class="col-sm-6">\n                      <button v-on="click: findGeolocation" class="btn btn-large btn-block btn-primary">\n                        Achar\n                      </button>\n                    </div>\n                    <div class="col-sm-6">\n                      <button v-on="click: findCurrentLocation" class="btn btn-large btn-block btn-primary">\n                        <i class="glyphicon glyphicon-pushpin"></i>\n                        Localização atual\n                      </button>\n                    </div>\n                  </div>\n                </div>\n              </div>\n            </div>\n            <div class="col-sm-8">\n              <div style="height:400px;width:100%;" id="map"></div>\n            </div>\n          </div>\n          <div class="row">\n            <div class="col-sm-offset-3 col-sm-3">\n              <button v-on="click: cancelNewBid" class="btn btn-large btn-block btn-danger">Cancelar</button>\n            </div>\n            <div class="col-sm-3">\n              <button v-class="disabled: newBidDisabled" v-on="click: postBid" class="btn btn-large btn-block btn-primary">\n                Enviar proposta\n              </button>\n            </div>\n          </div>\n        </div>\n      </div>\n    </div>\n  </div>\n\n  <!-- Resultado de ofertas -->\n  <div class="row">\n    <div v-repeat="o: offers | filterBy searchBid | filterBy currencyFilter" class="col-sm-6 col-md-4">\n      <div class="col-sm-offset-0 col-sm-12 bid widget-container fluid-height" style="margin-bottom:1em;">\n        <div class="widget-content padded">\n          <div class="row">\n            <div class="col-xs-4">\n              <img class="img-responsive" src="images/int.jpg" />\n            </div>\n            <div class="col-xs-8">\n              <p>\n                <a class="user-name" href="#">John</a>\n              </p>\n              <p>\n                {{o.operation == 0 ? \'Comprar\' : \'Vender\'}} {{o.currency}} {{o.amount}}\n              </p>\n              <p>\n                <i class="fa fa-map-marker"></i>\n                {{ o.address }}\n              </p>\n            </div>\n          </div>\n          <div class="row text-center rates">\n            <div class="col-xs-4">\n              <a href="#">\n                <h2>10</h2>\n              </a>\n              <p>\n                Km\n              </p>\n            </div>\n            <div class="col-xs-4">\n              <a href="#">\n                <h2>10</h2>\n              </a>\n              <p>\n                horas\n              </p>\n            </div>\n            <div class="col-xs-4">\n              <a href="#">\n                <h2>10</h2>\n              </a>\n              <p>\n                Nota média\n              </p>\n            </div>\n          </div>\n          <div class="row">\n            <div class="col-sm-8 col-sm-offset-2">\n              <button v-on="click: openChat(o)" class="btn btn-large btn-block btn-success">Abrir chat</button>\n            </div>\n          </div>\n        </div>\n      </div>\n    </div>\n  </div>\n</div>\n<div class="row" v-if="loadMoreBids">\n  <div class="col-sm-offset-3 col-sm-6">\n    <button v-on="click: loadPagination" class="btn btn-large btn-block btn-default-outline">Carregar mais resultados</button>\n  </div>\n</div>\n';
-},{}],125:[function(require,module,exports){
+},{"./painel.template.html":126}],126:[function(require,module,exports){
+module.exports = '<div>\n  <painel-cotacoes></painel-cotacoes>\n  <div class="row">\n    <div class="col-sm-3">\n      <button v-on="click: openNewBid" class="btn btn-large btn-block btn-primary">Nova Proposta</button>\n    </div>\n    <div class="col-sm-3">\n      <button v-on="click: openCurrentBids" class="btn btn-large btn-block btn-primary">Bids existentes</button>\n    </div>\n    <div class="pull-right form-inline hidden-xs">\n      <label>Procure aqui: </label>\n      <select class="form-control" options="availableCurrencies" v-model="currencyFilter"></select>\n      <input type="text" class="form-control" v-model="searchBid" placeholder="Digite aqui para filtrar">\n    </div>\n  </div>\n\n  <!-- Bids existentes -->\n  <div class="row" v-if="currentBids && !newBid" v-transition="slide">\n    <div class="col-sm-12">\n      <div class="widget-container fluid-height clearfix scrollable">\n        <div class="heading">\n          <i class="fa fa-money"></i>\n          Bids\n        </div>\n        <div class="widget-content padded bids">\n          <div class="row" v-repeat="b: bids | filterBy searchBid | filterBy currencyFilter">\n            <div class="col-sm-8">\n              <p class="lead">\n                {{ b.operation == 0 ? "Comprar" : "Vender" }} {{ b.amount | currency b.currency }} {{ b.operation == 0 ? "a" : "por" }} R$ {{ b.price }}\n              </p>\n              <p>\n                <i class="fa fa-map-marker"></i>\n                {{ b.address }}\n              </p>\n            </div>\n            <div class="col-sm-4">\n              <button v-on="click: cancelBid(b)" class="btn btn-large btn-block btn-warning">Cancelar Bid</button>\n            </div>\n          </div>\n        </div>\n      </div>\n    </div>\n  </div>\n\n  <!-- Post de novo Bid -->\n  <div class="row" v-if="newBid && !currentBids" v-transition="slide">\n    <div class="col-sm-12">\n      <div class="widget-container fluid-height clearfix">\n        <div class="heading">\n          <i class="fa fa-money"></i>\n          Faça aqui a sua proposta\n        </div>\n        <div class="widget-content padded">\n          <div class="row">\n            <div class="col-sm-4 opacity">\n              <div class="row">\n                <div class="col-sm-12" v-class="has-error: operationError,\n                                                animated: operationError,\n                                                shake: operationError">\n                  <label class="radio-inline">\n                    <input type="radio" value="0" v-model="operation">\n                    <span>Quero comprar</span>\n                  </label>\n                  <label class="radio-inline">\n                    <input type="radio" value="1" v-model="operation">\n                    <span>Quero vender</span>\n                  </label>\n                </div>\n              </div>\n\n              <div class="row">\n                <div class="col-sm-12" v-class="has-error: currencyError,\n                                                animated: currencyError,\n                                                shake: currencyError">\n                  <label v-class="">Escolha uma moeda*: </label>\n                  <select v-model="currency"\n                          options="availableCurrencies"\n                          class="form-control">\n                  </select>\n                </div>\n              </div>\n\n              <div class="row">\n                <div class="col-sm-12" v-class="has-error: amountError,\n                                                animated: amountError,\n                                                shake: amountError">\n                  <label>Digite um valor*: </label>\n                  <input class="form-control" type="number" v-model="amount">\n                </div>\n              </div>\n\n              <div class="row">\n                <div class="col-sm-12" v-class="has-error: priceError,\n                                                animated: priceError,\n                                                shake: priceError">\n                  <label>Digite um preço*: </label>\n                  <input class="form-control" type="number" v-model="price">\n                </div>\n              </div>\n\n              <div class="row">\n                <div class="col-sm-12" v-class="has-error: addressError,\n                                                animated: addressError,\n                                                shake: addressError">\n                  <div class="row">\n                    <div class="col-sm-12">\n                      <label>Localização: </label>\n                      <input data-toggle="tooltip"\n                             data-placement="top"\n                             title="Digite o local e clique em \'Achar\' no botão abaixo, ou apenas clique em \'Localização Atual\' para podermos achar as suas coordenadas!"\n                             class="form-control"\n                             type="text"\n                             v-model="address">\n                    </div>\n                  </div>\n                  <div class="row">\n                    <div class="col-sm-6">\n                      <button v-on="click: findGeolocation" class="btn btn-large btn-block btn-primary">\n                        Achar\n                      </button>\n                    </div>\n                    <div class="col-sm-6">\n                      <button v-on="click: findCurrentLocation" class="btn btn-large btn-block btn-primary">\n                        <i class="glyphicon glyphicon-pushpin"></i>\n                        Localização atual\n                      </button>\n                    </div>\n                  </div>\n                </div>\n              </div>\n            </div>\n            <div class="col-sm-8">\n              <div id="map-new-bid"></div>\n            </div>\n          </div>\n          <div class="row">\n            <div class="col-sm-offset-3 col-sm-3">\n              <button v-on="click: cancelNewBid" class="btn btn-large btn-block btn-danger">Cancelar</button>\n            </div>\n            <div class="col-sm-3">\n              <button v-class="disabled: newBidDisabled" v-on="click: postBid" class="btn btn-large btn-block btn-primary">\n                Enviar proposta\n              </button>\n            </div>\n          </div>\n        </div>\n      </div>\n    </div>\n  </div>\n\n  <!-- Resultado de ofertas -->\n  <div class="row grid">\n    <div v-repeat="o: offers | filterBy searchBid | filterBy currencyFilter" class="col-sm-6 col-md-4 grid-item">\n      <div class="col-sm-offset-0 col-sm-12 bid widget-container fluid-height" style="margin-bottom:1em;">\n        <div class="widget-content padded">\n          <div class="row">\n            <div class="col-xs-4">\n              <img class="img-responsive" src="images/int.jpg" />\n            </div>\n            <div class="col-xs-8">\n              <p>\n                <a class="user-name" href="#">John</a>\n              </p>\n              <p>\n                {{o.operation == 0 ? \'Comprar\' : \'Vender\'}} {{o.currency}} {{o.amount}}\n              </p>\n              <p>\n                <i class="fa fa-map-marker"></i>\n                {{ o.address }}\n              </p>\n            </div>\n          </div>\n          <div class="row text-center rates">\n            <div class="col-xs-4">\n              <a href="#">\n                <h2>10</h2>\n              </a>\n              <p>\n                Km\n              </p>\n            </div>\n            <div class="col-xs-4">\n              <a href="#">\n                <h2>10</h2>\n              </a>\n              <p>\n                horas\n              </p>\n            </div>\n            <div class="col-xs-4">\n              <a href="#">\n                <h2>10</h2>\n              </a>\n              <p>\n                Nota média\n              </p>\n            </div>\n          </div>\n          <div class="row">\n            <div class="col-sm-8 col-sm-offset-2">\n              <button v-on="click: openChat(o)" class="btn btn-large btn-block btn-success">Abrir chat</button>\n            </div>\n          </div>\n        </div>\n      </div>\n    </div>\n  </div>\n</div>\n<div class="row" v-if="loadMoreBids">\n  <div class="col-sm-offset-3 col-sm-6">\n    <button v-on="click: loadPagination" class="btn btn-large btn-block btn-default-outline">Carregar mais resultados</button>\n  </div>\n</div>\n';
+},{}],127:[function(require,module,exports){
 'use strict';
 
 module.exports = {
@@ -19444,7 +22059,7 @@ module.exports = {
     var dropzoneProfile = new window.Drop("form#dropzone-demo", {
       url: 'api/user/profilePicDrop',
       parallelUploads: 1,
-      maxFilesize: 2,
+      maxFilesize: 5,
       paramName: 'profilePic',
       headers: { 'X-CSRF-TOKEN': document.querySelector('#token').getAttribute('value') },
       acceptedFiles: '.jpg, .jpeg, .png, .bmp, .gif, .svg',
@@ -19585,10 +22200,13 @@ module.exports = {
       this.$http['delete']('api/user', function () {
         window.location.href = "/";
       });
+    },
+    openModal: function openModal(modal) {
+      $(modal).modal();
     }
   }
 };
 
-},{"./perfil.template.html":126}],126:[function(require,module,exports){
-module.exports = '<div class="page-title">\n  <h1>Perfil</h1>\n</div>\n\n<div class="row">\n  <div class="col-sm-12">\n    <div class="widget-container fluid-height clearfix">\n      <div class="widget-content padded profile-pic">\n        <div class="row">\n          <div class="col-sm-3 text-center">\n            <img src="{{profile_pic}}" class="img-responsive img-rounded profile-img" /><br>\n            <p>\n              Clique ou arraste uma foto para o quadrado para trocar a foto de peril.\n            </p>\n          </div>\n          <div class="col-sm-9">\n            <form class="dropzone" id="dropzone-demo"></form>\n          </div>\n        </div>\n      </div>\n    </div>\n  </div>\n</div>\n\n<div class="row">\n  <div class="col-lg-12">\n    <div class="widget-container fluid-height clearfix">\n      <div class="widget-content padded">\n        <p>\n          <em>Clique nos campos para editar.</em>\n        </p>\n        <table class="table table-hover table-bordered table-striped editable-form" id="user">\n          <tbody>\n            <tr>\n              <td width="20%">\n                Nome:\n              </td>\n              <td>\n                <div class="col-md-6">\n                  <a v-if="currentClick != \'nome\'"\n                     id="nome"\n                     v-on="click: editar"\n                     style="cursor:pointer;">\n                    {{nome}}\n                  </a>\n                  <div class="form-group form-inline editableform" v-if="currentClick == \'nome\'">\n                    <div class="editable-input">\n                      <input type="text"\n                             style="max-width: 200px"\n                             v-model="nome"\n                             class="form-control input-sm">\n                    </div>\n                    <div class="editable-buttons">\n                      <button v-on="click: postEditar(\'nome\')" class="btn btn-sm btn-primary">\n                        <i class="glyphicon glyphicon-ok"></i>\n                      </button>\n                      <button v-on="click: cancel" class="btn btn-sm btn-danger">\n                        <i class="glyphicon glyphicon-remove"></i>\n                      </button>\n                    </div>\n                    <span class="text-danger" v-if="currentClick == \'nome\' && erros">\n                      {{erros}}\n                    </danger>\n                  </div>\n                </div>\n              </td>\n            </tr>\n            <tr>\n              <td>\n                Sobrenome:\n              </td>\n              <td>\n                <div class="col-md-6">\n                  <a v-if="currentClick != \'sobrenome\'"\n                     id="sobrenome"\n                     v-on="click: editar"\n                     style="cursor:pointer;">\n                    {{sobrenome}}\n                  </a>\n                  <div class="form-group form-inline editableform" v-if="currentClick == \'sobrenome\'">\n                    <div class="editable-input">\n                      <input type="text"\n                             style="max-width: 200px"\n                             name="sobrenome"\n                             v-model="sobrenome"\n                             class="form-control input-sm">\n                    </div>\n                    <div class="editable-buttons">\n                      <button v-on="click: postEditar(\'sobrenome\')" class="btn btn-sm btn-primary">\n                        <i class="glyphicon glyphicon-ok"></i>\n                      </button>\n                      <button v-on="click: cancel" class="btn btn-sm btn-danger">\n                        <i class="glyphicon glyphicon-remove"></i>\n                      </button>\n                    </div>\n                    <span class="text-danger" v-if="currentClick == \'sobrenome\' && erros">\n                      {{erros}}\n                    </danger>\n                  </div>\n                </div>\n              </td>\n            </tr>\n            <tr>\n              <td>\n                Localização:\n              </td>\n              <td>\n                <div class="col-md-4">\n                  <a v-if="currentClick != \'localizacao\'"\n                     id="localizacao"\n                     v-on="click: editar"\n                     style="cursor:pointer;">\n                    {{ localizacao ? localizacao : "Editar"}}\n                  </a>\n                  <div class="form-group form-inline editableform" v-if="currentClick == \'localizacao\'">\n                    <div class="editable-input">\n                      <input type="text"\n                             style="max-width: 200px"\n                             name="localizacao"\n                             v-model="localizacao"\n                             class="form-control input-sm">\n                    </div>\n                    <div class="editable-buttons">\n                      <button v-on="click: findGeolocation" class="btn btn-sm btn-primary">\n                        <i class="glyphicon glyphicon-ok"></i>\n                      </button>\n                      <button v-on="click: cancel" class="btn btn-sm btn-danger">\n                        <i class="glyphicon glyphicon-remove"></i>\n                      </button>\n                    </div>\n                    <div class="location-button">\n                      <button v-on="click: findCurrentLocation" class="btn btn-block btn-primary">\n                        <i class="glyphicon glyphicon-pushpin"></i>\n                        Localização atual\n                      </button>\n                      <button v-on="click: nullLocation" class="btn btn-block btn-danger">\n                        <i class="glyphicon glyphicon-remove"></i>\n                        Apagar localaização\n                      </button>\n                    </div>\n                    <span class="text-danger" v-if="currentClick == \'localizacao\' && erros">\n                      {{erros}}\n                    </danger>\n                  </div>\n                </div>\n                <div class="col-md-8">\n                  <div style="height:200px;width:100%;" id="map"></div>\n                </div>\n              </td>\n            </tr>\n\n          </tbody>\n        </table>\n        <div class="row">\n          <div class="col-sm-3">\n            <button data-toggle="modal" data-target="#deleteAccountModal" class="btn btn-large btn-block btn-danger">Deletar conta</button>\n          </div>\n        </div>\n      </div>\n    </div>\n  </div>\n</div>\n<div class="modal fade" id="deleteAccountModal">\n  <div class="modal-dialog">\n    <div class="modal-content">\n      <div class="modal-body">\n        <h1>\n          Deseja deletar a sua conta?\n        </h1>\n        <p>\n          Ao deleter essa conta, todos os dados relacionados serão perdidos.\n        </p>\n      </div>\n      <div class="modal-footer">\n        <button class="btn btn-danger" v-on="click: destroyAccount">Deletar</button>\n        <button class="btn btn-default-outline" data-dismiss="modal" type="button">Cancelar</button>\n      </div>\n    </div>\n  </div>\n</div>\n';
-},{}]},{},[108]);
+},{"./perfil.template.html":128}],128:[function(require,module,exports){
+module.exports = '<div class="page-title">\n  <h1>Perfil</h1>\n</div>\n\n<div class="row">\n  <div class="col-sm-12">\n    <div class="widget-container fluid-height clearfix">\n      <div class="widget-content padded profile-pic">\n        <div class="row">\n          <div class="col-sm-3 text-center">\n            <img src="{{profile_pic}}" class="img-responsive img-rounded profile-img" /><br>\n            <p>\n              Clique ou arraste uma foto para o quadrado para trocar a foto de peril.\n            </p>\n          </div>\n          <div class="col-sm-9">\n            <form class="dropzone" id="dropzone-demo"></form>\n          </div>\n        </div>\n      </div>\n    </div>\n  </div>\n</div>\n\n<div class="row">\n  <div class="col-lg-12">\n    <div class="widget-container fluid-height clearfix">\n      <div class="widget-content padded">\n        <p>\n          <em>Clique nos campos para editar.</em>\n        </p>\n        <table class="table table-hover table-bordered table-striped editable-form" id="user">\n          <tbody>\n            <tr>\n              <td width="20%">\n                Nome:\n              </td>\n              <td>\n                <div class="col-md-6">\n                  <a v-if="currentClick != \'nome\'"\n                     id="nome"\n                     v-on="click: editar"\n                     style="cursor:pointer;">\n                    {{nome}}\n                  </a>\n                  <div class="form-group form-inline editableform" v-if="currentClick == \'nome\'">\n                    <div class="editable-input">\n                      <input type="text"\n                             style="max-width: 200px"\n                             v-model="nome"\n                             class="form-control input-sm">\n                    </div>\n                    <div class="editable-buttons">\n                      <button v-on="click: postEditar(\'nome\')" class="btn btn-sm btn-primary">\n                        <i class="glyphicon glyphicon-ok"></i>\n                      </button>\n                      <button v-on="click: cancel" class="btn btn-sm btn-danger">\n                        <i class="glyphicon glyphicon-remove"></i>\n                      </button>\n                    </div>\n                    <span class="text-danger" v-if="currentClick == \'nome\' && erros">\n                      {{erros}}\n                    </danger>\n                  </div>\n                </div>\n              </td>\n            </tr>\n            <tr>\n              <td>\n                Sobrenome:\n              </td>\n              <td>\n                <div class="col-md-6">\n                  <a v-if="currentClick != \'sobrenome\'"\n                     id="sobrenome"\n                     v-on="click: editar"\n                     style="cursor:pointer;">\n                    {{sobrenome}}\n                  </a>\n                  <div class="form-group form-inline editableform" v-if="currentClick == \'sobrenome\'">\n                    <div class="editable-input">\n                      <input type="text"\n                             style="max-width: 200px"\n                             name="sobrenome"\n                             v-model="sobrenome"\n                             class="form-control input-sm">\n                    </div>\n                    <div class="editable-buttons">\n                      <button v-on="click: postEditar(\'sobrenome\')" class="btn btn-sm btn-primary">\n                        <i class="glyphicon glyphicon-ok"></i>\n                      </button>\n                      <button v-on="click: cancel" class="btn btn-sm btn-danger">\n                        <i class="glyphicon glyphicon-remove"></i>\n                      </button>\n                    </div>\n                    <span class="text-danger" v-if="currentClick == \'sobrenome\' && erros">\n                      {{erros}}\n                    </danger>\n                  </div>\n                </div>\n              </td>\n            </tr>\n            <tr>\n              <td>\n                Localização:\n              </td>\n              <td>\n                <div class="col-md-4">\n                  <a v-if="currentClick != \'localizacao\'"\n                     id="localizacao"\n                     v-on="click: editar"\n                     style="cursor:pointer;">\n                    {{ localizacao ? localizacao : "Editar"}}\n                  </a>\n                  <div class="form-group form-inline editableform" v-if="currentClick == \'localizacao\'">\n                    <div class="editable-input">\n                      <input type="text"\n                             style="max-width: 200px"\n                             name="localizacao"\n                             v-model="localizacao"\n                             class="form-control input-sm">\n                    </div>\n                    <div class="editable-buttons">\n                      <button v-on="click: findGeolocation" class="btn btn-sm btn-primary">\n                        <i class="glyphicon glyphicon-ok"></i>\n                      </button>\n                      <button v-on="click: cancel" class="btn btn-sm btn-danger">\n                        <i class="glyphicon glyphicon-remove"></i>\n                      </button>\n                    </div>\n                    <div class="location-button">\n                      <button v-on="click: findCurrentLocation" class="btn btn-block btn-primary">\n                        <i class="glyphicon glyphicon-pushpin"></i>\n                        Localização atual\n                      </button>\n                      <button v-on="click: nullLocation" class="btn btn-block btn-danger">\n                        <i class="glyphicon glyphicon-remove"></i>\n                        Apagar localaização\n                      </button>\n                    </div>\n                    <span class="text-danger" v-if="currentClick == \'localizacao\' && erros">\n                      {{erros}}\n                    </danger>\n                  </div>\n                </div>\n                <div class="col-md-8">\n                  <div style="height:200px;width:100%;" id="map"></div>\n                </div>\n              </td>\n            </tr>\n\n          </tbody>\n        </table>\n        <div class="row">\n          <div class="col-sm-3">\n            <button v-touch="tap: openModal(\'#deleteAccountModal\')" class="btn btn-large btn-block btn-danger">Deletar conta</button>\n          </div>\n        </div>\n      </div>\n    </div>\n  </div>\n</div>\n<div class="modal fade" id="deleteAccountModal">\n  <div class="modal-dialog">\n    <div class="modal-content">\n      <div class="modal-body">\n        <h1>\n          Deseja deletar a sua conta?\n        </h1>\n        <p>\n          Ao deleter essa conta, todos os dados relacionados serão perdidos.\n        </p>\n      </div>\n      <div class="modal-footer">\n        <button class="btn btn-danger" v-on="click: destroyAccount">Deletar</button>\n        <button class="btn btn-default-outline" data-dismiss="modal" type="button">Cancelar</button>\n      </div>\n    </div>\n  </div>\n</div>\n';
+},{}]},{},[110]);

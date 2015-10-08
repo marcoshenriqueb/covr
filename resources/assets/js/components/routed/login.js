@@ -6,16 +6,35 @@ module.exports = {
       email: '',
       password: '',
       authErr: false,
-      fbLoading: false,
-      loading: false,
-      remember: null
+      remember: null,
+      emailInvalid: false,
+      passwordInvalid: false
     };
+  },
+
+  ready: function(){
+    Ladda.bind( 'ladda-button' );
   },
 
 
   methods: {
-    fbLogin: function(){
-      this.fbLoading = true;
+    validaEmail: function(){
+      if (this.email.length > 0 && this.email.length < 255) {
+        this.emailInvalid = false;
+      }else {
+        this.emailInvalid = 'O email tem que ter entre 0 e 255 caracteres';
+      }
+    },
+    validaPassword: function(){
+      if (this.password.length > 0 && this.password.length < 255) {
+        this.passwordInvalid = false;
+      }else {
+        this.passwordInvalid = 'A senha tem que ter mais de 6 dígitos';
+      }
+    },
+    fbLogin: function(e){
+      var l = Ladda.create(e.target);
+      l.start();
       FB.login(function(response){
         // console.log(JSON.stringify(response));
         FB.getLoginStatus(function(response) {
@@ -24,8 +43,9 @@ module.exports = {
       }, {scope: "public_profile,email,user_friends,user_location"});
     },
     postLogin: function(e){
-      this.loading = true;
       e.preventDefault();
+      var l = Ladda.create(e.target);
+      l.start();
       this.$http.post(
         'auth/login',
         {
@@ -37,11 +57,14 @@ module.exports = {
         if (data == true) {
           window.location="app";
         }else {
-          this.loading = false;
+          l.stop();
           this.authErr = true;
         }
       }).error(function(data){
-        this.loading = false;
+        l.stop();
+        for (var err in  data){
+          this.$set(err + 'Invalid', data[err]);
+        }
         console.log(data);
       });
     }

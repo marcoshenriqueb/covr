@@ -84,7 +84,7 @@ module.exports = {
     },
     initMap: function(){
       infowindow = new google.maps.InfoWindow;
-      map = new google.maps.Map(document.getElementById('map'), {
+      map = new google.maps.Map(document.getElementById('map-new-bid'), {
         center: {lat: -22.998657, lng: -43.398863},
         zoom: 12
       });
@@ -159,7 +159,7 @@ module.exports = {
         this.currentBids = false;
         var that = this;
         var init = function rec (){
-          var check = document.getElementById("map");
+          var check = document.getElementById("map-new-bid");
           if (mapOk && check != null) {
             that.initMap();
           }else {
@@ -195,6 +195,12 @@ module.exports = {
             this.offers.push(data[key].offers[k]);
           }
         }
+        setTimeout(function(){
+          $('.grid').masonry({
+            // options
+            itemSelector: '.grid-item'
+          }, 50);
+        })
       });
     },
     loadPagination: function(){
