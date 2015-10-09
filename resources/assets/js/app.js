@@ -47,7 +47,8 @@ var app = Vue.extend ({
 
   components: {
     'painel-cotacoes': require('./components/global/painelCotacoes'),
-    'compara-conversor-moeda': require('./components/global/comparaConversorMoeda')
+    'compara-conversor-moeda': require('./components/global/comparaConversorMoeda'),
+    'quotations-table': require('./components/global/quotationsTable')
   },
 
   ready:function(){

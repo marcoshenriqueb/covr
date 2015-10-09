@@ -13,15 +13,13 @@ module.exports = {
         ARS: {preco:'',variacao:''},
         MXN: {preco:'',variacao:''}
       },
-      animate:false,
-      USDcolor: '',
-      CADcolor: '',
-      AUDcolor: '',
-      EURcolor: '',
-      GBPcolor: '',
-      CLPcolor: '',
-      ARScolor: '',
-      MXNcolor: ''
+      animate:false
+    }
+  },
+
+  props: {
+    cotacao: {
+      twoWay: true
     }
   },
 
@@ -45,12 +43,14 @@ module.exports = {
       var ar = {};
       for(var k in c){
         var variacao = (c[k].var * 100).toFixed(2) + "%";
-        ar[k] = {preco: k + " " + Number(c[k].cot).toFixed(2), variacao: variacao};
-        if (c[k].var > 0) {
-          this[k + 'color'] = 'text-success';
-        }else if (c[k].var < 0) {
-          this[k + 'color'] = 'text-danger';
-        }
+        var color = c[k].var > 0 ? 'text-success' : c[k].var < 0 ? 'text-danger' : '';
+        console.log(color);
+        ar[k] = {
+          ticker: k,
+          preco: Number(c[k].cot).toFixed(2),
+          variacao: variacao,
+          color: color
+        };
       }
       this.cotacao = ar;
     }

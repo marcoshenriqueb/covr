@@ -17644,16 +17644,14 @@ module.exports = {
         ARS: { preco: '', variacao: '' },
         MXN: { preco: '', variacao: '' }
       },
-      animate: false,
-      USDcolor: '',
-      CADcolor: '',
-      AUDcolor: '',
-      EURcolor: '',
-      GBPcolor: '',
-      CLPcolor: '',
-      ARScolor: '',
-      MXNcolor: ''
+      animate: false
     };
+  },
+
+  props: {
+    cotacao: {
+      twoWay: true
+    }
   },
 
   ready: function ready() {
@@ -17678,12 +17676,14 @@ module.exports = {
       var ar = {};
       for (var k in c) {
         var variacao = (c[k]['var'] * 100).toFixed(2) + "%";
-        ar[k] = { preco: k + " " + Number(c[k].cot).toFixed(2), variacao: variacao };
-        if (c[k]['var'] > 0) {
-          this[k + 'color'] = 'text-success';
-        } else if (c[k]['var'] < 0) {
-          this[k + 'color'] = 'text-danger';
-        }
+        var color = c[k]['var'] > 0 ? 'text-success' : c[k]['var'] < 0 ? 'text-danger' : '';
+        console.log(color);
+        ar[k] = {
+          ticker: k,
+          preco: Number(c[k].cot).toFixed(2),
+          variacao: variacao,
+          color: color
+        };
       }
       this.cotacao = ar;
     }
@@ -17693,8 +17693,26 @@ module.exports = {
 };
 
 },{"./painelCotacoes.template.html":110}],110:[function(require,module,exports){
-module.exports = '<!-- Statistics -->\n<div class="row">\n  <div class="col-sm-6 hidden-xs" style="padding:0;">\n    <div class="widget-container cot-container">\n      <div class="col-sm-3"\n           v-class="animated: animate, fadeIn: animate">\n        <div class="number">\n          {{cotacao.USD.preco}}\n        </div>\n        <div class="text" v-class="USDcolor">\n          {{cotacao.USD.variacao}}\n        </div>\n      </div>\n      <div class="col-sm-3"\n           v-class="animated: animate, fadeIn: animate">\n        <div class="number">\n          {{cotacao.CAD.preco}}\n        </div>\n        <div class="text" v-class="CADcolor">\n          {{cotacao.CAD.variacao}}\n        </div>\n      </div>\n      <div class="col-sm-3"\n           v-class="animated: animate, fadeIn: animate">\n        <div class="number">\n          {{cotacao.AUD.preco}}\n        </div>\n        <div class="text" v-class="AUDcolor">\n          {{cotacao.AUD.variacao}}\n        </div>\n      </div>\n      <div class="col-sm-3"\n           style="border-right:none;"\n           v-class="animated: animate, fadeIn: animate">\n        <div class="number">\n          {{cotacao.EUR.preco}}\n        </div>\n        <div class="text" v-class="EURcolor">\n          {{cotacao.EUR.variacao}}\n        </div>\n      </div>\n    </div>\n  </div>\n  <div class="col-sm-6 hidden-xs" style="padding:0;">\n    <div class="widget-container cot-container">\n      <div class="col-sm-3"\n           v-class="animated: animate, fadeIn: animate">\n        <div class="number">\n          {{cotacao.GBP.preco}}\n        </div>\n        <div class="text" v-class="GBPcolor">\n          {{cotacao.GBP.variacao}}\n        </div>\n      </div>\n      <div class="col-sm-3"\n           v-class="animated: animate, fadeIn: animate">\n        <div class="number">\n          {{cotacao.CLP.preco}}\n        </div>\n        <div class="text" v-class="CLPcolor">\n          {{cotacao.CLP.variacao}}\n        </div>\n      </div>\n      <div class="col-sm-3"\n           v-class="animated: animate, fadeIn: animate">\n        <div class="number">\n          {{cotacao.ARS.preco}}\n        </div>\n        <div class="text" v-class="ARScolor">\n          {{cotacao.ARS.variacao}}\n        </div>\n      </div>\n      <div class="col-sm-3"\n           v-class="animated: animate, fadeIn: animate">\n        <div class="number">\n          {{cotacao.MXN.preco}}\n        </div>\n        <div class="text" v-class="MXNcolor">\n          {{cotacao.MXN.variacao}}\n        </div>\n      </div>\n    </div>\n  </div>\n</div>\n<!-- End Statistics -->\n';
+module.exports = '<!-- Statistics -->\n<div class="row">\n  <div class="col-sm-6 hidden-xs" style="padding:0;">\n    <div class="widget-container cot-container">\n      <div class="col-sm-3"\n           v-class="animated: animate, fadeIn: animate">\n        <div class="number">\n          {{cotacao.USD.ticker}} {{cotacao.USD.preco}}\n        </div>\n        <div class="text" v-class="cotacao.USD.color">\n          {{cotacao.USD.variacao}}\n        </div>\n      </div>\n      <div class="col-sm-3"\n           v-class="animated: animate, fadeIn: animate">\n        <div class="number">\n          {{cotacao.CAD.ticker}} {{cotacao.CAD.preco}}\n        </div>\n        <div class="text" v-class="cotacao.CAD.color">\n          {{cotacao.CAD.variacao}}\n        </div>\n      </div>\n      <div class="col-sm-3"\n           v-class="animated: animate, fadeIn: animate">\n        <div class="number">\n          {{cotacao.AUD.ticker}} {{cotacao.AUD.preco}}\n        </div>\n        <div class="text" v-class="cotacao.AUD.color">\n          {{cotacao.AUD.variacao}}\n        </div>\n      </div>\n      <div class="col-sm-3"\n           style="border-right:none;"\n           v-class="animated: animate, fadeIn: animate">\n        <div class="number">\n          {{cotacao.EUR.ticker}} {{cotacao.EUR.preco}}\n        </div>\n        <div class="text" v-class="cotacao.EUR.color">\n          {{cotacao.EUR.variacao}}\n        </div>\n      </div>\n    </div>\n  </div>\n  <div class="col-sm-6 hidden-xs" style="padding:0;">\n    <div class="widget-container cot-container">\n      <div class="col-sm-3"\n           v-class="animated: animate, fadeIn: animate">\n        <div class="number">\n          {{cotacao.GBP.ticker}} {{cotacao.GBP.preco}}\n        </div>\n        <div class="text" v-class="cotacao.GBP.color">\n          {{cotacao.GBP.variacao}}\n        </div>\n      </div>\n      <div class="col-sm-3"\n           v-class="animated: animate, fadeIn: animate">\n        <div class="number">\n          {{cotacao.CLP.ticker}} {{cotacao.CLP.preco}}\n        </div>\n        <div class="text" v-class="cotacao.CLP.color">\n          {{cotacao.CLP.variacao}}\n        </div>\n      </div>\n      <div class="col-sm-3"\n           v-class="animated: animate, fadeIn: animate">\n        <div class="number">\n          {{cotacao.ARS.ticker}} {{cotacao.ARS.preco}}\n        </div>\n        <div class="text" v-class="cotacao.ARS.color">\n          {{cotacao.ARS.variacao}}\n        </div>\n      </div>\n      <div class="col-sm-3"\n           v-class="animated: animate, fadeIn: animate">\n        <div class="number">\n          {{cotacao.MXN.ticker}} {{cotacao.MXN.preco}}\n        </div>\n        <div class="text" v-class="cotacao.MXN.color">\n          {{cotacao.MXN.variacao}}\n        </div>\n      </div>\n    </div>\n  </div>\n</div>\n<!-- End Statistics -->\n';
 },{}],111:[function(require,module,exports){
+'use strict';
+
+module.exports = {
+  template: require('./quotationsTable.template.html'),
+
+  data: function data() {
+    return {
+      cotacao: {}
+    };
+  },
+
+  props: ['cotacao']
+
+};
+
+},{"./quotationsTable.template.html":112}],112:[function(require,module,exports){
+module.exports = '<div class="widget-container fluid-height clearfix">\n  <div class="heading">\n    <i class="fa fa-table"></i>\n    Tabela de cotações\n  </div>\n  <div class="widget-content padded clearfix table-responsive">\n    <table class="table table-hover">\n      <thead>\n        <tr>\n          <th>Moeda</th>\n          <th>Ticker</th>\n          <th>Preço venda</th>\n          <th>Variação no dia</th>\n        </tr>\n      </thead>\n      <tbody>\n        <tr v-repeat="c: cotacao">\n          <td>Dólar Americano</td>\n          <td>{{c.ticker}}</td>\n          <td>{{c.preco}}</td>\n          <td v-class="c.color,\n                       c.color">\n            {{c.variacao}}\n          </td>\n        </tr>\n      </tbody>\n    </table>\n  </div>\n</div>\n';
+},{}],113:[function(require,module,exports){
 'use strict';
 
 module.exports = {
@@ -17794,18 +17812,18 @@ module.exports = {
   }
 };
 
-},{"./cadastro.template.html":112}],112:[function(require,module,exports){
+},{"./cadastro.template.html":114}],114:[function(require,module,exports){
 module.exports = '<div class="col-sm-offset-2 col-sm-8 col-md-offset-3 col-md-6">\n  <div class="widget-container fluid-height clearfix">\n    <div class="heading">\n      <i class="fa fa-sign-in"></i>\n      Cadastro\n    </div>\n    <div class="widget-content padded text-center">\n      <div class="login-wrapper col-sm-offset-1 col-sm-10">\n        <form method="POST">\n\n          <div class="form-group" v-class="has-error: nomeInvalid,\n                                          animated: nomeInvalid,\n                                          shake: nomeInvalid">\n            <div class="input-group">\n              <span class="input-group-addon"><i class="fa fa-user"></i></span>\n              <input type="text"\n                     v-model="nome"\n                     v-on="blur: validaNome"\n                     class="form-control"\n                     placeholder="Digite o seu nome">\n            </div>\n          </div>\n\n          <div class="form-group" v-class="has-error: sobrenomeInvalid,\n                                          animated: sobrenomeInvalid,\n                                          shake: sobrenomeInvalid">\n            <div class="input-group">\n              <span class="input-group-addon"><i class="fa fa-user-secret"></i></span>\n              <input type="text"\n                     v-model="sobrenome"\n                     v-on="blur: validaSobrenome"\n                     class="form-control"\n                     placeholder="Digite o seu sobrenome">\n            </div>\n          </div>\n\n          <div class="form-group" v-class="has-error: emailInvalid,\n                                          animated: emailInvalid,\n                                          shake: emailInvalid">\n            <div class="input-group">\n              <span class="input-group-addon"><i class="fa fa-envelope"></i></span>\n              <input type="text"\n                     v-model="email"\n                     v-on="blur: validaEmail"\n                     class="form-control"\n                     placeholder="Digite o email">\n            </div>\n          </div>\n\n          <div class="form-group" v-class="has-error: passwordInvalid,\n                                          animated: passwordInvalid,\n                                          shake: passwordInvalid">\n            <div class="input-group">\n              <span class="input-group-addon"><i class="fa fa-lock"></i></span>\n              <input type="password"\n                     v-model="password"\n                     v-on="blur: validaPassword"\n                     class="form-control"\n                     placeholder="Digite a senha">\n            </div>\n          </div>\n\n          <div class="form-group" v-class="has-error: confirmationInvalid,\n                                          animated: confirmationInvalid,\n                                          shake: confirmationInvalid">\n            <div class="input-group">\n              <span class="input-group-addon"><i class="fa fa-lock"></i></span>\n              <input type="password" v-model="password_confirmation" class="form-control" placeholder="Confirme a senha">\n            </div>\n          </div>\n\n          <button v-class="disabled: loading" v-on="click: postRegister" class="btn btn-lg btn-primary btn-block ladda-button" data-style="zoom-in">\n            <span class="ladda-label">\n              Cadastrar\n            </span>\n          </button>\n          <div class="alert alert-danger" style="margin-bottom:0" v-if="emailExists" role="alert">Este email já está cadastrado.</div>\n        </form>\n        <br>\n\n          <div class="social-login clearfix">\n            <a v-class="disabled: fbLoading" class="btn btn-primary facebook btn-block ladda-button" v-on="click: fbLogin" data-style="zoom-in">\n              <span class="ladda-label">\n                <i v-if="!fbLoading" class="fa fa-facebook"></i> Cadastro com o facebook\n              </span>\n            </a>\n          </div>\n\n          <hr>\n\n          <p>\n            Já tem uma conta?\n          </p>\n\n          <a v-link="{path: \'/login\'}" style="margin-bottom:20px;" class="btn btn-default-outline btn-block">Login</a>\n      </div>\n    </div>\n  </div>\n</div>\n';
-},{}],113:[function(require,module,exports){
+},{}],115:[function(require,module,exports){
 'use strict';
 
 module.exports = {
   template: require('./confirmaEmail.template.html')
 };
 
-},{"./confirmaEmail.template.html":114}],114:[function(require,module,exports){
+},{"./confirmaEmail.template.html":116}],116:[function(require,module,exports){
 module.exports = '<div class="col-md-offset-3 col-md-6">\n  <div class="widget-container fluid-height clearfix">\n    <div class="heading">\n      <i class="fa fa-sign-in"></i>\n      Confirmação de email\n    </div>\n    <div class="widget-content padded text-center">\n      <div class="login-wrapper col-md-offset-1 col-md-10">\n        <p>\n          Obrigado por ser cadastrar! Favor confirmar o seu cadastro através do email que lhe enviamos.\n        </p>\n      </div>\n    </div>\n  </div>\n</div>\n';
-},{}],115:[function(require,module,exports){
+},{}],117:[function(require,module,exports){
 'use strict';
 
 module.exports = {
@@ -17818,9 +17836,9 @@ module.exports = {
   }
 };
 
-},{"./home.template.html":116}],116:[function(require,module,exports){
-module.exports = '<div>\n  <painel-cotacoes></painel-cotacoes>\n  <div class="row">\n    <div class="col-md-12">\n      <div class="widget-container fluid-height clearfix">\n        <compara-conversor-moeda cotacao=\'{{cotacao}}\'></compara-conversor-moeda>\n      </div>\n    </div>\n  </div>\n</div>\n';
-},{}],117:[function(require,module,exports){
+},{"./home.template.html":118}],118:[function(require,module,exports){
+module.exports = '<div>\n  <painel-cotacoes cotacao="{{@ cotacao}}"></painel-cotacoes>\n  <div class="row">\n    <div class="col-sm-12">\n      <div class="widget-container fluid-height clearfix">\n        <compara-conversor-moeda cotacao=\'{{cotacao}}\'></compara-conversor-moeda>\n      </div>\n    </div>\n  </div>\n  <div class="row">\n    <div class="col-sm-12">\n      <quotations-table cotacao="{{cotacao}}"></quotations-table>\n    </div>\n  </div>\n</div>\n';
+},{}],119:[function(require,module,exports){
 'use strict';
 
 module.exports = {
@@ -17892,9 +17910,9 @@ module.exports = {
   }
 };
 
-},{"./login.template.html":118}],118:[function(require,module,exports){
+},{"./login.template.html":120}],120:[function(require,module,exports){
 module.exports = '\n\n<div class="col-sm-offset-2 col-sm-8 col-md-offset-3 col-md-6">\n  <div class="widget-container fluid-height clearfix">\n    <div class="heading">\n      <i class="fa fa-sign-in"></i>\n      Login\n    </div>\n    <div class="widget-content padded text-center">\n      <div class="login-wrapper col-sm-offset-1 col-sm-10">\n        <form method="POST">\n\n          <div class="form-group" v-class="has-error: emailInvalid,\n                                          animated: emailInvalid,\n                                          shake: emailInvalid">\n            <div class="input-group">\n              <span class="input-group-addon"><i class="fa fa-envelope"></i></span>\n              <input type="text"\n                     v-model="email"\n                     v-on="blur: validaEmail"\n                     class="form-control"\n                     placeholder="Digite o email">\n            </div>\n          </div>\n\n          <div class="form-group" v-class="has-error: passwordInvalid,\n                                          animated: passwordInvalid,\n                                          shake: passwordInvalid">\n            <div class="input-group">\n              <span class="input-group-addon"><i class="fa fa-lock"></i></span>\n              <input type="password"\n                     v-model="password"\n                     v-on="blur: validaPassword"\n                     class="form-control"\n                     placeholder="Digite a senha">\n            </div>\n          </div>\n\n          <a class="pull-right">Esqueceu a senha?</a>\n\n          <div style="left:20px;position:relative;" class="text-left">\n            <label class="checkbox">\n              <input type="checkbox" value="1" v-model="remember">\n              <span>Manter-me conectado</span>\n            </label>\n          </div>\n\n\n          <button v-class="disabled: loading" v-on="click: postLogin" class="btn btn-lg btn-primary btn-block ladda-button" data-style="zoom-in">\n            <span class="ladda-label">\n              Login\n            </span>\n          </button>\n          <div class="alert alert-danger" style="margin-bottom:0" v-if="authErr" role="alert">Credenciais inválidas</div>\n        </form><br>\n\n          <div class="social-login clearfix">\n            <a v-class="disabled: fbLoading" class="btn btn-primary facebook btn-block ladda-button" v-on="click: fbLogin" data-style="zoom-in">\n              <span class="ladda-label">\n                <i v-if="!fbLoading" class="fa fa-facebook"></i> Entrar com o facebook\n              </span>\n            </a>\n          </div>\n        <hr>\n        <p>\n          Ainda não tem uma conta?\n        </p>\n        <a v-link="{path: \'/cadastro\'}" style="margin-bottom:20px;" class="btn btn-default-outline btn-block btn-large">Cadastre-se</a>\n      </div>\n    </div>\n  </div>\n</div>\n';
-},{}],119:[function(require,module,exports){
+},{}],121:[function(require,module,exports){
 'use strict';
 
 var Pusher = require('pusher-js');
@@ -17916,7 +17934,8 @@ var site = Vue.extend({
 
   components: {
     'painel-cotacoes': require('./components/global/painelCotacoes'),
-    'compara-conversor-moeda': require('./components/global/comparaConversorMoeda')
+    'compara-conversor-moeda': require('./components/global/comparaConversorMoeda'),
+    'quotations-table': require('./components/global/quotationsTable')
   },
 
   methods: {
@@ -17967,4 +17986,4 @@ router.mode = 'hash';
 
 router.start(site, '#site');
 
-},{"./components/global/comparaConversorMoeda":107,"./components/global/painelCotacoes":109,"./components/routed/cadastro":111,"./components/routed/confirmaEmail":113,"./components/routed/home":115,"./components/routed/login":117,"pusher-js":2,"vue":105,"vue-resource":4,"vue-router":16}]},{},[119]);
+},{"./components/global/comparaConversorMoeda":107,"./components/global/painelCotacoes":109,"./components/global/quotationsTable":111,"./components/routed/cadastro":113,"./components/routed/confirmaEmail":115,"./components/routed/home":117,"./components/routed/login":119,"pusher-js":2,"vue":105,"vue-resource":4,"vue-router":16}]},{},[121]);

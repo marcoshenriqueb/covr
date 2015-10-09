@@ -1,0 +1,29 @@
+<div class="widget-container fluid-height clearfix">
+  <div class="heading">
+    <i class="fa fa-table"></i>
+    Tabela de cotações
+  </div>
+  <div class="widget-content padded clearfix table-responsive">
+    <table class="table table-hover">
+      <thead>
+        <tr>
+          <th>Moeda</th>
+          <th>Ticker</th>
+          <th>Preço venda</th>
+          <th>Variação no dia</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-repeat="c: cotacao">
+          <td>Dólar Americano</td>
+          <td>{{c.ticker}}</td>
+          <td>{{c.preco}}</td>
+          <td v-class="c.color,
+                       c.color">
+            {{c.variacao}}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

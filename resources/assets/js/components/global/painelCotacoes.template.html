@@ -5,27 +5,27 @@
       <div class="col-sm-3"
            v-class="animated: animate, fadeIn: animate">
         <div class="number">
-          {{cotacao.USD.preco}}
+          {{cotacao.USD.ticker}} {{cotacao.USD.preco}}
         </div>
-        <div class="text" v-class="USDcolor">
+        <div class="text" v-class="cotacao.USD.color">
           {{cotacao.USD.variacao}}
         </div>
       </div>
       <div class="col-sm-3"
            v-class="animated: animate, fadeIn: animate">
         <div class="number">
-          {{cotacao.CAD.preco}}
+          {{cotacao.CAD.ticker}} {{cotacao.CAD.preco}}
         </div>
-        <div class="text" v-class="CADcolor">
+        <div class="text" v-class="cotacao.CAD.color">
           {{cotacao.CAD.variacao}}
         </div>
       </div>
       <div class="col-sm-3"
            v-class="animated: animate, fadeIn: animate">
         <div class="number">
-          {{cotacao.AUD.preco}}
+          {{cotacao.AUD.ticker}} {{cotacao.AUD.preco}}
         </div>
-        <div class="text" v-class="AUDcolor">
+        <div class="text" v-class="cotacao.AUD.color">
           {{cotacao.AUD.variacao}}
         </div>
       </div>
@@ -33,9 +33,9 @@
            style="border-right:none;"
            v-class="animated: animate, fadeIn: animate">
         <div class="number">
-          {{cotacao.EUR.preco}}
+          {{cotacao.EUR.ticker}} {{cotacao.EUR.preco}}
         </div>
-        <div class="text" v-class="EURcolor">
+        <div class="text" v-class="cotacao.EUR.color">
           {{cotacao.EUR.variacao}}
         </div>
       </div>
@@ -46,36 +46,36 @@
       <div class="col-sm-3"
            v-class="animated: animate, fadeIn: animate">
         <div class="number">
-          {{cotacao.GBP.preco}}
+          {{cotacao.GBP.ticker}} {{cotacao.GBP.preco}}
         </div>
-        <div class="text" v-class="GBPcolor">
+        <div class="text" v-class="cotacao.GBP.color">
           {{cotacao.GBP.variacao}}
         </div>
       </div>
       <div class="col-sm-3"
            v-class="animated: animate, fadeIn: animate">
         <div class="number">
-          {{cotacao.CLP.preco}}
+          {{cotacao.CLP.ticker}} {{cotacao.CLP.preco}}
         </div>
-        <div class="text" v-class="CLPcolor">
+        <div class="text" v-class="cotacao.CLP.color">
           {{cotacao.CLP.variacao}}
         </div>
       </div>
       <div class="col-sm-3"
            v-class="animated: animate, fadeIn: animate">
         <div class="number">
-          {{cotacao.ARS.preco}}
+          {{cotacao.ARS.ticker}} {{cotacao.ARS.preco}}
         </div>
-        <div class="text" v-class="ARScolor">
+        <div class="text" v-class="cotacao.ARS.color">
           {{cotacao.ARS.variacao}}
         </div>
       </div>
       <div class="col-sm-3"
            v-class="animated: animate, fadeIn: animate">
         <div class="number">
-          {{cotacao.MXN.preco}}
+          {{cotacao.MXN.ticker}} {{cotacao.MXN.preco}}
         </div>
-        <div class="text" v-class="MXNcolor">
+        <div class="text" v-class="cotacao.MXN.color">
           {{cotacao.MXN.variacao}}
         </div>
       </div>

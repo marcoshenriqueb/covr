@@ -145,7 +145,6 @@
       <!-- End Navigation -->
       <div class="container-fluid main-content">
         <router-view></router-view>
-
       </div>
 
     </div>
