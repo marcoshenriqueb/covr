@@ -4,6 +4,7 @@ Bugs
 -colocar uma tabela de cotações na primeira pág e hidden-xs na de cima
 -cronjob e variação da atualização em relação ao dia anterior
 -melhorar template de email
+-Bids estão sendo filtrados por algo desconhecido, pode ser bug no vue.js
 
 -listeners de criação de chat e mensagem estão nos lugares errados
 -utilizar queue para email cadastro e atualizar fbfriends

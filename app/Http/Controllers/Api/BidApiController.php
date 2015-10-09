@@ -10,6 +10,7 @@ use App\Own\GMaps\DistanceMatrix;
 use App\Http\Requests\BidCadastroRequest;
 use Symfony\Component\HttpFoundation\Response;
 use App\Own\Repositories\BidsRepo;
+use App\Own\Repositories\BidSearchRepo;
 
 class BidApiController extends Controller
 {
@@ -18,26 +19,21 @@ class BidApiController extends Controller
       $this->middleware('auth');
     }
 
-    public function distance (DistanceMatrix $dm)
+    public function index($friends, BidSearchRepo $repo)
     {
-        return $dm->calculateDistance('-23.000434,-43.398604', '-22.977362,-43.218359|-22.911759,-43.169594');
+        $c = $repo->getBidsAndOffers(['dist' => 500, 'friends' => $friends]);
+        return json_encode($c);
+    }
+
+    public function page($index, $friends, BidSearchRepo $repo)
+    {
+        $c = $repo->getBidsAndOffers(['dist' => 500, 'skip' => ($index - 1) * 12, 'friends' => $friends]);
+        return json_encode($c);
     }
 
     public function store(BidCadastroRequest $request, BidsRepo $repo, DistanceMatrix $dm)
     {
         return $repo->store($request);
-    }
-
-    public function index(BidsRepo $repo)
-    {
-        $c = $repo->getBestOffers(500);
-        return json_encode($c);
-    }
-
-    public function page($index, BidsRepo $repo)
-    {
-        $c = $repo->getBestOffers(500, ($index - 1) * 12);
-        return json_encode($c);
     }
 
     public function destroy(Request $request, BidsRepo $repo)

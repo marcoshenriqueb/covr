@@ -20,24 +20,42 @@ class Bid extends Model
         $this->attributes['lng'] = $value['L'];
     }
 
-    public function scopeSearchRadius($query, $bid, $dist, $id, $skip = 0, $take = 12)
+    public function scopeSearchRadius($query, $dist, $id, $skip = 0, $take = 12)
     {
-        $ln1 = $bid->lng - $dist/abs(cos(deg2rad($bid->lat))*111.2);
-        $ln2 = $bid->lng + $dist/abs(cos(deg2rad($bid->lat))*111.2);
-        $lt1 = $bid->lat - ($dist/111.2);
-        $lt2 = $bid->lat + ($dist/111.2);
+        $ln1 = $this->lng - $dist/abs(cos(deg2rad($this->lat))*111.2);
+        $ln2 = $this->lng + $dist/abs(cos(deg2rad($this->lat))*111.2);
+        $lt1 = $this->lat - ($dist/111.2);
+        $lt2 = $this->lat + ($dist/111.2);
         return $query->select("id", "address", "currency", "operation", "lng", "lat", "amount", "price",
-          DB::raw("3956 * 2 * ASIN(SQRT(POWER(SIN(($bid->lat - lat) * pi()/180 / 2), 2) +
-          COS($bid->lat * pi()/180) * COS(lat * pi()/180) * POWER(SIN(($bid->lng - lng) * pi()/180 / 2), 2)))
+          DB::raw("3956 * 2 * ASIN(SQRT(POWER(SIN(($this->lat - lat) * pi()/180 / 2), 2) +
+          COS($this->lat * pi()/180) * COS(lat * pi()/180) * POWER(SIN(($this->lng - lng) * pi()/180 / 2), 2)))
           as distance")
           )->whereBetween('lng', [$ln1, $ln2])
             ->whereBetween('lat', [$lt1, $lt2])
             ->whereNotIn('user_id', [$id])
-            ->where('operation', '!=', $bid->operation)
-            ->where('currency', '=', $bid->currency)
-            ->orderBy('distance', 'asc')
-            ->skip($skip)
-            ->take($take);
+            ->where('operation', '!=', $this->operation)
+            ->where('currency', '=', $this->currency)
+            ->orderBy('distance', 'asc');
+    }
+
+    public function scopeSearchFriendsRadius($query, $dist, $user, $skip = 0, $take = 12)
+    {
+        $ln1 = $this->lng - $dist/abs(cos(deg2rad($this->lat))*111.2);
+        $ln2 = $this->lng + $dist/abs(cos(deg2rad($this->lat))*111.2);
+        $lt1 = $this->lat - ($dist/111.2);
+        $lt2 = $this->lat + ($dist/111.2);
+        return $query->join('users', 'users.id', '=', 'bids.user_id')
+          ->select("bids.id", "bids.address", "bids.currency", "bids.operation", "bids.lng", "bids.lat", "bids.amount", "bids.price",
+            DB::raw("3956 * 2 * ASIN(SQRT(POWER(SIN(($this->lat - lat) * pi()/180 / 2), 2) +
+            COS($this->lat * pi()/180) * COS(lat * pi()/180) * POWER(SIN(($this->lng - lng) * pi()/180 / 2), 2)))
+            as distance")
+            )->whereBetween('lng', [$ln1, $ln2])
+              ->whereBetween('lat', [$lt1, $lt2])
+              ->whereNotIn('user_id', [$user->id])
+              ->whereIn('user_id', $user->friends->modelKeys())
+              ->where('operation', '!=', $this->operation)
+              ->where('currency', '=', $this->currency)
+              ->orderBy('distance', 'asc');
     }
 
     public function scopeSearchTeste($query, $lat, $lng, $dist)

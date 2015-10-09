@@ -40,19 +40,7 @@ class BidsRepo
      }
 
   }
-
-  public function getBestOffers($dist, $skip = 0, $take = 12)
-  {
-    $user = Auth::user();
-    $bids = Auth::user()->bids()->orderBy('created_at', 'desc')->get();
-    $results = [];
-    foreach ($bids as $k => $bid) {
-      $results[$k]['bid'] = $bid;
-      $results[$k]['offers'] = Bid::searchRadius($bid, $dist, $user->id, $skip, $take)->get()->toArray();
-    }
-
-    return $results;
-  }
+  
 
   public function getUserFromBidRequest($request)
   {

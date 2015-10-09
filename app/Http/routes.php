@@ -51,8 +51,8 @@ Route::put('api/user/fbRegisterProfilePic', 'Api\UserApiController@fbRegisterPro
 Route::post('api/user/profilePicDrop', 'Api\UserApiController@postPictureDrop');
 Route::delete('api/user', 'Api\UserApiController@destroy');
 Route::post('api/bid', 'Api\BidApiController@store');
-Route::get('api/bid', 'Api\BidApiController@index');
-Route::get('api/bid/page/{index}', 'Api\BidApiController@page');
+Route::get('api/bid/{friends}', 'Api\BidApiController@index');
+Route::get('api/bid/page/{index}/{friends}', 'Api\BidApiController@page');
 Route::delete('api/bid/destroy', 'Api\BidApiController@destroy');
 Route::get('api/chat', 'Api\ChatApiController@index');
 Route::post('api/chat', 'Api\ChatApiController@store');

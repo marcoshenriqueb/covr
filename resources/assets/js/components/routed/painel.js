@@ -26,18 +26,20 @@ module.exports = {
       priceError: false,
       addressError: false,
       currentPagination: 1,
-      loadMoreBids: true
+      loadMoreBids: true,
+      friendBidFilter: false
     };
   },
 
-  computed: {
-    compressIfNewBid: function(){
-      return this.newBid ? 'col-md-6' : 'col-md-12';
-    }
-  },
-
   ready: function(){
-
+    var that = this;
+    $('#friendBidFilter').bootstrapSwitch();
+    $('#friendBidFilter').on('switchChange.bootstrapSwitch', function(event,state){
+        that.friendBidFilter = state;
+        that.loadMoreBids = true;
+        that.currentPagination = 1;
+        that.getBids();
+      });
     this.getAvailableCurrencies();
 
     this.getBids();
@@ -188,7 +190,8 @@ module.exports = {
     getBids: function(){
       this.offers = [];
       this.bids = [];
-      this.$http.get('api/bid', function(data){
+      var b = this.friendBidFilter ? 1 : 0;
+      this.$http.get('api/bid/' + b, function(data){
         for(var key in data){
           this.bids.push(data[key].bid);
           for(var k in data[key].offers){
@@ -205,7 +208,8 @@ module.exports = {
     },
     loadPagination: function(){
       this.loadMoreBids = false;
-      this.$http.get('api/bid/page/' + ++this.currentPagination, function(data){
+      var b = this.friendBidFilter ? 1 : 0;
+      this.$http.get('api/bid/page/' + ++this.currentPagination + '/' + b, function(data){
         for(var key in data){
           // this.bids.push(data[key].bid);
           for(var k in data[key].offers){

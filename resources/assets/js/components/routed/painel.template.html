@@ -148,6 +148,19 @@
     </div>
   </div>
 
+  <!-- Filtro de amigos -->
+  <div class="row">
+    <div class="col-sm-offset-4 col-sm-4 text-center">
+      <input type="checkbox"
+             v-model="friendBidFilter"
+             data-switch-toogle="state"
+             data-handle-width="100"
+             data-on-text="AMIGOS"
+             data-off-text="TODOS"
+             id="friendBidFilter">
+    </div>
+  </div>
+
   <!-- Resultado de ofertas -->
   <div class="row grid">
     <div v-repeat="o: offers | filterBy searchBid | filterBy currencyFilter" class="col-sm-6 col-md-4 grid-item">
