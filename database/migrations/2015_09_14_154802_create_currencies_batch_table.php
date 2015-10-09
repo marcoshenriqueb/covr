@@ -3,7 +3,7 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateAvailableCurrenciesTable extends Migration
+class CreateCurrenciesBatchTable extends Migration
 {
     /**
      * Run the migrations.
@@ -12,10 +12,10 @@ class CreateAvailableCurrenciesTable extends Migration
      */
     public function up()
     {
-        Schema::create('available_currencies', function (Blueprint $table) {
-            $table->string('ticker');
-            $table->string('currency');
-            $table->primary('ticker');
+        Schema::create('currencies_batch', function (Blueprint $table) {
+            $table->increments('id');
+            $table->string('date');
+            $table->string('eTag');
             $table->timestamps();
         });
     }
@@ -27,6 +27,6 @@ class CreateAvailableCurrenciesTable extends Migration
      */
     public function down()
     {
-        Schema::drop('available_currencies');
+        Schema::drop('latest_currencies');
     }
 }

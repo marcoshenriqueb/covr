@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 
 use App\Http\Requests;
 use App\Http\Controllers\Controller;
-use App\Own\Repositories\LatestCurrenciesRepo;
+use App\Own\Repositories\CurrencyBatchRepo;
 use App\Own\Repositories\AvailableCurrenciesRepo;
 use App\Own\Currency\RatePreparer;
 
@@ -18,12 +18,12 @@ class CurrencyApiController extends Controller
      *
      * @return Response
      */
-    public function latest(LatestCurrenciesRepo $repo, RatePreparer $rate)
+    public function latest(CurrencyBatchRepo $repo, RatePreparer $rate)
     {
-        return json_encode($rate->prepareToApi($repo->fetch()));
+        return json_encode($rate->prepareToApi($repo->lastTwo()));
     }
 
-    public function converter(LatestCurrenciesRepo $repo, RatePreparer $rate)
+    public function converter(CurrencyPriceRepo $repo, RatePreparer $rate)
     {
         return json_encode($rate->prepareToConverter($repo->fetchWithHeaders()));
     }

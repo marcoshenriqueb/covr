@@ -17577,7 +17577,8 @@ module.exports = {
 
   data: function data() {
     return {
-      cotacao: [],
+      cotacao: null,
+      arrayCotacao: [],
       selectedA: 1,
       selectedB: '',
       valor: 1000,
@@ -17588,25 +17589,33 @@ module.exports = {
     };
   },
 
+  props: ['cotacao'],
+
   ready: function ready() {
-    this.$http.get('api/currency/converter', function (data) {
-      var cot = [];
-      this.selectedB = data.USD;
-      for (var k in data) {
-        if (k == 'date') {
-          this.data = data[k];
-        } else if (k != 'eTag') {
-          cot.push({ text: k, value: data[k] });
-        }
+    var that = this;
+    var initRecur = function rec() {
+      if (that.cotacao != null && typeof that.cotacao == 'object') {
+        that.initCalc();
+      } else {
+        setTimeout(function () {
+          rec();
+        }, 50);
       }
-      cot.push({ text: 'BRL', value: 1 });
-      this.cotacao = cot;
-      this.calcula();
-      this.simbolo = 'USD';
-    });
+    };
+    initRecur();
   },
 
   methods: {
+    initCalc: function initCalc() {
+      var r = [];
+      r[0] = { text: 'BRL', value: 1 };
+      for (var k in this.cotacao) {
+        r.push({ text: k, value: this.cotacao[k].preco });
+      }
+      this.arrayCotacao = r;
+      this.selectedB = this.cotacao.USD.preco;
+      this.calcula();
+    },
     calcula: function calcula() {
       this.resultado = (this.selectedA / this.selectedB * this.valor).toFixed(2);
       this.resultadoSpread = (this.selectedA / this.selectedB * 0.90 * this.valor).toFixed(2);
@@ -17625,7 +17634,7 @@ module.exports = {
 };
 
 },{"./comparaConversorMoeda.template.html":108}],108:[function(require,module,exports){
-module.exports = '<div class="heading">\n  <i class="fa fa-calculator"></i>\n  Conversor de Moedas\n</div>\n<div class="widget-content padded text-center">\n  <div class="row">\n    <div class="col-sm-offset-2 col-sm-8">\n      <h3>Veja quanto você economiza com o Covr!</h3>\n    </div>\n  </div>\n  <div class="row">\n    <div class="col-sm-2">\n      <div class="form-group">\n        <label>Digite o valor:</label>\n        <input class="form-control" v-on="keyup: calcula, click: calcula" type="number" v-model="valor">\n      </div>\n    </div>\n    <div class="col-sm-2">\n      <div class="form-group">\n        <label>Moeda que possui:</label>\n        <select class="form-control" v-on="change: calcula" v-model="selectedA" options="cotacao"></select>\n      </div>\n    </div>\n    <div class="col-sm-1">\n      <div class="form-group">\n        <div class="hidden-xs"></div>\n        <button v-on="click: inverte" style="margin-top:5px;" type="button" class="btn btn-block btn-primary">\n          <span style="margin:0;" class="fa fa-refresh"></span>\n        </button>\n      </div>\n    </div>\n    <div class="col-sm-2">\n      <div class="form-group">\n        <label>Moeda que deseja:</label>\n        <select class="form-control" v-on="change: calcula" v-model="selectedB" options="cotacao" id="simbolo"></select>\n      </div>\n    </div>\n    <div class="col-sm-5">\n      <div class="col-sm-6">\n        <span>Banco/Corretora</span>\n        <h2 style="margin-top:3px;"><small>{{simbolo}}</small> {{resultadoSpread}}</h2>\n      </div>\n      <div class="col-sm-6">\n        <span>Com o AppCambio</span>\n        <h2 style="margin-top:3px;"><small>{{simbolo}}</small> {{resultado}}</h2>\n      </div>\n    </div>\n\n    <div class="col-sm-12">\n      <p>\n        *Data base: {{data}}\n      </p>\n    </div>\n  </div>\n</div>\n';
+module.exports = '<div class="heading">\n  <i class="fa fa-calculator"></i>\n  Conversor de Moedas\n</div>\n<div class="widget-content padded text-center">\n  <div class="row">\n    <div class="col-sm-offset-2 col-sm-8">\n      <h3>Veja quanto você pode economizar!</h3>\n    </div>\n  </div>\n  <div class="row">\n    <div class="col-sm-2">\n      <div class="form-group">\n        <label>Digite o valor:</label>\n        <input class="form-control" v-on="keyup: calcula, click: calcula" type="number" v-model="valor">\n      </div>\n    </div>\n    <div class="col-sm-2">\n      <div class="form-group">\n        <label>Moeda que possui:</label>\n        <select class="form-control" v-on="change: calcula" v-model="selectedA" options="arrayCotacao"></select>\n      </div>\n    </div>\n    <div class="col-sm-1">\n      <div class="form-group">\n        <div class="hidden-xs"></div>\n        <button v-on="click: inverte" style="margin-top:5px;" type="button" class="btn btn-block btn-primary">\n          <span style="margin:0;" class="fa fa-refresh"></span>\n        </button>\n      </div>\n    </div>\n    <div class="col-sm-2">\n      <div class="form-group">\n        <label>Moeda que deseja:</label>\n        <select class="form-control" v-on="change: calcula" v-model="selectedB" options="arrayCotacao" id="simbolo"></select>\n      </div>\n    </div>\n    <div class="col-sm-5">\n      <div class="col-sm-6">\n        <span>Banco/Corretora</span>\n        <h2 style="margin-top:3px;"><small>{{simbolo}}</small> {{resultadoSpread}}</h2>\n      </div>\n      <div class="col-sm-6">\n        <span>Com Covr</span>\n        <h2 style="margin-top:3px;"><small>{{simbolo}}</small> {{resultado}}</h2>\n      </div>\n    </div>\n\n    <div class="col-sm-12">\n      <p>\n        *Data base: {{data}}\n      </p>\n    </div>\n  </div>\n</div>\n';
 },{}],109:[function(require,module,exports){
 'use strict';
 
@@ -17677,12 +17686,12 @@ module.exports = {
       for (var k in c) {
         var variacao = (c[k]['var'] * 100).toFixed(2) + "%";
         var color = c[k]['var'] > 0 ? 'text-success' : c[k]['var'] < 0 ? 'text-danger' : '';
-        console.log(color);
         ar[k] = {
           ticker: k,
           preco: Number(c[k].cot).toFixed(2),
           variacao: variacao,
-          color: color
+          color: color,
+          currency: c[k].currency
         };
       }
       this.cotacao = ar;
@@ -17711,7 +17720,7 @@ module.exports = {
 };
 
 },{"./quotationsTable.template.html":112}],112:[function(require,module,exports){
-module.exports = '<div class="widget-container fluid-height clearfix">\n  <div class="heading">\n    <i class="fa fa-table"></i>\n    Tabela de cotações\n  </div>\n  <div class="widget-content padded clearfix table-responsive">\n    <table class="table table-hover">\n      <thead>\n        <tr>\n          <th>Moeda</th>\n          <th>Ticker</th>\n          <th>Preço venda</th>\n          <th>Variação no dia</th>\n        </tr>\n      </thead>\n      <tbody>\n        <tr v-repeat="c: cotacao">\n          <td>Dólar Americano</td>\n          <td>{{c.ticker}}</td>\n          <td>{{c.preco}}</td>\n          <td v-class="c.color,\n                       c.color">\n            {{c.variacao}}\n          </td>\n        </tr>\n      </tbody>\n    </table>\n  </div>\n</div>\n';
+module.exports = '<div class="widget-container fluid-height clearfix">\n  <div class="heading">\n    <i class="fa fa-table"></i>\n    Tabela de cotações\n  </div>\n  <div class="widget-content padded clearfix table-responsive">\n    <table class="table table-hover">\n      <thead>\n        <tr>\n          <th>Moeda</th>\n          <th>Ticker</th>\n          <th>Preço venda</th>\n          <th>Variação no dia</th>\n        </tr>\n      </thead>\n      <tbody>\n        <tr v-repeat="c: cotacao">\n          <td>{{c.currency}}</td>\n          <td>{{c.ticker}}</td>\n          <td>{{c.preco}}</td>\n          <td v-class="c.color,\n                       c.color">\n            {{c.variacao}}\n          </td>\n        </tr>\n      </tbody>\n    </table>\n  </div>\n</div>\n';
 },{}],113:[function(require,module,exports){
 'use strict';
 
@@ -17837,7 +17846,7 @@ module.exports = {
 };
 
 },{"./home.template.html":118}],118:[function(require,module,exports){
-module.exports = '<div>\n  <painel-cotacoes cotacao="{{@ cotacao}}"></painel-cotacoes>\n  <div class="row">\n    <div class="col-sm-12">\n      <div class="widget-container fluid-height clearfix">\n        <compara-conversor-moeda cotacao=\'{{cotacao}}\'></compara-conversor-moeda>\n      </div>\n    </div>\n  </div>\n  <div class="row">\n    <div class="col-sm-12">\n      <quotations-table cotacao="{{cotacao}}"></quotations-table>\n    </div>\n  </div>\n</div>\n';
+module.exports = '<div>\n  <painel-cotacoes cotacao="{{@ cotacao}}"></painel-cotacoes>\n  <div class="row">\n    <div class="col-sm-12">\n      <div class="widget-container fluid-height clearfix">\n        <compara-conversor-moeda cotacao="{{cotacao}}"></compara-conversor-moeda>\n      </div>\n    </div>\n  </div>\n  <div class="row">\n    <div class="col-sm-12">\n      <quotations-table cotacao="{{cotacao}}"></quotations-table>\n    </div>\n  </div>\n</div>\n';
 },{}],119:[function(require,module,exports){
 'use strict';
 

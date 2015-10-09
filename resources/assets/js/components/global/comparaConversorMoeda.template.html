@@ -5,7 +5,7 @@
 <div class="widget-content padded text-center">
   <div class="row">
     <div class="col-sm-offset-2 col-sm-8">
-      <h3>Veja quanto você economiza com o Covr!</h3>
+      <h3>Veja quanto você pode economizar!</h3>
     </div>
   </div>
   <div class="row">
@@ -18,7 +18,7 @@
     <div class="col-sm-2">
       <div class="form-group">
         <label>Moeda que possui:</label>
-        <select class="form-control" v-on="change: calcula" v-model="selectedA" options="cotacao"></select>
+        <select class="form-control" v-on="change: calcula" v-model="selectedA" options="arrayCotacao"></select>
       </div>
     </div>
     <div class="col-sm-1">
@@ -32,7 +32,7 @@
     <div class="col-sm-2">
       <div class="form-group">
         <label>Moeda que deseja:</label>
-        <select class="form-control" v-on="change: calcula" v-model="selectedB" options="cotacao" id="simbolo"></select>
+        <select class="form-control" v-on="change: calcula" v-model="selectedB" options="arrayCotacao" id="simbolo"></select>
       </div>
     </div>
     <div class="col-sm-5">
@@ -41,7 +41,7 @@
         <h2 style="margin-top:3px;"><small>{{simbolo}}</small> {{resultadoSpread}}</h2>
       </div>
       <div class="col-sm-6">
-        <span>Com o AppCambio</span>
+        <span>Com Covr</span>
         <h2 style="margin-top:3px;"><small>{{simbolo}}</small> {{resultado}}</h2>
       </div>
     </div>

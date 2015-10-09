@@ -3,7 +3,8 @@ module.exports = {
 
   data: function(){
     return {
-      cotacao: [],
+      cotacao: null,
+      arrayCotacao: [],
       selectedA: 1,
       selectedB: '',
       valor: 1000,
@@ -14,25 +15,35 @@ module.exports = {
     };
   },
 
+  props: [
+    'cotacao'
+  ],
+
   ready: function(){
-    this.$http.get('api/currency/converter', function(data){
-      var cot = [];
-      this.selectedB = data.USD;
-      for(var k in data){
-        if (k == 'date') {
-          this.data = data[k];
-        }else if (k != 'eTag') {
-          cot.push({text: k, value: data[k]});
-        }
+    var that = this;
+    var initRecur = function rec (){
+      if (that.cotacao != null && typeof that.cotacao == 'object') {
+        that.initCalc();
+      }else {
+        setTimeout(function(){
+          rec();
+        }, 50);
       }
-      cot.push({text: 'BRL', value: 1});
-      this.cotacao = cot;
-      this.calcula();
-      this.simbolo = 'USD';
-    });
+    }
+    initRecur();
   },
 
   methods: {
+    initCalc: function(){
+      var r = [];
+      r[0] = {text: 'BRL', value: 1};
+      for(var k in this.cotacao){
+        r.push({text: k, value: this.cotacao[k].preco});
+      }
+      this.arrayCotacao = r;
+      this.selectedB = this.cotacao.USD.preco;
+      this.calcula();
+    },
     calcula: function(){
       this.resultado = ((this.selectedA / this.selectedB) * this.valor).toFixed(2);
       this.resultadoSpread = (((this.selectedA / this.selectedB) * 0.90 ) * this.valor).toFixed(2);

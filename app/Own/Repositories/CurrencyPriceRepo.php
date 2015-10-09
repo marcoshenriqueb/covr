@@ -2,31 +2,24 @@
 
 namespace App\Own\Repositories;
 
-use App\LatestCurrencies;
+use App\CurrencyPrice;
 /**
  *
  */
-class LatestCurrenciesRepo
+class CurrencyPriceRepo
 {
 
-  public function saveLatestCurrencies($rates)
+  public function savePrices($rates, $batch)
   {
-    $currency = new LatestCurrencies();
-    $currency->USD = $rates['USD'];
-    $currency->CAD = $rates['CAD'];
-    $currency->AUD = $rates['AUD'];
-    $currency->EUR = $rates['EUR'];
-    $currency->GBP = $rates['GBP'];
-    $currency->CLP = $rates['CLP'];
-    $currency->ARS = $rates['ARS'];
-    $currency->MXN = $rates['MXN'];
-    $currency->eTag = $rates['eTag'];
-    $currency->date = $rates['date'];
-    if ($result = $currency->save()) {
-      return $result;
+    foreach ($rates as $key => $value) {
+      if ($key != 'eTag' && $key != 'date') {
+        $currency = new CurrencyPrice();
+        $currency->price = $rates[$key];
+        $currency->available_currency_ticker = $key;
+        $batch->prices()->save($currency);
+      }
     }
-    return false;
-
+    return $batch;
   }
 
   public function fetch()

@@ -64,6 +64,5 @@ Route::put('api/message/read', 'Api\MessageApiController@update');
 
 
 Route::get('teste', function(\Illuminate\Http\Request $request){
-  $r = $request->session()->all();
-  return json_encode($r);
+  return event(new \App\Events\AtualizaCotacao());
 });

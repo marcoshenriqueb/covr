@@ -15,7 +15,7 @@
       </thead>
       <tbody>
         <tr v-repeat="c: cotacao">
-          <td>Dólar Americano</td>
+          <td>{{c.currency}}</td>
           <td>{{c.ticker}}</td>
           <td>{{c.preco}}</td>
           <td v-class="c.color,

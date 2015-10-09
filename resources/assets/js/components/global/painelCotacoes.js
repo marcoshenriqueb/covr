@@ -44,12 +44,12 @@ module.exports = {
       for(var k in c){
         var variacao = (c[k].var * 100).toFixed(2) + "%";
         var color = c[k].var > 0 ? 'text-success' : c[k].var < 0 ? 'text-danger' : '';
-        console.log(color);
         ar[k] = {
           ticker: k,
           preco: Number(c[k].cot).toFixed(2),
           variacao: variacao,
-          color: color
+          color: color,
+          currency: c[k].currency
         };
       }
       this.cotacao = ar;

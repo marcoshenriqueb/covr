@@ -7,7 +7,8 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use App\Own\Currency\LatestFetch;
 use App\Own\Currency\RatePreparer;
-use App\Own\Repositories\LatestCurrenciesRepo;
+use App\Own\Repositories\CurrencyPriceRepo;
+use App\Own\Repositories\CurrencyBatchRepo;
 
 class AtualizaCotacao extends Event implements ShouldBroadcast
 {
@@ -24,14 +25,15 @@ class AtualizaCotacao extends Event implements ShouldBroadcast
     {
       $fetch = new LatestFetch();
       $rate = new RatePreparer();
-      $repo = new LatestCurrenciesRepo();
+      $repo = new CurrencyPriceRepo();
+      $batch = new CurrencyBatchRepo();
       $result = $fetch->fetchLatest();
       var_dump($result->getStatusCode());
       if ($result->getStatusCode() == 200) {
         $last = $rate->getRates($result);
-        $repo->saveLatestCurrencies($last);
+        $repo->savePrices($last, $batch->store($last));
       }
-      $cot = $rate->prepareToApi($repo->fetch());
+      $cot = $rate->prepareToApi($batch->lastTwo());
       $this->cotacao = json_encode($cot);
     }
 
