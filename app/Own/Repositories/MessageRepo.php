@@ -4,13 +4,19 @@ namespace App\Own\Repositories;
 
 use App\Message;
 use App\Chat;
-use Auth;
+use App\Own\Auth\UserAuth as Auth;
 
 /**
  *
  */
 class MessageRepo
 {
+  private $auth;
+
+  public function __construct(Auth $auth)
+  {
+    $this->auth = $auth;
+  }
 
   public function storeMessage($request)
   {
@@ -28,6 +34,6 @@ class MessageRepo
   public function updateRead($request)
   {
      $chat = Chat::find($request->input('id'));
-     return $chat->messages()->whereNotIn('user_id', [Auth::id()])->update(['read' => 1]);
+     return $chat->messages()->whereNotIn('user_id', [$this->auth->id()])->update(['read' => 1]);
   }
 }

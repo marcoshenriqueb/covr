@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Http\Requests\Request;
+use App\Own\Auth\UserAuth as Auth;
 
 class CreateChatRequest extends Request
 {
@@ -11,9 +12,9 @@ class CreateChatRequest extends Request
      *
      * @return bool
      */
-    public function authorize()
+    public function authorize(Auth $auth)
     {
-        return \Auth::check();
+        return $auth->check();
     }
 
     /**

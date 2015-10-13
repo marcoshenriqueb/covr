@@ -3,22 +3,28 @@
 namespace App\Own\Repositories;
 
 use App\User;
-use Auth;
+use App\Own\Auth\UserAuth as Auth;
 
 /**
  *
  */
 class UserRepo
 {
+  private $auth;
+
+  public function __construct(Auth $auth)
+  {
+    $this->auth = $auth;
+  }
 
   public function getUser()
   {
-    return Auth::user();
+    return $this->auth->user();
   }
 
   public function editNome($request)
   {
-    $user = Auth::user();
+    $user = $this->auth->user();
     $user->nome = $request->input('nome');
     if ($result = $user->save()) {
       return $user;
@@ -28,7 +34,7 @@ class UserRepo
 
   public function editSobrenome($request)
   {
-    $user = Auth::user();
+    $user = $this->auth->user();
     $user->sobrenome = $request->input('sobrenome');
     if ($result = $user->save()) {
       return $user;
@@ -38,7 +44,7 @@ class UserRepo
 
   public function editLocalizacao($request)
   {
-    $user = Auth::user();
+    $user = $this->auth->user();
     $user->localizacao = $request->input('localizacao');
     $user->place_id = $request->input('place_id');
     if ($result = $user->save()) {
@@ -49,8 +55,18 @@ class UserRepo
 
   public function editProfilePic($profilePic)
   {
-    $user = Auth::user();
+    $user = $this->auth->user();
     $user->profile_pic = $profilePic;
+    if ($result = $user->save()) {
+      return $user;
+    }
+    return $result;
+  }
+
+  public function editProfilePicFromUserEmail($request)
+  {
+    $user = User::where('email', $request->input('email'))->first();
+    $user->profile_pic = $request->input('profilePic');
     if ($result = $user->save()) {
       return $user;
     }
@@ -60,7 +76,17 @@ class UserRepo
   public function profilePicIsNotNull()
   {
       $count = strlen(env('PROFILE_PIC_PATH'));
-      if (isset(Auth::user()->profile_pic) && substr(Auth::user()->profile_pic, $count)) {
+      if (isset($this->auth->user()->profile_pic) && substr($this->auth->user()->profile_pic, $count)) {
+        return true;
+      }
+      return false;
+  }
+
+  public function profilePicIsNotNullFromEmail($request)
+  {
+      $count = strlen(env('PROFILE_PIC_PATH'));
+      $user = User::where('email', $request->input('email'));
+      if (isset($user->profile_pic) && substr($user->profile_pic, $count)) {
         return true;
       }
       return false;
@@ -151,7 +177,7 @@ class UserRepo
 
   public function destroy()
   {
-      return User::destroy(Auth::id());
+      return User::destroy($this->auth->id());
   }
 
 }

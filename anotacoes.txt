@@ -1,6 +1,5 @@
 Bugs
 -colocar opção de data limite
--colocar uma tabela de cotações na primeira pág e hidden-xs na de cima
 -cronjob e variação da atualização em relação ao dia anterior
 -melhorar template de email
 

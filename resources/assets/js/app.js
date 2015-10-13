@@ -9,8 +9,9 @@ Vue.use(VueResource);
 window.moment = require('moment');
 window.socket = io('http://localhost:3000');
 
-Vue.http.headers.common['X-CSRF-TOKEN'] = document.querySelector('#token').getAttribute('value');
+Vue.http.headers.common['Authorization'] = 'Bearer ' + document.querySelector('#token').getAttribute('value');
 Vue.config.debug = false;
+
 Vue.transition('slide', {
   enter: function (el, done) {
     // element is already inserted into the DOM
@@ -58,6 +59,7 @@ var app = Vue.extend ({
         window.socket.emit('user_id', {user_id: this.user.id});
       }.bind(this));
     });
+
   }
 
 
@@ -96,11 +98,10 @@ router.map({
 
 router.beforeEach(function(transition){
   if (transition.to.auth) {
-    var response;
-    $.get('auth/check')
-      .done(function(xhr){
+    Vue.http.get('auth/check')
+      .success(function(data){
       transition.next();
-    }).fail(function(xhr){
+    }).error(function(data){
       window.location.href = "/login";
     });
   }else {

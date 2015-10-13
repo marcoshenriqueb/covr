@@ -3,13 +3,19 @@
 namespace App\Own\Repositories;
 
 use App\Bid;
-use Auth;
+use App\Own\Auth\UserAuth as Auth;
 
 /**
  *
  */
 class BidsRepo
 {
+  private $auth;
+
+  public function __construct(Auth $auth)
+  {
+    $this->auth = $auth;
+  }
 
   public function store($request)
   {
@@ -21,7 +27,7 @@ class BidsRepo
      if ($request->input('place_id') != null) {
        $bid->place_id = $request->input('place_id');
      }else {
-       $pId = (array) json_decode(Auth::user()->place_id);
+       $pId = (array) json_decode($this->auth->user()->place_id);
        if (count($pId) > 0) {
          $bid->place_id = $pId;
        }else {
@@ -31,16 +37,16 @@ class BidsRepo
      if ($request->input('address') != null) {
        $bid->address = $request->input('address');
      }else {
-       $bid->address = Auth::user()->localizacao;
+       $bid->address = $this->auth->user()->localizacao;
      }
-     if(Auth::user()->bids()->save($bid)){
+     if($this->auth->user()->bids()->save($bid)){
        return $bid;
      }else {
        return false;
      }
 
   }
-  
+
 
   public function getUserFromBidRequest($request)
   {

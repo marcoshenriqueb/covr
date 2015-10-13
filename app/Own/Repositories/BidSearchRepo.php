@@ -3,7 +3,7 @@
 namespace App\Own\Repositories;
 
 use App\Bid;
-use Auth;
+use App\Own\Auth\UserAuth as Auth;
 
 /**
  *
@@ -11,6 +11,7 @@ use Auth;
 class BidSearchRepo
 {
 
+  private $auth;
   private $user;
   private $bids;
   private $distance = 100;
@@ -18,9 +19,14 @@ class BidSearchRepo
   private $take = 12;
   private $friends = 0;
 
+  public function __construct(Auth $auth)
+  {
+    $this->auth = $auth;
+  }
+
   public function getBidsAndOffers($options = [])
   {
-    $this->user = Auth::user();
+    $this->user = $this->auth->user();
     $this->bids = $this->user->bids()->orderBy('created_at', 'desc')->get();
     $this->setSearchParameters($options);
     $results = [];
