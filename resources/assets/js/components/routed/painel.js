@@ -51,13 +51,12 @@ module.exports = {
       if (this.address.length > 3) {
         geocoder.geocode( { 'address': this.address}, function(results, status) {
           if (status == google.maps.GeocoderStatus.OK) {
-            that.place_id = results[0].geometry.location;
-            console.log(results[0]);
             map.setCenter(results[0].geometry.location);
             var marker = new google.maps.Marker({
                 map: map,
                 position: results[0].geometry.location
             });
+            that.setPlaceId(results);
           } else {
             alert("Geocode was not successful for the following reason: " + status);
           }
@@ -233,6 +232,13 @@ module.exports = {
       .error(function(data){
         console.log(data);
       });
+    },
+    setPlaceId: function(geometry){
+      console.log(geometry[0]['geometry']['location'].lat());
+      this.place_id = {
+        H: geometry[0]['geometry']['location'].lat(),
+        L: geometry[0]['geometry']['location'].lng()
+      };
     }
   }
 };

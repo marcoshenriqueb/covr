@@ -60,13 +60,12 @@ module.exports = {
         var that = this;
         geocoderPerfil.geocode( { 'address': this.localizacao}, function(results, status) {
           if (status == google.maps.GeocoderStatus.OK) {
-
-            that.place_id = results[0].geometry.location;
             mapPerfil.setCenter(results[0].geometry.location);
             var marker = new google.maps.Marker({
                 map: mapPerfil,
                 position: results[0].geometry.location
             });
+            that.setPlaceId(results);
             that.postEditarLocation();
           } else {
             alert("Geocode was not successful for the following reason: " + status);
@@ -181,6 +180,13 @@ module.exports = {
     },
     openModal(modal){
       $(modal).modal();
+    },
+    setPlaceId: function(geometry){
+      console.log(geometry[0]['geometry']['location'].lat());
+      this.place_id = {
+        H: geometry[0]['geometry']['location'].lat(),
+        L: geometry[0]['geometry']['location'].lng()
+      };
     }
   }
 };
