@@ -54,12 +54,8 @@ module.exports = {
           remember: this.remember
         }
       ).success(function(data){
-        if (data == true) {
-          window.location="app";
-        }else {
-          l.stop();
-          this.authErr = true;
-        }
+        window.location="app";
+        l.stop();
       }).error(function(data){
         l.stop();
         for (var err in  data){

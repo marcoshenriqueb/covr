@@ -3,35 +3,42 @@
 namespace App\Own\Repositories;
 
 use App\User;
-use Auth;
+use App\Own\Auth\UserAuth as Auth;
 
 /**
  *
  */
 class FriendsRepo
 {
+  private $auth;
+
+  public function __construct(Auth $auth)
+  {
+    $this->auth = $auth;
+  }
+
   public function getFriends()
   {
-    return Auth::user()->friends()->get();
+    return $this->auth->user()->friends()->get();
   }
 
   public function getRequests()
   {
-    return Auth::user()->requests()->get();
+    return $this->auth->user()->requests()->get();
   }
 
   public function getRequested()
   {
-    return Auth::user()->requested()->get();
+    return $this->auth->user()->requested()->get();
   }
 
   public function getNotFriends()
   {
-    $not_friends = User::where('id', '!=', Auth::user()->id);
-    if (Auth::user()->friends->count() || Auth::user()->requests->count() || Auth::user()->requested->count()) {
-      $not_friends->whereNotIn('id', Auth::user()->friends->modelKeys());
-      $not_friends->whereNotIn('id', Auth::user()->requests->modelKeys());
-      $not_friends->whereNotIn('id', Auth::user()->requested->modelKeys());
+    $not_friends = User::where('id', '!=', $this->auth->user()->id);
+    if ($this->auth->user()->friends->count() || $this->auth->user()->requests->count() || $this->auth->user()->requested->count()) {
+      $not_friends->whereNotIn('id', $this->auth->user()->friends->modelKeys());
+      $not_friends->whereNotIn('id', $this->auth->user()->requests->modelKeys());
+      $not_friends->whereNotIn('id', $this->auth->user()->requested->modelKeys());
     }
     return $not_friends->get();
   }
@@ -39,36 +46,36 @@ class FriendsRepo
   public function requestFriend($request)
   {
     $friend = User::find($request->input('id'));
-    Auth::user()->requestFriend($friend);
+    $this->auth->user()->requestFriend($friend);
     return true;
   }
 
   public function confirmFriend($request)
   {
     $friend = User::find($request->input('id'));
-    $friend->removeRequest(Auth::user());
-    Auth::user()->confirmFriend($friend);
+    $friend->removeRequest($this->auth->user());
+    $this->auth->user()->confirmFriend($friend);
     return true;
   }
 
   public function removeRequest($request)
   {
     $friend = User::find($request->input('id'));
-    $friend->removeRequest(Auth::user());
+    $friend->removeRequest($this->auth->user());
     return true;
   }
 
   public function cancelRequest($request)
   {
     $friend = User::find($request->input('id'));
-    Auth::user()->removeRequest($friend);
+    $this->auth->user()->removeRequest($friend);
     return true;
   }
 
   public function removeFriend($request)
   {
     $friend = User::find($request->input('id'));
-    Auth::user()->removeFriend($friend);
+    $this->auth->user()->removeFriend($friend);
     return true;
   }
 

@@ -3,7 +3,7 @@
 namespace App\Own\Repositories;
 
 use Intervention\Image\Facades\Image;
-use Auth;
+use App\Own\Auth\UserAuth as Auth;
 use Illuminate\Support\Facades\Storage;
 
 /**
@@ -11,11 +11,17 @@ use Illuminate\Support\Facades\Storage;
  */
 class ImageRepo
 {
+  private $auth;
+
+  public function __construct(Auth $auth)
+  {
+    $this->auth = $auth;
+  }
 
   function storeDropzonePic($file)
   {
-    $oldImage = Auth::user()->profile_pic;
-    $image['arquivo'] = time() . "-" . Auth::user()->nome . '-' . Auth::user()->sobrenome . '-' . Auth::id() . '.' . $file->getClientOriginalExtension();
+    $oldImage = $this->auth->user()->profile_pic;
+    $image['arquivo'] = time() . "-" . $this->auth->user()->nome . '-' . $this->auth->user()->sobrenome . '-' . $this->auth->id() . '.' . $file->getClientOriginalExtension();
     $image['nome'] = pathinfo($image['arquivo'])['filename'];
     try {
       if ($file->isValid())

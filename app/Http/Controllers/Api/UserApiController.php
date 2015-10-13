@@ -18,7 +18,7 @@ class UserApiController extends Controller
     public function __construct(UserRepo $user)
     {
       $this->user = $user->getUser();
-      $this->middleware('auth');
+      $this->middleware('jwt.auth');
     }
 
     /**
@@ -58,15 +58,6 @@ class UserApiController extends Controller
           'localizacao' => 'min:3'
         ]);
         return json_encode($user->editLocalizacao($request));
-    }
-
-    public function fbRegisterProfilePic(Request $request, UserRepo $user)
-    {
-        if ($user->profilePicIsNotNull()) {
-          return json_encode(true);
-        }else {
-          return json_encode($user->editProfilePic($request->input('profilePic')));
-        }
     }
 
     public function postPictureDrop(UpdateProfilePicRequest $request, ImageRepo $imageRepo, UserRepo $repo)

@@ -39,7 +39,7 @@ module.exports = {
       parallelUploads: 1,
       maxFilesize: 5,
       paramName: 'profilePic',
-      headers: {'X-CSRF-TOKEN': document.querySelector('#token').getAttribute('value')},
+      headers: {'Authorization': 'Bearer ' + document.querySelector('#token').getAttribute('value')},
       acceptedFiles: '.jpg, .jpeg, .png, .bmp, .gif, .svg',
       dictDefaultMessage: 'Arraste a sua foto para cá!',
       dictInvalidFileType: 'Favor colocar uma imagem',
@@ -176,7 +176,7 @@ module.exports = {
     },
     destroyAccount: function(){
       this.$http.delete('api/user', function(){
-        window.location.href = "/";
+        window.location.href = "auth/logout";
       });
     },
     openModal(modal){

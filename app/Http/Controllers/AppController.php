@@ -13,7 +13,7 @@ class AppController extends Controller
 
     public function __construct()
     {
-      $this->middleware('auth');
+      $this->middleware('jwt.auth');
     }
 
     /**
@@ -25,13 +25,5 @@ class AppController extends Controller
     {
         return view('app', ['user' => Auth::user()]);
     }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return Response
-     */
-
-
 
 }

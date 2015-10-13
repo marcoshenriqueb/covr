@@ -7,7 +7,7 @@ use Auth;
 /**
  *
  */
-class OwnAuthUser
+class SessionAuth implements UserAuth
 {
 
   public function auth($request){

@@ -24,7 +24,8 @@
       <!-- Navigation -->
       <div class="navbar navbar-fixed-top scroll-hide">
         <div class="container-fluid top-bar">
-          <button class="navbar-toggle"><span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span></button><a class="logo" href="index.html">Covr</a>
+          <button class="navbar-toggle"><span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span></button>
+          <a class="logo" href="index.html">Covr</a>
         </div>
         <div class="container-fluid main-nav clearfix">
           <div class="nav-collapse">

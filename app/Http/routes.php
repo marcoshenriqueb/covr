@@ -1,11 +1,13 @@
 <?php
+
 // Authentication routes...
 Route::post('auth/login', 'SiteController@postLogin');
-Route::get('auth/logout', 'SiteController@getLogout');
 Route::post('auth/FBlogin', 'SiteController@postFbLogin');
 // Registration routes...
 Route::post('auth/register', 'SiteController@postRegister');
+Route::put('api/user/fbRegisterProfilePic', 'SiteController@fbRegisterProfilePic');
 Route::get('auth/check', 'SiteController@authCheck');
+Route::get('auth/logout', 'SiteController@getLogout');
 
 
 // Site routes
@@ -16,13 +18,9 @@ Route::get('confirma-email', 'SiteController@index');
 Route::get('confirma-email/{confirmToken}', 'SiteController@confirmRegister');
 
 // App routes
-Route::get('app', 'AppController@index');
-Route::get('perfil', 'AppController@index');
-Route::get('contatos', 'AppController@index');
-Route::get('logout', function(){
-  Auth::logout();
-  return redirect('/');
-});
+Route::get('app', 'SiteController@index');
+Route::get('perfil', 'SiteController@index');
+Route::get('contatos', 'SiteController@index');
 
 // Error routes
 Route::get('404', function(){
@@ -47,7 +45,6 @@ Route::get('api/user', 'Api\UserApiController@index');
 Route::put('api/user/nome', 'Api\UserApiController@postNome');
 Route::put('api/user/sobrenome', 'Api\UserApiController@postSobrenome');
 Route::put('api/user/localizacao', 'Api\UserApiController@postLocalizacao');
-Route::put('api/user/fbRegisterProfilePic', 'Api\UserApiController@fbRegisterProfilePic');
 Route::post('api/user/profilePicDrop', 'Api\UserApiController@postPictureDrop');
 Route::delete('api/user', 'Api\UserApiController@destroy');
 Route::post('api/bid', 'Api\BidApiController@store');
@@ -64,5 +61,5 @@ Route::put('api/message/read', 'Api\MessageApiController@update');
 
 
 Route::get('teste', function(\Illuminate\Http\Request $request){
-  return event(new \App\Events\AtualizaCotacao());
+  return json_encode(\Auth::check());
 });

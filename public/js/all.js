@@ -10368,6 +10368,7 @@ var FbGetAppSession = function() {
   FB.api('/me?fields=id,first_name,friends,last_name,picture,location,age_range,email', function(response) {
     var csrf = document.querySelector('#token').getAttribute('value');
     var dados = response;
+    console.log(dados);
     jQuery.ajax({
       method: 'POST',
       url: "auth/FBlogin",
@@ -10381,16 +10382,13 @@ var FbGetAppSession = function() {
       success: function(data){
         if (data) {
           FB.api('/me/picture?type=large', function(response) {
-            var csrf = document.querySelector('#token').getAttribute('value');
             var profilePic = response.data.url;
             jQuery.ajax({
               method: 'PUT',
               url: 'api/user/fbRegisterProfilePic',
-              headers: {
-                'X-CSRF-TOKEN': csrf
-              },
               data: {
-                profilePic: profilePic
+                profilePic: profilePic,
+                email: dados.email
               },
               dataType: "json",
               success: function(data){
