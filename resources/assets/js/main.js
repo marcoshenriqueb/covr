@@ -40,7 +40,6 @@
       return $('body, html').toggleClass("nav-open");
     });
     $('.main-nav .nav a').click(function() {
-      console.log('veio');
       return $('body, html').removeClass("nav-open");
     });
 
