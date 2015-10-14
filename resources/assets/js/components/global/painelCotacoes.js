@@ -4,14 +4,14 @@ module.exports = {
   data: function(){
     return {
       cotacao: {
-        USD: {preco:'',variacao:''},
-        CAD: {preco:'',variacao:''},
-        AUD: {preco:'',variacao:''},
-        EUR: {preco:'',variacao:''},
-        GBP: {preco:'',variacao:''},
-        CLP: {preco:'',variacao:''},
-        ARS: {preco:'',variacao:''},
-        MXN: {preco:'',variacao:''}
+        USD: {preco:'',variacao:'',ticker:'',color:''},
+        CAD: {preco:'',variacao:'',ticker:'',color:''},
+        AUD: {preco:'',variacao:'',ticker:'',color:''},
+        EUR: {preco:'',variacao:'',ticker:'',color:''},
+        GBP: {preco:'',variacao:'',ticker:'',color:''},
+        CLP: {preco:'',variacao:'',ticker:'',color:''},
+        ARS: {preco:'',variacao:'',ticker:'',color:''},
+        MXN: {preco:'',variacao:'',ticker:'',color:''}
       },
       animate:false
     }
@@ -29,8 +29,7 @@ module.exports = {
     });
 
     var that = this;
-    var socket = io('http://localhost:3000');
-    socket.on('cotacao:App\\Events\\AtualizaCotacao', function(data){
+    window.socket.on('cotacao:App\\Events\\AtualizaCotacao', function(data){
       that.animate = true;
       var p = JSON.parse(data.cotacao);
       that.parseCot(p);

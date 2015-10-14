@@ -39,36 +39,19 @@ Vue.transition('slide', {
   }
 });
 var app = Vue.extend ({
-
-  data: function(){
-    return {
-      user: {}
-    };
-  },
-
   components: {
     'painel-cotacoes': require('./components/global/painelCotacoes'),
     'compara-conversor-moeda': require('./components/global/comparaConversorMoeda'),
     'quotations-table': require('./components/global/quotationsTable')
-  },
-
-  ready:function(){
-    this.$http.get('api/user').success(function(data){
-      this.user = data;
-      window.socket.on('connect', function(){
-        window.socket.emit('user_id', {user_id: this.user.id});
-      }.bind(this));
-    });
-
   }
-
-
 });
+
 var router = new VueRouter({
   history: true,
 	saveScrollPosition: true
 });
 window.router = router;
+
 router.map({
     '/': {
       component: require('./components/routed/home')
