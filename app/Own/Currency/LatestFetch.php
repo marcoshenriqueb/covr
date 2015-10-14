@@ -14,7 +14,7 @@ class LatestFetch extends CurrencyFetcher
   public function fetchLatest(){
     $repo = new CurrencyBatchRepo();
     $fetch = $repo->last();
-    if ($fetch && $fetch->count() == 1) {
+    if ($fetch && $fetch->count() > 0) {
       $options['headers'] = ['If-None-Match' => $fetch->eTag, 'If-Modified-Since' => $fetch->date];
     }else {
       $options = [];
