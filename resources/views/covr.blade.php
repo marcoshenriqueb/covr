@@ -26,13 +26,14 @@
           @if(isset($user))
           <div class="pull-right">
             <ul class="nav navbar-nav pull-right">
-              <li class="dropdown notifications hidden-xs">
-                <a class="dropdown-toggle" data-toggle="dropdown" href="#"><span aria-hidden="true" class="hightop-flag"></span>
+              <li class="notifications hidden-xs">
+                <a v-on="click: messagesNotRead = 0" v-link="{path: '/contatos'}">
+                  <span aria-hidden="true" class="hightop-flag"></span>
                   <div class="sr-only">
                     Notifications
                   </div>
-                  <p class="counter">
-                    4
+                  <p v-if="messagesNotRead > 0" class="counter">
+                    @{{messagesNotRead}}
                   </p>
                 </a>
                 <ul class="dropdown-menu">
@@ -71,27 +72,6 @@
                       New growth data available
                     </p></a>
 
-                  </li>
-                </ul>
-              </li>
-              <li class="dropdown messages hidden-xs">
-                <a class="dropdown-toggle" data-toggle="dropdown" href="#"><span aria-hidden="true" class="hightop-envelope"></span>
-                  <div class="sr-only">
-                    Messages
-                  </div>
-                  <p class="counter">
-                    3
-                  </p>
-                </a>
-                <ul class="dropdown-menu">
-                  <li><a href="#">
-                    <img width="34" height="34" src="images/avatar-male2.png" />Could we meet today? I wanted...</a>
-                  </li>
-                  <li><a href="#">
-                    <img width="34" height="34" src="images/avatar-female.png" />Important data needs your analysis...</a>
-                  </li>
-                  <li><a href="#">
-                    <img width="34" height="34" src="images/avatar-male2.png" />Buy Se7en today, it's a great theme...</a>
                   </li>
                 </ul>
               </li>

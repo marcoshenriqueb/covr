@@ -34,6 +34,11 @@ class MessageApiController extends Controller
         return json_encode($chatRepo->getMessagesFromChat($id, ($index - 1) * 15));
     }
 
+    public function notread(ChatRepo $chatRepo)
+    {
+        return json_encode($chatRepo->getNotRead());
+    }
+
     /**
      * Store a newly created resource in storage.
      *

@@ -54,6 +54,7 @@ Route::delete('api/bid/destroy', 'Api\BidApiController@destroy');
 Route::get('api/chat', 'Api\ChatApiController@index');
 Route::post('api/chat', 'Api\ChatApiController@store');
 Route::delete('api/chat/{id}', 'Api\ChatApiController@destroy');
+Route::get('api/message/notread', 'Api\MessageApiController@notread');
 Route::get('api/message/{id}', 'Api\MessageApiController@index');
 Route::get('api/message/{id}/{index}', 'Api\MessageApiController@page');
 Route::post('api/message/store', 'Api\MessageApiController@store');
@@ -61,5 +62,5 @@ Route::put('api/message/read', 'Api\MessageApiController@update');
 
 
 // Route::get('teste', function(\Illuminate\Http\Request $request){
-//   return view('teste');
+//   event(new \App\Events\AtualizaCotacao());
 // });

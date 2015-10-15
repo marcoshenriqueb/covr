@@ -21,7 +21,7 @@ class CreateBidsTable extends Migration
             $table->string('address');
             $table->double('lat', 12, 10);
             $table->double('lng', 13, 10);
-            $table->timestamp('dataPrazo')->nullable();
+            $table->timestamp('deadline')->nullable();
             $table->integer('user_id')->unsigned();
             $table->timestamps();
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');

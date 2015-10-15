@@ -31,7 +31,7 @@ class BidApiController extends Controller
         return json_encode($c);
     }
 
-    public function store(BidCadastroRequest $request, BidsRepo $repo, DistanceMatrix $dm)
+    public function store(BidCadastroRequest $request, BidsRepo $repo)
     {
         return $repo->store($request);
     }

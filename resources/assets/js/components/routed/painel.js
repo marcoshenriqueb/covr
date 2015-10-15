@@ -8,6 +8,7 @@ module.exports = {
       currencyFilter: '',
       amount: '',
       price: '',
+      deadline: '',
       address: '',
       place_id: '',
       results: '',
@@ -24,6 +25,7 @@ module.exports = {
       currencyError: false,
       amountError: false,
       priceError: false,
+      deadlineError: false,
       addressError: false,
       currentPagination: 1,
       loadMoreBids: true,
@@ -130,6 +132,7 @@ module.exports = {
       this.amountError = false;
       this.priceError = false;
       this.addressError = false;
+      this.deadlineError = false;
       var postData = {
         operation: this.operation,
         currency: this.currency,
@@ -137,6 +140,7 @@ module.exports = {
         price: this.price,
         address: this.address,
         place_id: this.place_id,
+        deadline: this.deadline
       };
       this.$http.post('api/bid', postData)
       .success(function(data){
@@ -145,6 +149,7 @@ module.exports = {
         this.currency = '';
         this.amount = '';
         this.price = '';
+        this.deadline = '';
         this.address = '';
         this.place_id = '';
         this.newBid = false;
@@ -170,6 +175,15 @@ module.exports = {
           var check = document.getElementById("map-new-bid");
           if (mapOk && check != null) {
             that.initMap();
+            $('.datepicker').datepicker({
+              format: 'dd/mm/yyyy',
+              autoclose: true,
+              disableTouchKeyboard: true,
+              language: 'pt-BR',
+              clearBtn: true,
+              startDate: window.moment().format('DD-MM-YYYY'),
+              todayHighlight: true
+            });
           }else {
             setTimeout(function(){rec();},500);
           }

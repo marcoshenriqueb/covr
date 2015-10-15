@@ -30,7 +30,8 @@ class BidCadastroRequest extends Request
             'amount' => 'required|numeric',
             'price' => 'required|numeric',
             'address' => 'max:255',
-            'place_id' => 'max:255'
+            'place_id' => 'max:255',
+            'deadline' => 'date_format:d/m/Y|after:-1 day'
         ];
     }
 }

@@ -97,7 +97,14 @@
                   <input class="form-control" type="number" v-model="price">
                 </div>
               </div>
-
+              <div class="row">
+                <div class="col-sm-12" v-class="has-error: deadlineError,
+                                                animated: deadlineError,
+                                                shake: deadlineError">
+                  <label>Digite a data limite:</label>
+                  <input v-model="deadline" class="form-control datepicker"/>
+                </div>
+              </div>
               <div class="row">
                 <div class="col-sm-12" v-class="has-error: addressError,
                                                 animated: addressError,
@@ -175,7 +182,7 @@
                 <a class="user-name" href="#">{{o.nome + ' ' + o.sobrenome}}</a>
               </p>
               <p>
-                Deseja {{o.operation == 0 ? 'comprar' : 'vender'}} até 00/00
+                Deseja {{o.operation == 0 ? 'comprar' : 'vender'}} {{o.deadline != null ? 'até ' + o.deadline : ''}}
               </p>
               <p>
                 <i class="fa fa-map-marker"></i>

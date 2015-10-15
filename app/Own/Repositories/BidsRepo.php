@@ -24,6 +24,7 @@ class BidsRepo
      $bid->currency = $request->input('currency');
      $bid->amount = $request->input('amount');
      $bid->price = $request->input('price');
+     $bid->deadline = $request->input('deadline');
      if ($request->input('place_id') != null) {
        $bid->place_id = $request->input('place_id');
      }else {

@@ -27,6 +27,6 @@ class CreateCurrenciesBatchTable extends Migration
      */
     public function down()
     {
-        Schema::drop('latest_currencies');
+        Schema::drop('currencies_batch');
     }
 }

@@ -42,7 +42,8 @@ var app = Vue.extend ({
 
   data: function(){
     return {
-      user: null
+      user: null,
+      messagesNotRead: 0
     };
   },
 
@@ -60,6 +61,7 @@ var app = Vue.extend ({
         if (user == 1) {
           Vue.http.headers.common['Authorization'] = 'Bearer ' + document.getElementById('token').getAttribute('value');
           that.initSocket();
+          that.getNotRead();
         }
       }else {
         setTimeout(function(){
@@ -77,6 +79,15 @@ var app = Vue.extend ({
         window.socket.on('connect', function(){
           window.socket.emit('user_id', {user_id: this.user.id});
         }.bind(this));
+      });
+    },
+    getNotRead: function(){
+      this.$http.get('api/message/notread')
+      .success(function(data){
+        this.messagesNotRead = data;
+      })
+      .error(function(data){
+        console.log(data);
       });
     }
   }

@@ -25,7 +25,6 @@ class RatePreparer
     }
     $rates['date'] = $fetched->getHeader('date')[0];
     $rates['eTag'] = $fetched->getHeader('etag')[0];
-
     return $rates;
   }
 
