@@ -9,7 +9,8 @@ Vue.use(VueResource);
 window.moment = require('moment');
 window.socket = io('http://localhost:3000');
 
-Vue.http.headers.common['Authorization'] = 'Bearer ' + document.querySelector('#token').getAttribute('value');
+
+
 Vue.config.debug = false;
 Vue.transition('slide', {
   enter: function (el, done) {
@@ -52,12 +53,12 @@ var app = Vue.extend ({
   },
 
   ready:function(){
-
     var that = this;
     var initRecur = function rec (){
       var user = document.getElementById("user-set").getAttribute('value');
       if (user.trim() != '' && user != undefined) {
         if (user == 1) {
+          Vue.http.headers.common['Authorization'] = 'Bearer ' + document.getElementById('token').getAttribute('value');
           that.initSocket();
         }
       }else {
@@ -121,13 +122,13 @@ router.beforeEach(function(transition){
       .success(function(data){
       transition.next();
     }).error(function(data){
-      window.location.href = "/login";
+      window.location.href = "auth/logout";
     });
   }else {
     transition.next();
   }
 });
 
-router.mode = 'hash';
+router.mode = 'html5';
 
 router.start(app, '#app');

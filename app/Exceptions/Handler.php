@@ -48,6 +48,13 @@ class Handler extends ExceptionHandler
         if ($e instanceof NotFoundHttpException) {
             return redirect('404');
         }
+        if ($e instanceof \Tymon\JWTAuth\Exceptions\TokenExpiredException) {
+          return response()->json(['token_expired'], $e->getStatusCode());
+        } else if ($e instanceof \Tymon\JWTAuth\Exceptions\TokenInvalidException) {
+          return response()->json(['token_invalid'], $e->getStatusCode());
+        } else if ($e instanceof \Tymon\JWTAuth\Exceptions\JWTException) {
+          return response('Forbidden', 401);
+        }
         return parent::render($request, $e);
     }
 }

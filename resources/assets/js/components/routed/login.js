@@ -58,7 +58,7 @@ module.exports = {
           remember: this.remember
         }
       ).success(function(data){
-        location.href = "app";
+        location.href = "/";
         l.stop();
       }).error(function(data){
         l.stop();

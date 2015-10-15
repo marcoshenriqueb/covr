@@ -62,10 +62,11 @@ class SiteController extends Controller
     public function authCheck()
     {
       $response = $this->autentica->check();
+      dd($response);
       if (json_decode($response) == true) {
         return response('Ok', 200);
       }else {
-        return $response;
+        return response('Forbidden', 401);
       }
     }
 
