@@ -168,14 +168,14 @@
         <div class="widget-content padded">
           <div class="row">
             <div class="col-xs-4">
-              <img class="img-responsive img-rounded" src="{{ o.profile_pic != null ? o.profile_pic : 'images/int.jpg'}}" />
+              <img class="img-responsive img-rounded" src="{{ o.profile_pic != null ? o.profile_pic.substring(0,3) == 'http' ? o.profile_pic : 'images/profile/' + o.profile_pic : 'images/int.jpg'}}" />
             </div>
             <div class="col-xs-8">
               <p>
                 <a class="user-name" href="#">{{o.nome + ' ' + o.sobrenome}}</a>
               </p>
               <p>
-                Deseja {{o.operation == 0 ? 'comprar' : 'vender'}}
+                Deseja {{o.operation == 0 ? 'comprar' : 'vender'}} até 00/00
               </p>
               <p>
                 <i class="fa fa-map-marker"></i>
@@ -202,10 +202,10 @@
             </div>
             <div class="col-xs-4">
               <a href="#">
-                <h2>00/00</h2>
+                <h2>{{o.price | toFixed 2}}</h2>
               </a>
               <p>
-                Prazo
+                R$
               </p>
             </div>
           </div>
