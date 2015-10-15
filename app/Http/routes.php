@@ -60,6 +60,6 @@ Route::post('api/message/store', 'Api\MessageApiController@store');
 Route::put('api/message/read', 'Api\MessageApiController@update');
 
 
-Route::get('teste', function(\Illuminate\Http\Request $request){
-  return json_encode(\Auth::check());
-});
+// Route::get('teste', function(\Illuminate\Http\Request $request){
+//   return view('teste');
+// });

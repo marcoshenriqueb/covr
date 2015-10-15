@@ -1,5 +1,4 @@
 Bugs
--display de mensagens credenciais invalidas
 -colocar opção de data limite
 -cronjob e variação da atualização em relação ao dia anterior
 -melhorar template de email

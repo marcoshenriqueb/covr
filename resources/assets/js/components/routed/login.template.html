@@ -53,9 +53,8 @@
               Login
             </span>
           </button>
-          <div class="alert alert-danger" style="margin-bottom:0" v-if="authErr" role="alert">Credenciais inválidas</div>
+          <div class="alert alert-danger text-center" style="margin-bottom:0" v-if="errorInvalid" role="alert">Credenciais inválidas</div>
         </form><br>
-
           <div class="social-login clearfix">
             <a v-class="disabled: fbLoading" class="btn btn-primary facebook btn-block ladda-button" v-on="click: fbLogin" data-style="zoom-in">
               <span class="ladda-label">
@@ -71,4 +70,5 @@
       </div>
     </div>
   </div>
+  <br>
 </div>

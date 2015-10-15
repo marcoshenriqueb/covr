@@ -18,7 +18,7 @@
     <![endif]-->
   </head>
   <body id="app" class="page-header-fixed bg-1">
-
+    <input type="hidden" id="user-set" value="{{isset($user) ? 1 : 0 }}">
     <div class="modal-shiftfix">
       <!-- Navigation -->
       <div class="navbar navbar-fixed-top scroll-hide">

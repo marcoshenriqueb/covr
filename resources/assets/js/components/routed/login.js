@@ -8,12 +8,15 @@ module.exports = {
       authErr: false,
       remember: null,
       emailInvalid: false,
-      passwordInvalid: false
+      passwordInvalid: false,
+      errorInvalid: false
     };
   },
 
   ready: function(){
     Ladda.bind( 'ladda-button' );
+
+
   },
 
 
@@ -44,6 +47,7 @@ module.exports = {
     },
     postLogin: function(e){
       e.preventDefault();
+      this.errorInvalid = false;
       var l = Ladda.create(e.target);
       l.start();
       this.$http.post(
@@ -54,7 +58,7 @@ module.exports = {
           remember: this.remember
         }
       ).success(function(data){
-        window.location="app";
+        location.href = "app";
         l.stop();
       }).error(function(data){
         l.stop();

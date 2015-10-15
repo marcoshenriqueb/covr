@@ -12,7 +12,7 @@ class AppMailer
 {
   protected $mailer;
 
-  protected $from = 'postmaster@sandbox36e0be12d3de4e0abb9a70914d6ee5de.mailgun.org';
+  protected $from;
 
   protected $to;
 
@@ -24,6 +24,7 @@ class AppMailer
 
   public function __construct(Mailer $mailer)
   {
+    $this->from = env('MAIL_USERNAME');
     $this->mailer = $mailer;
   }
 
@@ -39,7 +40,7 @@ class AppMailer
   public function deliver()
   {
     $result = $this->mailer->send($this->view, $this->data, function($message){
-      $message->from($this->from, 'AppCambio')
+      $message->from($this->from, 'Covr')
               ->to($this->to)
               ->subject($this->subject);
     });

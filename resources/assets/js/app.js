@@ -11,7 +11,6 @@ window.socket = io('http://localhost:3000');
 
 Vue.http.headers.common['Authorization'] = 'Bearer ' + document.querySelector('#token').getAttribute('value');
 Vue.config.debug = false;
-
 Vue.transition('slide', {
   enter: function (el, done) {
     // element is already inserted into the DOM
@@ -53,13 +52,33 @@ var app = Vue.extend ({
   },
 
   ready:function(){
-    this.$http.get('api/user').success(function(data){
-      this.user = data;
-      window.socket.on('connect', function(){
-        window.socket.emit('user_id', {user_id: this.user.id});
-      }.bind(this));
-    });
-   }
+
+    var that = this;
+    var initRecur = function rec (){
+      var user = document.getElementById("user-set").getAttribute('value');
+      if (user.trim() != '' && user != undefined) {
+        if (user == 1) {
+          that.initSocket();
+        }
+      }else {
+        setTimeout(function(){
+          rec();
+        }, 50);
+      }
+    }
+    initRecur();
+  },
+
+  methods: {
+    initSocket: function(){
+      this.$http.get('api/user').success(function(data){
+        this.user = data;
+        window.socket.on('connect', function(){
+          window.socket.emit('user_id', {user_id: this.user.id});
+        }.bind(this));
+      });
+    }
+  }
 
 });
 
