@@ -147,7 +147,7 @@
       </div>
     </div>
   </div>
-  
+
   <!-- Filtro de amigos -->
   <div class="row">
     <div class="col-sm-offset-4 col-sm-4 text-center">
@@ -168,14 +168,14 @@
         <div class="widget-content padded">
           <div class="row">
             <div class="col-xs-4">
-              <img class="img-responsive" src="images/int.jpg" />
+              <img class="img-responsive img-rounded" src="{{ o.profile_pic != null ? o.profile_pic : 'images/int.jpg'}}" />
             </div>
             <div class="col-xs-8">
               <p>
-                <a class="user-name" href="#">John</a>
+                <a class="user-name" href="#">{{o.nome + ' ' + o.sobrenome}}</a>
               </p>
               <p>
-                {{o.operation == 0 ? 'Comprar' : 'Vender'}} {{o.currency}} {{o.amount}}
+                Deseja {{o.operation == 0 ? 'comprar' : 'vender'}}
               </p>
               <p>
                 <i class="fa fa-map-marker"></i>
@@ -186,7 +186,15 @@
           <div class="row text-center rates">
             <div class="col-xs-4">
               <a href="#">
-                <h2>10</h2>
+                <h2>{{o.amount | toFixed 0 }}</h2>
+              </a>
+              <p>
+                {{o.currency}}
+              </p>
+            </div>
+            <div class="col-xs-4">
+              <a href="#">
+                <h2>{{o.distance | toFixed 2 }}</h2>
               </a>
               <p>
                 Km
@@ -194,18 +202,10 @@
             </div>
             <div class="col-xs-4">
               <a href="#">
-                <h2>10</h2>
+                <h2>00/00</h2>
               </a>
               <p>
-                horas
-              </p>
-            </div>
-            <div class="col-xs-4">
-              <a href="#">
-                <h2>10</h2>
-              </a>
-              <p>
-                Nota média
+                Prazo
               </p>
             </div>
           </div>

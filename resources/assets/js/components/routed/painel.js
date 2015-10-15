@@ -45,6 +45,12 @@ module.exports = {
     this.getBids();
   },
 
+  filters: {
+    toFixed: function(value, n){
+      return Number(value).toFixed(n);
+    }
+  },
+
   methods: {
     findGeolocation: function(){
       var that = this;

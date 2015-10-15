@@ -26,16 +26,17 @@ class Bid extends Model
         $ln2 = $this->lng + $dist/abs(cos(deg2rad($this->lat))*111.2);
         $lt1 = $this->lat - ($dist/111.2);
         $lt2 = $this->lat + ($dist/111.2);
-        return $query->select("id", "address", "currency", "operation", "lng", "lat", "amount", "price",
-          DB::raw("3956 * 2 * ASIN(SQRT(POWER(SIN(($this->lat - lat) * pi()/180 / 2), 2) +
-          COS($this->lat * pi()/180) * COS(lat * pi()/180) * POWER(SIN(($this->lng - lng) * pi()/180 / 2), 2)))
-          as distance")
-          )->whereBetween('lng', [$ln1, $ln2])
-            ->whereBetween('lat', [$lt1, $lt2])
-            ->whereNotIn('user_id', [$id])
-            ->where('operation', '!=', $this->operation)
-            ->where('currency', '=', $this->currency)
-            ->orderBy('distance', 'asc');
+        return $query->join('users', 'users.id', '=', 'bids.user_id')
+          ->select("bids.id", "bids.address", "bids.currency", "bids.operation", "bids.lng", "bids.lat", "bids.amount", "bids.price", "users.nome", "users.sobrenome", "users.profile_pic",
+            DB::raw("3956 * 2 * ASIN(SQRT(POWER(SIN(($this->lat - bids.lat) * pi()/180 / 2), 2) +
+            COS($this->lat * pi()/180) * COS(bids.lat * pi()/180) * POWER(SIN(($this->lng - bids.lng) * pi()/180 / 2), 2)))
+            as distance")
+            )->whereBetween('bids.lng', [$ln1, $ln2])
+              ->whereBetween('bids.lat', [$lt1, $lt2])
+              ->whereNotIn('bids.user_id', [$id])
+              ->where('bids.operation', '!=', $this->operation)
+              ->where('bids.currency', '=', $this->currency)
+              ->orderBy('distance', 'asc');
     }
 
     public function scopeSearchFriendsRadius($query, $dist, $user, $skip = 0, $take = 12)
@@ -45,7 +46,7 @@ class Bid extends Model
         $lt1 = $this->lat - ($dist/111.2);
         $lt2 = $this->lat + ($dist/111.2);
         return $query->join('users', 'users.id', '=', 'bids.user_id')
-          ->select("bids.id", "bids.address", "bids.currency", "bids.operation", "bids.lng", "bids.lat", "bids.amount", "bids.price",
+          ->select("bids.id", "bids.address", "bids.currency", "bids.operation", "bids.lng", "bids.lat", "bids.amount", "bids.price", "users.nome", "users.sobrenome", "users.profile_pic",
             DB::raw("3956 * 2 * ASIN(SQRT(POWER(SIN(($this->lat - lat) * pi()/180 / 2), 2) +
             COS($this->lat * pi()/180) * COS(lat * pi()/180) * POWER(SIN(($this->lng - lng) * pi()/180 / 2), 2)))
             as distance")
