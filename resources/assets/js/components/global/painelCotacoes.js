@@ -17,14 +17,12 @@ module.exports = {
     }
   },
 
-  props: {
-    cotacao: {
-      twoWay: true
-    }
-  },
+  props: [
+    'cotacao'
+  ],
 
   ready: function(){
-    this.$http.get('api/currency/latest', function(data){
+    this.$http.get('api/currency/latest').success(function(data){
       this.parseCot(data);
     });
 
@@ -53,9 +51,6 @@ module.exports = {
       }
       this.cotacao = ar;
     }
-  },
+  }
 
-  props: [
-    'cotacao'
-  ]
 };

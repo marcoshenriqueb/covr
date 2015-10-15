@@ -3,7 +3,16 @@ module.exports = {
 
   data: function(){
     return {
-      cotacao: null,
+      cotacao: {
+        USD: {preco:'',variacao:'',ticker:'',color:'',currency:''},
+        CAD: {preco:'',variacao:'',ticker:'',color:'',currency:''},
+        AUD: {preco:'',variacao:'',ticker:'',color:'',currency:''},
+        EUR: {preco:'',variacao:'',ticker:'',color:'',currency:''},
+        GBP: {preco:'',variacao:'',ticker:'',color:'',currency:''},
+        CLP: {preco:'',variacao:'',ticker:'',color:'',currency:''},
+        ARS: {preco:'',variacao:'',ticker:'',color:'',currency:''},
+        MXN: {preco:'',variacao:'',ticker:'',color:'',currency:''}
+      },
       arrayCotacao: [],
       selectedA: 1,
       selectedB: '',
@@ -22,7 +31,7 @@ module.exports = {
   ready: function(){
     var that = this;
     var initRecur = function rec (){
-      if (that.cotacao != null && typeof that.cotacao == 'object') {
+      if (that.cotacao != null && typeof that.cotacao == 'object' && that.cotacao.USD.preco != '') {
         that.initCalc();
       }else {
         setTimeout(function(){
