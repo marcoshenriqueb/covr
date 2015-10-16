@@ -9,7 +9,8 @@ use Illuminate\Foundation\Auth\Access\Authorizable;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
 use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
-use Auth;
+use App\Own\Auth\UserAuth as Auth;
+use DB;
 
 class User extends Model implements AuthenticatableContract,
                                     AuthorizableContract,
@@ -122,16 +123,4 @@ class User extends Model implements AuthenticatableContract,
         }
     }
 
-    public function scopeSearch($query, $search)
-    {
-        return $query->where('id', '!=', Auth::user()->id)
-                     ->whereNotIn('id', Auth::user()->friends->modelKeys())
-                     ->whereNotIn('id', Auth::user()->requests->modelKeys())
-                     ->whereNotIn('id', Auth::user()->requested->modelKeys())
-                     ->where(function($q) use ($search){
-                       $q->where('nome', 'LIKE', "%$search%")
-                         ->orWhere('sobrenome', 'LIKE', "%$search%")
-                         ->orWhere('email', 'LIKE', "%$search%");
-                     });
-    }
 }

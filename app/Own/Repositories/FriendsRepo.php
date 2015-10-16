@@ -79,11 +79,23 @@ class FriendsRepo
     return true;
   }
 
-  public function search($q)
+  public function searchNewFriends($s)
   {
-    $result = $q
-      ? User::search($q)->get()->toArray()
-      : false;
+    $result = \DB::table(\DB::raw("(select id,
+                                         nome,
+                                         sobrenome,
+                                         CONCAT_WS(' ', nome, sobrenome) AS full_name,
+                                         email,
+                                         localizacao
+                                         from users) as users_view"))
+                           ->where('id', '!=', $this->auth->user()->id)
+                           ->whereNotIn('id', $this->auth->user()->friends->modelKeys())
+                           ->whereNotIn('id', $this->auth->user()->requests->modelKeys())
+                           ->whereNotIn('id', $this->auth->user()->requested->modelKeys())
+                           ->where(function($q) use ($s){
+                             $q->where('full_name', 'LIKE', "%$s%")
+                               ->orWhere('email', 'LIKE', "%$s%");
+                           })->get();
 
     return $result;
   }

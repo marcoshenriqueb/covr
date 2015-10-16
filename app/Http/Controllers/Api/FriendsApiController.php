@@ -52,7 +52,7 @@ class FriendsApiController extends Controller
 
     public function search($q, FriendsRepo $repo)
     {
-      return json_encode($repo->search($q));
+      return json_encode($repo->searchNewFriends($q));
     }
 
     public function destroy(Request $request, FriendsRepo $repo)

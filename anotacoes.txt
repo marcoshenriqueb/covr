@@ -1,12 +1,10 @@
 Bugs
--colocar opção de data limite
 -cronjob e variação da atualização em relação ao dia anterior
 -melhorar template de email
 
 -listeners de criação de chat e mensagem estão nos lugares errados
 -utilizar queue para email cadastro e atualizar fbfriends
 -O que acontece na merda do Mozilla???????? Auth cai toda hora e problema com CSRF token
--unificar modais
 -transições
 -acertar verbos http
 -colocar localização do fb
