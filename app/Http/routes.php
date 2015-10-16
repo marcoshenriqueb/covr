@@ -48,8 +48,8 @@ Route::put('api/user/localizacao', 'Api\UserApiController@postLocalizacao');
 Route::post('api/user/profilePicDrop', 'Api\UserApiController@postPictureDrop');
 Route::delete('api/user', 'Api\UserApiController@destroy');
 Route::post('api/bid', 'Api\BidApiController@store');
-Route::get('api/bid/{friends}', 'Api\BidApiController@index');
-Route::get('api/bid/page/{index}/{friends}', 'Api\BidApiController@page');
+Route::get('api/bid/{friends}/{radius}/{bidOrder}', 'Api\BidApiController@index');
+Route::get('api/bid/page/{index}/{friends}/{radius}/{bidOrder}', 'Api\BidApiController@page');
 Route::delete('api/bid/destroy', 'Api\BidApiController@destroy');
 Route::get('api/chat', 'Api\ChatApiController@index');
 Route::post('api/chat', 'Api\ChatApiController@store');
@@ -62,5 +62,5 @@ Route::put('api/message/read', 'Api\MessageApiController@update');
 
 
 // Route::get('teste', function(\Illuminate\Http\Request $request){
-//   event(new \App\Events\AtualizaCotacao());
+//   dd($request);
 // });

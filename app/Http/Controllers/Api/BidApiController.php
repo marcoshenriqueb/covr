@@ -19,15 +19,15 @@ class BidApiController extends Controller
       $this->middleware('jwt.auth');
     }
 
-    public function index($friends, BidSearchRepo $repo)
+    public function index($friends, $radius, $bidOrder, BidSearchRepo $repo)
     {
-        $c = $repo->getBidsAndOffers(['dist' => 500, 'friends' => $friends]);
+        $c = $repo->getBidsAndOffers(['distance' => $radius, 'order' => $bidOrder, 'friends' => $friends]);
         return json_encode($c);
     }
 
-    public function page($index, $friends, BidSearchRepo $repo)
+    public function page($index, $friends, $radius, $bidOrder, BidSearchRepo $repo)
     {
-        $c = $repo->getBidsAndOffers(['dist' => 500, 'skip' => ($index - 1) * 12, 'friends' => $friends]);
+        $c = $repo->getBidsAndOffers(['distance' => $radius, 'order' => $bidOrder, 'skip' => ($index - 1) * 12, 'friends' => $friends]);
         return json_encode($c);
     }
 

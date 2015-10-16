@@ -29,19 +29,15 @@ module.exports = {
       addressError: false,
       currentPagination: 1,
       loadMoreBids: true,
-      friendBidFilter: false
+      friendBidFilter: false,
+      radius: 50,
+      bidOrder: 'amount_difference',
+      showFilters: false
     };
   },
 
   ready: function(){
-    var that = this;
-    $('#friendBidFilter').bootstrapSwitch();
-    $('#friendBidFilter').on('switchChange.bootstrapSwitch', function(event,state){
-        that.friendBidFilter = state;
-        that.loadMoreBids = true;
-        that.currentPagination = 1;
-        that.getBids();
-      });
+
     this.getAvailableCurrencies();
 
     this.getBids();
@@ -208,10 +204,15 @@ module.exports = {
         });
     },
     getBids: function(){
+      this.showFilters = false;
+      this.loadMoreBids = true;
+      this.currentPagination = 1;
       this.offers = [];
       this.bids = [];
       var b = this.friendBidFilter ? 1 : 0;
-      this.$http.get('api/bid/' + b, function(data){
+      var c = this.radius > 0 ? this.radius : 50;
+      var d = this.bidOrder;
+      this.$http.get('api/bid/' + b + '/' + c + '/' + d, function(data){
         for(var key in data){
           this.bids.push(data[key].bid);
           for(var k in data[key].offers){
@@ -229,7 +230,9 @@ module.exports = {
     loadPagination: function(){
       this.loadMoreBids = false;
       var b = this.friendBidFilter ? 1 : 0;
-      this.$http.get('api/bid/page/' + ++this.currentPagination + '/' + b, function(data){
+      var c = this.radius > 0 ? this.radius : 50;
+      var d = this.bidOrder;
+      this.$http.get('api/bid/page/' + ++this.currentPagination + '/' + b + '/' + c + '/' + d, function(data){
         for(var key in data){
           // this.bids.push(data[key].bid);
           for(var k in data[key].offers){
@@ -259,6 +262,26 @@ module.exports = {
         H: geometry[0]['geometry']['location'].lat(),
         L: geometry[0]['geometry']['location'].lng()
       };
+    },
+    openFilters: function(){
+      this.showFilters = !this.showFilters;
+      if (this.showFilters) {
+        var that = this;
+        var initRec = function rec(){
+          var $bsSwitch = $('#friendBidFilter');
+          if ($bsSwitch.length > 0) {
+            $bsSwitch.bootstrapSwitch()
+            $bsSwitch.on('switchChange.bootstrapSwitch', function(event,state){
+                that.friendBidFilter = state;
+              });
+          }else {
+            setTimeout(function(){
+              rec();
+            }, 50);
+          }
+        }
+        initRec();
+      }
     }
   }
 };

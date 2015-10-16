@@ -18,6 +18,7 @@ class BidSearchRepo
   private $skip = 0;
   private $take = 12;
   private $friends = 0;
+  private $order = 'amount_difference';
 
   public function __construct(Auth $auth)
   {
@@ -44,7 +45,7 @@ class BidSearchRepo
 
   private function getBestOffers($bid)
   {
-    return $bid->searchRadius($this->distance, $this->user->id)
+    return $bid->searchRadius($this->distance, $this->user->id, $this->order)
       ->skip($this->skip)
       ->take($this->take)
       ->get()->toArray();
@@ -52,7 +53,7 @@ class BidSearchRepo
 
   private function getBestOffersFromFriends($bid)
   {
-    return $bid->searchFriendsRadius($this->distance, $this->user)
+    return $bid->searchFriendsRadius($this->distance, $this->user, $this->order)
       ->skip($this->skip)
       ->take($this->take)
       ->get()->toArray();
@@ -61,7 +62,7 @@ class BidSearchRepo
   private function setSearchParameters($options)
   {
     foreach ($options as $property => $option) {
-      if (property_exists($this, $property)) {
+      if (property_exists($this, $property) && $option != null && strlen($option) > 0) {
         $this->{$property} = $option;
       }
     }

@@ -11,6 +11,7 @@
       <label>Procure aqui: </label>
       <select class="form-control" options="availableCurrencies" v-model="currencyFilter"></select>
       <input type="text" class="form-control" v-model="searchBid" placeholder="Digite aqui para filtrar">
+      <button v-on="click: openFilters" class="btn btn-primary">Mais filtros <i class="fa fa-filter" style="margin-left:5px;"></i></button>
     </div>
   </div>
 
@@ -156,17 +157,52 @@
   </div>
 
   <!-- Filtro de amigos -->
-  <div class="row">
-    <div class="col-sm-offset-4 col-sm-4 text-center">
-      <input type="checkbox"
-             v-model="friendBidFilter"
-             data-switch-toogle="state"
-             data-handle-width="100"
-             data-on-text="AMIGOS"
-             data-off-text="TODOS"
-             id="friendBidFilter">
+  <div class="row" v-if="showFilters" v-transition="slide">
+    <div class="col-sm-12">
+      <div class="widget-container fluid-height clearfix">
+        <div class="heading">
+          <i class="fa fa-filter"></i>
+          Filtros
+        </div>
+        <div class="widget-content padded">
+          <div class="col-sm-4 text-center">
+            <div class="form-group">
+              <label>Escolha a distância limite:</label>
+              <div class="input-group">
+                <input class="form-control" type="number" v-model="radius">
+                <span class="input-group-addon">Km</span>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-4 text-center">
+            <label>Filtre para ver apenas os seus amigos:</label>
+            <input type="checkbox"
+                   v-model="friendBidFilter"
+                   data-switch-toogle="state"
+                   data-handle-width="100"
+                   data-on-text="AMIGOS"
+                   data-off-text="TODOS"
+                   id="friendBidFilter">
+          </div>
+          <div class="col-sm-4 text-center">
+            <label>Ordenar por:</label>
+            <select class="form-control" v-model="bidOrder">
+              <option value="amount_difference">Valores mais próximos à minha oferta</option>
+              <option value="distance">Distância</option>
+              <option value="price">Preço</option>
+            </select>
+          </div>
+          <div class="row">
+            <div class="col-sm-offset-4 col-sm-4">
+              <button v-on="click: getBids" class="btn btn-large btn-block btn-primary">Filtrar</button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
+
+
 
   <!-- Resultado de ofertas -->
   <div class="row grid">
