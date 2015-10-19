@@ -11,7 +11,10 @@ Route::get('auth/logout', 'SiteController@getLogout');
 
 
 // Site routes
-Route::get('/', 'SiteController@index');
+Route::get('/', function(){
+  return view('home');
+});
+Route::get('painel', 'SiteController@index');
 Route::get('login', 'SiteController@index');
 Route::get('cadastro', 'SiteController@index');
 Route::get('confirma-email', 'SiteController@index');
@@ -61,6 +64,6 @@ Route::post('api/message/store', 'Api\MessageApiController@store');
 Route::put('api/message/read', 'Api\MessageApiController@update');
 
 
-// Route::get('teste', function(\Illuminate\Http\Request $request){
-//   dd($request);
+// Route::get('teste', function(){
+//   return view('teste');
 // });

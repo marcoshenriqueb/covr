@@ -61,10 +61,35 @@ class BidSearchRepo
 
   private function setSearchParameters($options)
   {
-    foreach ($options as $property => $option) {
-      if (property_exists($this, $property) && $option != null && strlen($option) > 0) {
-        $this->{$property} = $option;
-      }
+    if (isset($options['friends'])) {
+      $this->setFriends($options['friends']);
+    }
+    if (isset($options['distance'])) {
+      $this->setDistance($options['distance']);
+    }
+    if (isset($options['order'])) {
+      $this->setOrder($options['order']);
+    }
+  }
+
+  private function setFriends($friends)
+  {
+    if ($friends == 1 || $friends == 0) {
+      $this->friends = $friends;
+    }
+  }
+
+  private function setDistance($distance)
+  {
+    if (is_numeric($distance) && $distance > 0) {
+      $this->distance = $distance;
+    }
+  }
+
+  private function setOrder($order)
+  {
+    if (in_array($order, ['amount_difference', 'distance', 'price'])) {
+      $this->order = $order;
     }
   }
 }

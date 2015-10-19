@@ -101,7 +101,7 @@ var router = new VueRouter({
 window.router = router;
 
 router.map({
-    '/': {
+    '/painel': {
       component: require('./components/routed/home')
     },
     '/app' :{

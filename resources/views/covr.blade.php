@@ -95,13 +95,13 @@
           </div>
           @endif
           <button class="navbar-toggle"><span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span></button>
-          <a class="logo" href="index.html">COvr</a>
+          <a class="logo" href="painel">COvr</a>
         </div>
         <div class="container-fluid main-nav clearfix">
           <div class="nav-collapse">
             <ul class="nav">
               <li>
-                <a v-link="{path: '/'}">
+                <a v-link="{path: '/painel'}">
                    <span aria-hidden="true" class="hightop-home"></span>
                    Home
                  </a>

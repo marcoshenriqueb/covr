@@ -7,7 +7,7 @@
          <title>Title Page</title>
 
          <!-- Bootstrap CSS -->
-         <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.0/css/bootstrap.min.css" rel="stylesheet">
+         <link href="css/home.css" rel="stylesheet">
 
          <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
          <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -17,26 +17,27 @@
          <![endif]-->
        </head>
        <body id="teste">
-        <h1 class="text-center">Hello World</h1>
-        <button v-on="click: send" class="btn btn-large btn-block btn-primary">send</button>
-        <!-- jQuery -->
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/0.12.16/vue.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/vue-resource/0.1.16/vue-resource.min.js"></script>
-        <!-- Your own javascript -->
-        <script type="text/javascript">
+         @for($i = 33; $i < 127; $i++)
+            <div data-icon="{{chr($i)}}" class="iconbox_icon"></div>
+         @endfor
+         @for($i = 97; $i < 122; $i++)
+            <div data-icon="&#xe00{{chr($i)}}" class="iconbox_icon"></div>
+         @endfor
+         @for($i = 0; $i < 10; $i++)
+            <div data-icon="&#xe00{{$i}}" class="iconbox_icon"></div>
+         @endfor
+         @for($i = 97; $i < 122; $i++)
+            @for($j = 0; $j < 10; $j++)
+              <div data-icon="&#xe0{{$j}}{{chr($i)}}" class="iconbox_icon"></div>
+            @endfor
+         @endfor
+         @for($i = 97; $i < 122; $i++)
+           @for($j = 0; $j < 10; $j++)
+             @for($k = 0; $k < 10; $k++)
+              <div data-icon="&#xe{{$k}}{{$j}}{{chr($i)}}" class="iconbox_icon"></div>
+             @endfor
+           @endfor
+         @endfor
 
-        new Vue({
-          el: '#teste',
-
-          methods:{
-          send: function(){
-              this.$http.get('api/currency/latest')
-              .success(function(){
-                alert('hey');
-              });
-            }
-          }
-        })
-        </script>
        </body>
 </html>
