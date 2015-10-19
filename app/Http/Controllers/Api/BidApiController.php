@@ -9,8 +9,8 @@ use App\Http\Controllers\Controller;
 use App\Own\GMaps\DistanceMatrix;
 use App\Http\Requests\BidCadastroRequest;
 use Symfony\Component\HttpFoundation\Response;
-use App\Own\Repositories\BidsRepo;
-use App\Own\Repositories\BidSearchRepo;
+use App\Own\Repositories\BidsRepo\BidsRepo;
+use App\Own\Repositories\BidSearchRepo\BidSearchRepo;
 
 class BidApiController extends Controller
 {

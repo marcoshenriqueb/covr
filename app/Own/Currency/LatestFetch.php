@@ -3,7 +3,7 @@
 namespace App\Own\Currency;
 
 use App\Own\Currency\CurrencyFetcher;
-use App\Own\Repositories\CurrencyBatchRepo;
+use App\Own\Repositories\CurrencyBatchRepo\EloquentCurrencyBatchRepo;
 
 /**
  *
@@ -12,7 +12,7 @@ class LatestFetch extends CurrencyFetcher
 {
 
   public function fetchLatest(){
-    $repo = new CurrencyBatchRepo();
+    $repo = new EloquentCurrencyBatchRepo();
     $fetch = $repo->last();
     if ($fetch && $fetch->count() > 0) {
       $options['headers'] = ['If-None-Match' => $fetch->eTag, 'If-Modified-Since' => $fetch->date];

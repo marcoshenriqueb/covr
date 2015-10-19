@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 
 use App\Http\Requests\UserCadastroRequest;
 use App\Own\Auth\UserAuth;
-use App\Own\Repositories\UserRepo;
+use App\Own\Repositories\UserRepo\UserRepo;
 use App\Http\Controllers\Controller;
 use App\Own\Mailer\AppMailer;
 use App\Http\Requests\SignUserRequest;

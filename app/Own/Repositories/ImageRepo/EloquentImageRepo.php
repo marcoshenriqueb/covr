@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Own\Repositories;
+namespace App\Own\Repositories\ImageRepo;
 
 use Intervention\Image\Facades\Image;
 use App\Own\Auth\UserAuth as Auth;
@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Storage;
 /**
  *
  */
-class ImageRepo
+class EloquentImageRepo implements ImageRepo
 {
   private $auth;
 

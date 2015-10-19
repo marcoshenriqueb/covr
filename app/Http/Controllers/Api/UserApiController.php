@@ -6,8 +6,8 @@ use Illuminate\Http\Request;
 
 use App\Http\Requests;
 use App\Http\Controllers\Controller;
-use App\Own\Repositories\UserRepo;
-use App\Own\Repositories\ImageRepo;
+use App\Own\Repositories\UserRepo\UserRepo;
+use App\Own\Repositories\ImageRepo\ImageRepo;
 use App\Http\Requests\UpdateProfilePicRequest;
 
 class UserApiController extends Controller

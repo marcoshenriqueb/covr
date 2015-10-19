@@ -7,8 +7,8 @@ use Illuminate\Http\Request;
 use App\Http\Requests;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CreateChatRequest;
-use App\Own\Repositories\ChatRepo;
-use App\Own\Repositories\BidsRepo;
+use App\Own\Repositories\ChatRepo\ChatRepo;
+use App\Own\Repositories\BidsRepo\BidsRepo;
 use App\Events\ChatHasBeenDeleted;
 use App\Events\ChatHasBeenCreated;
 

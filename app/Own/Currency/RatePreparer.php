@@ -2,7 +2,7 @@
 
 namespace App\Own\Currency;
 
-use App\Own\Repositories\AvailableCurrenciesRepo;
+use App\Own\Repositories\AvailableCurrenciesRepo\EloquentAvailableCurrenciesRepo;
 
 /**
  *
@@ -12,7 +12,7 @@ class RatePreparer
 
   public function getRates($fetched)
   {
-    $repo = new AvailableCurrenciesRepo();
+    $repo = new EloquentAvailableCurrenciesRepo();
     $currencies = $repo->get();
     $f = json_decode((string) $fetched->getBody())->rates;
     $rates = [];

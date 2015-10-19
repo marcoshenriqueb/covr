@@ -39,8 +39,9 @@
                                           shake: emailInvalid">
             <div class="input-group">
               <span class="input-group-addon"><i class="fa fa-envelope"></i></span>
-              <input type="text"
+              <input type="email"
                      v-model="email"
+                     name="email"
                      v-on="blur: validaEmail"
                      class="form-control"
                      placeholder="Digite o email">
@@ -56,7 +57,7 @@
                      v-model="password"
                      v-on="blur: validaPassword"
                      class="form-control"
-                     placeholder="Digite a senha">
+                     placeholder="Digite a senha (mínimo de 6 dígitos)">
             </div>
           </div>
 

@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Own\Repositories;
+namespace App\Own\Repositories\CurrencyPriceRepo;
 
 use App\CurrencyPrice;
 /**
  *
  */
-class CurrencyPriceRepo
+class EloquentCurrencyPriceRepo implements CurrencyPriceRepo
 {
 
   public function savePrices($rates, $batch)

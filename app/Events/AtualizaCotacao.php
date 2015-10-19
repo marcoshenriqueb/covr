@@ -7,8 +7,8 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use App\Own\Currency\LatestFetch;
 use App\Own\Currency\RatePreparer;
-use App\Own\Repositories\CurrencyPriceRepo;
-use App\Own\Repositories\CurrencyBatchRepo;
+use App\Own\Repositories\CurrencyPriceRepo\EloquentCurrencyPriceRepo;
+use App\Own\Repositories\CurrencyBatchRepo\EloquentCurrencyBatchRepo;
 
 class AtualizaCotacao extends Event implements ShouldBroadcast
 {
@@ -25,8 +25,8 @@ class AtualizaCotacao extends Event implements ShouldBroadcast
     {
       $fetch = new LatestFetch();
       $rate = new RatePreparer();
-      $repo = new CurrencyPriceRepo();
-      $batch = new CurrencyBatchRepo();
+      $repo = new EloquentCurrencyPriceRepo();
+      $batch = new EloquentCurrencyBatchRepo();
       $result = $fetch->fetchLatest();
       var_dump($result->getStatusCode());
       if ($result->getStatusCode() == 200) {

@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Own\Repositories;
+namespace App\Own\Repositories\CurrencyBatchRepo;
 
 use App\CurrencyBatch;
 /**
  *
  */
-class CurrencyBatchRepo
+class EloquentCurrencyBatchRepo implements CurrencyBatchRepo
 {
 
   public function store($last)

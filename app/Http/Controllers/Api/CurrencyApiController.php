@@ -6,8 +6,8 @@ use Illuminate\Http\Request;
 
 use App\Http\Requests;
 use App\Http\Controllers\Controller;
-use App\Own\Repositories\CurrencyBatchRepo;
-use App\Own\Repositories\AvailableCurrenciesRepo;
+use App\Own\Repositories\CurrencyBatchRepo\CurrencyBatchRepo;
+use App\Own\Repositories\AvailableCurrenciesRepo\AvailableCurrenciesRepo;
 use App\Own\Currency\RatePreparer;
 
 class CurrencyApiController extends Controller

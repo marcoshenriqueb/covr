@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Own\Repositories;
+namespace App\Own\Repositories\MessageRepo;
 
 use App\Message;
 use App\Chat;
@@ -9,7 +9,7 @@ use App\Own\Auth\UserAuth as Auth;
 /**
  *
  */
-class MessageRepo
+class EloquentMessageRepo implements MessageRepo
 {
   private $auth;
 

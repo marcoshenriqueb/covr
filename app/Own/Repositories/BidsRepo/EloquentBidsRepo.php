@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Own\Repositories;
+namespace App\Own\Repositories\BidsRepo;
 
 use App\Bid;
 use App\Own\Auth\UserAuth as Auth;
@@ -8,7 +8,7 @@ use App\Own\Auth\UserAuth as Auth;
 /**
  *
  */
-class BidsRepo
+class EloquentBidsRepo implements BidsRepo
 {
   private $auth;
 

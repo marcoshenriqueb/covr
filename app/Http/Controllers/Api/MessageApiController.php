@@ -7,8 +7,8 @@ use Illuminate\Http\Request;
 use App\Http\Requests;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CreateMessageRequest;
-use App\Own\Repositories\MessageRepo;
-use App\Own\Repositories\ChatRepo;
+use App\Own\Repositories\MessageRepo\MessageRepo;
+use App\Own\Repositories\ChatRepo\ChatRepo;
 use App\Events\BroadcastChatMessage;
 
 class MessageApiController extends Controller

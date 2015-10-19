@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Own\Repositories;
+namespace App\Own\Repositories\FriendsRepo;
 
 use App\User;
 use App\Own\Auth\UserAuth as Auth;
@@ -8,7 +8,7 @@ use App\Own\Auth\UserAuth as Auth;
 /**
  *
  */
-class FriendsRepo
+class EloquentFriendsRepo implements FriendsRepo
 {
   private $auth;
 
