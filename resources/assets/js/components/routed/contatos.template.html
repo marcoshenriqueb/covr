@@ -61,7 +61,7 @@
           <h3>Solicitações pendentes</h3>
           <div class="row" v-repeat="r: requested">
             <div class="col-sm-2">
-              <img src="{{ r.profilePic == null ? 'images/int.jpg' : r.profilePic }}"
+              <img src="{{ r.profile_pic == null ? 'images/int.jpg' : r.profile_pic }}"
                    class="img-responsive img-rounded" />
               </div>
             <div class="col-sm-7">
@@ -88,7 +88,7 @@
           <h3>Solicitações feitas</h3>
           <div class="row" v-repeat="r: requests">
             <div class="col-sm-2">
-              <img src="{{ r.profilePic == null ? 'images/int.jpg' : r.profilePic }}"
+              <img src="{{ r.profile_pic == null ? 'images/int.jpg' : r.profile_pic }}"
                    class="img-responsive img-rounded" />
             </div>
             <div class="col-sm-7">
@@ -112,7 +112,7 @@
           <h3>Amigos</h3>
           <div class="row" v-repeat="f: friends | filterBy searchFriends">
             <div class="col-sm-2">
-              <img src="{{ f.profilePic == null ? 'images/int.jpg' : f.profilePic }}"
+              <img src="{{ f.profile_pic == null ? 'images/int.jpg' : f.profile_pic }}"
                    class="img-responsive img-rounded" />
             </div>
             <div class="col-sm-7">
@@ -135,7 +135,7 @@
           <h3>Mais pessoas</h3>
           <div class="row" v-repeat="n: notFriends | filterBy searchFriends">
             <div class="col-sm-2">
-              <img src="{{ n.profilePic == null ? 'images/int.jpg' : n.profilePic }}"
+              <img src="{{ n.profile_pic == null ? 'images/int.jpg' : n.profile_pic }}"
                    class="img-responsive img-rounded" />
             </div>
             <div class="col-sm-7">
