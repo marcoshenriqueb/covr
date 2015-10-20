@@ -18,7 +18,7 @@ interface FriendsRepo
 
   public function getRequested();
 
-  public function getNotFriends();
+  public function getNotFriends($user = null);
 
   public function requestFriend($request);
 
@@ -31,4 +31,6 @@ interface FriendsRepo
   public function removeFriend($request);
 
   public function searchNewFriends($s);
+
+  public function syncFriendsFromFb($fbRequest, $user = null);
 }

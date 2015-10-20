@@ -32,13 +32,16 @@ class EloquentFriendsRepo implements FriendsRepo
     return $this->auth->user()->requested()->get();
   }
 
-  public function getNotFriends()
+  public function getNotFriends($user = null)
   {
-    $not_friends = User::where('id', '!=', $this->auth->user()->id);
-    if ($this->auth->user()->friends->count() || $this->auth->user()->requests->count() || $this->auth->user()->requested->count()) {
-      $not_friends->whereNotIn('id', $this->auth->user()->friends->modelKeys());
-      $not_friends->whereNotIn('id', $this->auth->user()->requests->modelKeys());
-      $not_friends->whereNotIn('id', $this->auth->user()->requested->modelKeys());
+    if ($user == null) {
+      $user = $this->auth->user();
+    }
+    $not_friends = User::where('id', '!=', $user->id);
+    if ($user->friends->count() || $user->requests->count() || $user->requested->count()) {
+      $not_friends->whereNotIn('id', $user->friends->modelKeys());
+      $not_friends->whereNotIn('id', $user->requests->modelKeys());
+      $not_friends->whereNotIn('id', $user->requested->modelKeys());
     }
     return $not_friends->get();
   }
@@ -98,5 +101,28 @@ class EloquentFriendsRepo implements FriendsRepo
                            })->get();
 
     return $result;
+  }
+
+  public function syncFriendsFromFb($fbFriends, $user = null)
+  {
+    if ($user == null) {
+      $user = $this->auth->user();
+    }
+    $notFriends = $this->getNotFriends($user)->modelKeys();
+    $requests = $user->requests->modelKeys();
+    $requested = $user->requested->modelKeys();
+    foreach ($fbFriends as $f) {
+      $friend = User::where('fbId', $f['id'])->get()->first();
+      $fId = $friend['id'];
+      if (in_array($fId, $notFriends)) {
+        $user->confirmFriend($friend);
+      }elseif (in_array($fId, $requests)) {
+        $user->removeRequest($friend);
+        $user->confirmFriend($friend);
+      }elseif (in_array($fId, $requested)) {
+        $friend->removeRequest($user);
+        $user->confirmFriend($friend);
+      }
+    }
   }
 }

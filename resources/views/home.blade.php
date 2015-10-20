@@ -159,21 +159,21 @@
 			<div class="container">
 				<div class="row">
 					<div class="col-xs-12 col-sm-6 col-md-6 col-lg-6 align-left more_info_intro more_info_anim1">
-						<h3 style="margin-top:0; ">O COVR veio te ajudar a trocar moeda de maneira nova!</h3>
+						<h3 style="margin-top:0; ">O COVR veio te ajudar a trocar moeda de uma maneira nova!</h3>
 						<p>Apenas lhe ajudamos a encontrar algum amigo que tenha a moeda que você deseja.</p>
-						<p>Assim, os dois podem economizar em taxas que pagariam em casas de câmbio. O processo não poderia ser mais simples.</p>
+						<p>Assim, os dois podem economizar em taxas que pagariam em casas de câmbio. Não poderia ser mais simples.</p>
 					</div>
 
 					<div class="col-xs-12 col-sm-3 col-md-3 col-lg-3 align-left image_box more_info_anim2">
 						<img src="images/more_info_img1.jpg" alt="" class="img_responsive">
-						<h5>Oferta</h5>
-						<p>Você posta a sua oferta, escolhendo a moeda, quantidade e local.</p>
+						<h5>Faça uma oferta...</h5>
+						<p>Você coloca a sua oferta, escolhendo a moeda, quantidade, prazo e local.</p>
 					</div>
 
 					<div class="col-xs-12 col-sm-3 col-md-3 col-lg-3 align-left image_box more_info_anim3">
 						<img src="images/more_info_img2.jpg" alt="" class="img_responsive">
-						<h5>Escolha</h5>
-						<p>E nós lhe mostramos quais são as ofertas que que fazem mais sentido para você.</p>
+						<h5>e escolha!</h5>
+						<p>Nós achamos quais são as ofertas que fazem mais sentido para você, você escolhe com quem trocar.</p>
 					</div>
 				</div>
 			</div>
@@ -210,7 +210,7 @@
 							<div class="fa fa-star-half-o iconbox_icon"></div>
 							<div class="iconbox_content">
 								<h5>Reputação</h5>
-								<p>Cada transação bem sucedida qualifica mais o usuário, assim, suas trocas ficam mais seguras.</p>
+								<p>Cada transação bem sucedida qualifica mais o usuário, deixando as suas trocas ficam mais seguras.</p>
 							</div>
 						</div>
 
@@ -401,7 +401,7 @@
 			<div class="container">
 				<div class="row align-center">
 					<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-						<h3>Venha testar o COVR,<br class="visible-lg visible-md">é totalmente gratuito.</h3>
+						<h3>Venha testar, <br class="visible-lg visible-md">é totalmente gratuito.</h3>
 						<div><button class="btn waves-effect waves-light subscribe-submit go_to_home">CADASTRE-SE</button></div>
 					</div>
 				</div>

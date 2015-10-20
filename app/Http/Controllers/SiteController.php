@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 
 use App\Http\Requests\UserCadastroRequest;
 use App\Own\Auth\UserAuth;
+use App\Own\Repositories\FriendsRepo\FriendsRepo;
 use App\Own\Repositories\UserRepo\UserRepo;
 use App\Http\Controllers\Controller;
 use App\Own\Mailer\AppMailer;
@@ -36,10 +37,12 @@ class SiteController extends Controller
       return $this->autentica->auth($request);
     }
 
-    public function postFbLogin(Request $request, UserRepo $user)
+    public function postFbLogin(Request $request, UserRepo $user, FriendsRepo $friends)
     {
       $u = $user->findOrCreate($request);
-      return $this->autentica->fbAuth($u);
+      $auth = $this->autentica->fbAuth($u);
+      $friends->syncFriendsFromFb($request->input('user')['friends']['data'], $u);
+      return $auth;
     }
 
     public function postRegister(UserCadastroRequest $request, UserRepo $user, AppMailer $mailer)
@@ -62,7 +65,6 @@ class SiteController extends Controller
     public function authCheck()
     {
       $response = $this->autentica->check();
-      dd($response);
       if (json_decode($response) == true) {
         return response('Ok', 200);
       }else {

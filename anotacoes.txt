@@ -1,4 +1,6 @@
 Bugs
+-sincronizar amigos do FB
+-Foto de perfil nos amigos
 -cronjob e variação da atualização em relação ao dia anterior
 -melhorar template de email
 
